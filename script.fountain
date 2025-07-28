@@ -1,0 +1,462 @@
+INT.CABIN.DAY
+
+A creature like a bipedal lion is tending to 
+
+NARRATOR
+Deep in the woods lay a cabin,
+Forgotten by the man who built it,
+Nearly forgotten by the woman who lived in it,
+The last of her kind, a Marelon, named Vista.
+Most days were the same for Vista,
+She read her book and cared for her sawdust doll.
+But one day, she recieved something new -
+A letter.
+
+CUT TO:
+
+INT.GARBAGE CHUTE.DAY
+A human man is falling down a garbage chute. He is unconscious.
+
+VISTA
+(Reading)
+Dear Vista,
+I don't know if you remember me,
+It's been a decade or so,
+But I figured it'd be nice to catch up.
+I was your daughter for a couple of months.
+(Thinking aloud)
+I don't... think I had a daughter... did I?
+
+GLASS EYES
+by Ethan Hill
+
+INT.GARBAGE CAVE.DAY
+
+His name is Jeremy.
+The man wakes up. His leg is broken.
+He's on a pile of trash.
+
+A mouse-like creature walks up to him.
+
+MOUSE
+Oh- Sorry, hate to bother,
+*Typically* the humans they dump down the garbage are dead.
+
+JEREMY
+(Terrified)
+
+MOUSE
+No, no, no.. Relax, I'm not going to eat you *now*.
+I'll let you die first.
+
+JEREMY
+H-How do I get out of here?
+
+MOUSE
+Why would I tell you that? I like you where you are.
+
+Option A:
+    JEREMY
+    Leave me alone!
+
+    MOUSE
+    Fine! Good grief... What's his problem?
+
+    The mouse leaves.
+
+Option B:
+    JEREMY
+    I can help.
+    If you get me out of here, I'll, uh..
+    I'll make sure to repay you!
+
+    MOUSE
+    ...fine, but I'm a hungry man.
+    You'll want to take a left, then a right, then another left.
+    Once you get to the woods, don't stop until Avalon.
+
+    JEREMY
+    Thank you..
+
+    MOUSE
+    When you get to the village,
+    Send someone back here with a turkey or something, alright?
+    I love it when they send turkey down the chute.
+
+    The mouse leaves.
+
+Jeremy encounters a couple of small fights with bugs.
+
+Eventually he reaches the end of the garbage cave and collapses.
+
+He is pulled out by a mysterious person in a hood.
+
+INT.OUTPOST.DAY
+
+Jeremy wakes up in what seems to be some kind of outpost office.
+It's really worn down and probably not fit to live in.
+
+He walks around until he finds a Marelon in the corner, eating lime out of a jar.
+
+GINGER
+Oh - you're awake? You're not.. super hurt, are you?
+
+JEREMY
+My leg is broken.
+I'm in excruciating pain.
+I don't know when the adrenaline is going to wear off.
+
+GINGER
+I, uh..
+Do you want a lime?
+
+JEREMY
+...
+Yes.
+Thank you.
+Has anyone ever told you that you look *just* like Vista S-
+
+GINGER
+Y-Yeah, I get that a lot, haha.
+I'm Ginger by the way.
+
+JEREMY
+Nice to, uh, meet you. I'm Jeremy.
+
+GINGER
+We should go to Avalon, they've got magic that'll help with your leg. and it's on the way to Canterbury.
+
+JEREMY
+What's in Canterbury?
+
+GINGER
+Well.. I was trying to get there anyway, and I figured you'd wanna go because of the airport.
+
+JEREMY
+You can't get into Canterbury if you're not human.
+
+GINGER
+And you're not supposed to be in Albion if you *are* human, so...
+
+JEREMY
+Ah. I see what you're doing.
+
+GINGER
+Uh huh?
+
+JEREMY
+Fine. Let's get a move on.
+
+INT.WOODS.DAY
+
+Jeremy and Ginger make some progress in the woods, but not a lot.
+
+They encounter a hostile stranger. He is a mueto.
+
+STRANGER
+*spits* A human! What are you doing here?
+
+JEREMY
+*Trying* to leave.
+
+STRANGER
+But the human city is back the way you came.
+
+JEREMY
+I know, I just-... Look.
+
+STRANGER
+Silence!
+
+The battle mechanics are established for the first time. Jeremy has the option to use his walking cane as a staff, and Ginger seems to have a crossbow. Jeremy can't swing to save his life, Ginger can't ever hit the stranger. However, it doesn't matter, because on the first attempt, the stranger pricks his finger on his own poison dart.
+
+STRANGER
+The blade... it was... poisoned...
+
+The stranger dies. Ginger looks mortified.
+
+If Jeremy raids the fallen stranger:
+    - +5 GOLD
+    - picture of family
+    - poison dagger
+
+INT.AVALON.DAY
+
+Avalon is a dumpster fire of a town. Piles of trash, lots of literal fire - dangerous people seeming everywhere. A gallows in the center of town. Lots of ramshackle buildings that seem to be built on top of once-cute buildings.
+
+There are lots of interactions Jeremy and Ginger can have in the city.
+
+An old mueto is selling tickets to see a statue.
+
+OLD MUETO
+1 gold to see my daughter who was turned to stone by a cruel witch.
+
+JEREMY
+Maybe I heard you wrong.
+
+OLD MUETO
+It's very true.
+
+GINGER
+(Sad)
+That's terrible...
+
+JEREMY
+How do I know you aren't charging to look at a statue?
+
+OLD MUETO
+Only one way to find out.
+
+There's a shop that is selling things.
+
+SHOPKEEP
+Howdy howdy, stranger!
+
+JEREMY
+You don't have a problem with me being human?
+
+SHOPKEEP
+Uh.. No? Humans have so much money.
+
+JEREMY
+Fair enough.
+
+Items:
+    -   1 *really* shiny gold (2 gold)
+    -   Health potion
+    -   Crossbow bolts
+    -   Turkey (live / only if conversation with the Mouse happens earlier)
+    -   Cloak with hood (disguise)
+
+SHOPKEEP
+Thanks, stranger! Come back with more money!
+
+There's a butcher that you can visit.
+
+The butcher is covered in flies. Clearly not having a good day.
+
+With disguise:
+    BUTCHER
+    What you want?
+
+    JEREMY
+    Uh.. Just browsing.
+
+    BUTCHER
+    You sound like a human.
+
+    JEREMY
+    The nerve...
+    I'm offended that you would even suggest that.
+
+    BUTCHER
+    You gotta put some meat on those bones, then.
+
+Without disguise:
+    BUTCHER
+    (Closes door)
+    It sounds like someone hasn't discovered what human meat goes for on the market.
+
+    GINGER
+    Stop!
+
+    BUTCHER
+    I don't know who you are, love, let me handle this.
+
+    Fight sequence with Butcher.
+
+        If he dies:
+        Items:
+            -   5 gold.
+            -   10 rotten meat.
+    
+        If he doesn't die:
+
+        GINGER
+        (Undoes her hood to reveal her face)
+        Stop! I command you!
+
+        BUTCHER
+        ...I apologize, I don't understand... What business is this?
+
+        If they have a turkey:
+
+            JEREMY
+            This turkey. We want it butchered.
+
+            BUTCHER
+            Right away, yes sir. For goodness sake...
+
+            JEREMY
+            What was that about?
+
+            GINGER
+            Uh.. We'll chat about it later.
+
+        If they don't:
+
+            BUTCHER
+            Here, have a steak. Hell, have two.
+
+            JEREMY
+            Three steaks.
+
+            BUTCHER
+            *heavy sigh*
+            Fine. Three steaks.
+
+There's a courier service you can visit.
+
+COURIER
+What's your business?
+
+If turkey:
+
+    JEREMY
+    I want this turkey sent to the mouse who lives in the garbage cave.
+
+    COURIER
+    Ugh.. I hate that guy.
+
+    GINGER
+    What happened?
+
+    COURIER
+    He keeps eating packages.
+
+    JEREMY
+    Does it make it better that this package is *supposed* to be eaten?
+
+    COURIER
+    No, because it keeps him from *starving*.
+
+If no turkey / already talked to him:
+
+    COURIER
+    Do you want to know why I'm a courier, human?
+
+    JEREMY
+    Not really.
+
+    COURIER
+    Because this place sucks.
+    The trash, the fires, the trash fires, all of it.
+
+    JEREMY
+    Are other places much better?
+
+    COURIER
+    No, but I can tolerate it when they're in rotation.
+    I get to see different people's trash every week.
+
+Looking at the gallows in the center of town. There is an old lady mueto.
+
+GINGER
+This place smells so bad...
+
+JEREMY
+What village are you from?
+
+GINGER
+I'm from Animulus.
+
+OLD LADY
+*cackles* Animulus. I bet they don't have any good hangins' out there.
+
+GINGER
+I think she's gone senile.
+
+OLD LADY
+I'm just as sharp as you are, dear!
+See that square? That's where I sit and knit during the hangings.
+I just can't work without a good hanging.
+
+JEREMY
+Lovely locals.
+
+There seems to be a dead body on the ground.
+
+GINGER
+Heaven help him...
+
+NOT DEAD BODY
+Oh, I'm not dead, haha.
+I'm just really tired.
+It feels super nice. You should try it sometime.
+
+GINGER
+You know there's a tavern with beds, right?
+
+NOT DEAD BODY
+Too loud. Nice and quiet out here.
+
+When Ginger and Jeremy try to exit the town:
+
+GINGER
+It's getting late, we shouldn't leave the town at night.
+
+JEREMY
+As if staying *in* the town was any more safe.
+
+GINGER
+It's marginally safer.
+
+There is a guard in charge of one of the main exits.
+
+GUARD
+It's not safe to leave the village at night.
+No one is allowed to leave.
+Not even humans.
+Proclamation of Grand Master Senatrix.
+
+Ginger and Jeremy enter the tavern.
+
+If they go up to the front.
+
+BARKEEP
+Pick your poison.
+
+JEREMY
+Uh.. Ginger, does he mean-
+
+BARKEEP
+Haha, no, I don't mean literally.
+Don't cause any problems or I might though.
+Me, I don't mind you humans, but these hooligans?
+A little drink and any excuse to get rialed up and whew-
+
+JEREMY
+Noted.
+
+He is able to buy:
+    -   Whiskey (1 gold)
+    -   Hotel stay (10 gold)
+
+There is a mueto playing with darts.
+
+DARTS MAN
+Oh.. Look who the cat dragged in.
+
+JEREMY
+Thank you for that, by the way.
+
+DARTS MAN
+Put in a little money, try your hand -
+If you do better than us, you win the pool.
+
+If you win the game, enough to get 10 gold, one of the muetos gets angry.
+
+ANGRY MUETO
+Hey! That filthy human lost all my money!
+
+JEREMY
+We can play again if you want.
+
+ANGRY MUETO
+I'm done with playing!
+
+A battle scene begins against the Angry Mueto.
+
+When it gets to be his turn, he uses "knockout darts", which cause Jeremy and Ginger to *both* become knocked out.
+
+The screen fades to black.
