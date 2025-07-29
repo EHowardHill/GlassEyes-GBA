@@ -1,6 +1,6 @@
 INT.CABIN.DAY
 
-A creature like a bipedal lion is tending to 
+A creature like a bipedal lion is tending to her daily tasks.
 
 NARRATOR
 Deep in the woods lay a cabin,
@@ -9,7 +9,7 @@ Nearly forgotten by the woman who lived in it,
 The last of her kind, a Marelon, named Vista.
 Most days were the same for Vista,
 She read her book and cared for her sawdust doll.
-But one day, she recieved something new -
+But one day, she received something new -
 A letter.
 
 CUT TO:
@@ -25,7 +25,7 @@ It's been a decade or so,
 But I figured it'd be nice to catch up.
 I was your daughter for a couple of months.
 (Thinking aloud)
-I don't... think I had a daughter... did I?
+I don't... remember... a daughter...
 
 GLASS EYES
 by Ethan Hill
@@ -38,30 +38,30 @@ His name is Jeremy.
 The man wakes up. His leg is broken.
 He's on a pile of trash.
 
-A mouse-like creature walks up to him.
+A mouse-like creature walks up to him. His name is Viskers.
 
-MOUSE
+VISKERS
 Oh- Sorry, hate to bother,
 *Typically* the humans they dump down the garbage are dead.
 
 JEREMY
 (Terrified)
 
-MOUSE
+VISKERS
 No, no, no.. Relax, I'm not going to eat you *now*.
 I'll let you die first.
 
 JEREMY
 H-How do I get out of here?
 
-MOUSE
+VISKERS
 Why would I tell you that? I like you where you are.
 
 Option A:
     JEREMY
     Leave me alone!
 
-    MOUSE
+    VISKERS
     Fine! Good grief... What's his problem?
 
     The mouse leaves.
@@ -72,7 +72,7 @@ Option B:
     If you get me out of here, I'll, uh..
     I'll make sure to repay you!
 
-    MOUSE
+    VISKERS
     ...fine, but I'm a hungry man.
     You'll want to take a left, then a right, then another left.
     Once you get to the woods, don't stop until Avalon.
@@ -80,7 +80,7 @@ Option B:
     JEREMY
     Thank you..
 
-    MOUSE
+    VISKERS
     When you get to the village,
     Send someone back here with a turkey or something, alright?
     I love it when they send turkey down the chute.
@@ -701,31 +701,40 @@ I enrolled at BGI but they couldn't authorize my identity.
 It's a big concern, apparently. Identity theft.
 Well, now that some random guy has my ID card...
 Yeah, that dream is over.
+The thing about genetics, it's only *legal* in New Berlin.
+But that city was awful. Just as bad as Avalon.
+Ugh. My mother is going to kill me.
 
 GINGER
 You wanted to be a geneticist?
 
 JEREMY
-It's prestegious. And I was good at it.
-On second thought, maybe it's for the best.
-That city was awful. Just as bad as Avalon.
-Maybe this land is cursed.
+Dr. Henry Erickson? He's my hero.
+Did you know that most muetos were created by him alone?
+We lost most of his techniques.
+All we can make these days are small, useless creatures.
+Frogs and slugs mostly.
 
 GINGER
-Was there anything you wanted to make?
+Yeah, he's a nice guy.
 
 JEREMY
-No. Not really.
-Ugh. My mother is going to kill me.
+...No.
+You're not implying that you *know* him, right?!
 
 GINGER
-I guess we have that in common, heh.
+He's my grandfather.
 
 JEREMY
-That your mother is going to kill me?
+...NO.
+OH MY- HOLY-
+Oh... Oh you have to introduce me to him.
 
 GINGER
-No. Heavens no. Oh, I hope not.
+I don't think I can, I'm sorry.
+
+JEREMY
+Aw, come on.
 
 If he checks the fridge.
 
@@ -777,19 +786,19 @@ The three escape through the tunnel, though there's more gameplay in that. The m
 
 If you fed him the turkey:
 
-    MOUSE
+    VISKERS
     What's going on here?
 
     JEREMY
     What do you mean "what's going on here"?! What are you doing here?
 
-    MOUSE
+    VISKERS
     I'm a mouse, we tunnel, it's our thing.
 
     GINGER
     What's going on up top?
 
-    MOUSE
+    VISKERS
     Not pretty. Big dragon. Everything's gone.
     Gorgeous house though. Real shame. I was gonna raid it tonight.
     Oh... Thanks for the turkey, by the way.
@@ -797,18 +806,18 @@ If you fed him the turkey:
     JEREMY
     No problem.
 
-    MOUSE
+    VISKERS
     Follow me.
 
 If not:
 
-    MOUSE
+    VISKERS
     Hey! You again! You owe me a turkey!
 
     JEREMY
     I'm sorry, I don't-... Look-
 
-    MOUSE
+    VISKERS
     I knew I couldn't trust a filthy human.
 
     There is a battle moment with the mouse.
@@ -1175,7 +1184,7 @@ If you enter the barber shop:
 
 There are two men: Manuel and Luigi.
 
-MANUEL
+LUIGI
 Let me guess, you are here for a haircut.
 
 (Jeremy is bald)
@@ -1183,6 +1192,646 @@ Let me guess, you are here for a haircut.
 JEREMY
 Very funny.
 
-MANUEL
+LUIGI
 How about you grow some hair first and then.. uh..
 We'll see what we can do, yes?
+
+If you talk to Manuel
+
+MANUEL
+My name is Manuel. I play the guitar.
+
+GINGER
+Is that all you do?
+
+MANUEL
+It doesn't pay well. All I can afford is five kids and a house.
+
+If you try to leave the town:
+
+TOWN GUARD
+No tourists allowed in the countryside.
+
+JEREMY
+We're trying to get to Canterbury.
+
+TOWN GUARD
+Those sure are some funny-looking humans you've got there.
+
+JEREMY
+...Right.
+
+SEBELLUS
+In that case- TASTE STEEL!
+
+The battle mechanic breaks out. However, the guard instantly one-shots the three if they try to fight.
+
+If you go in the shop office:
+
+INT.SHOP OFFICE.DAY
+
+ANNIE
+Oh thank goodness tourists
+Hey, look, I sell things, I don't.. SIGH
+I don't know how tourists think, okay?
+The Carnival is tonight, and I need to put out these fliers.
+And I can't leave the shop, ugh.
+I tell you what. You put them up where YOU'D be looking, as tourists, right?
+I'll give you all something free from the shop.
+
+If you go and place fliers (it doesn't matter where):
+
+ANNIE
+Thank goodness, I was worried that-
+
+A mysterious voice from the back.
+
+OFFICE BOSS
+ARE THOSE FLIERS PUT UP YET?!
+
+ANNIE
+Yes, Mr. Malcomovich!
+
+GINGER
+Are you okay?
+
+ANNIE
+We'll have to talk at a later time-
+I don't want him to hear us.
+
+The story only continues after this point.
+
+EXT.FLAYITHRO.NIGHT
+
+Carnival is now going on. Everyone is dressed up and looks rather nice. People are dancing in the town square. There's a shack with food in it, and a super long line.
+
+SHACK GUY
+Alright, what do you want?
+
+Options:
+    -   Spaghetti (2 gold)
+    -   Fettuccini (2 gold)
+    -   Mozzarella (2 gold)
+
+You can't buy anything though because it instantly cuts to:
+
+SHACK GUY
+Hey- This isn't a place for dilly-dalliers, back of the line if you can't decide.
+
+SEBELLUS
+What's *his* problem?
+
+SHACK GUY
+YOU ARE! MOVE!
+
+ANNIE
+Hey, you three are new, so you don't know.
+Long ago, Carnival was just a local thing.
+We had food right out in the open.
+Then it attracted a lot of people so things got crazy.
+They had to put the food in the shack and the cook got jaded.
+Then everyone stopped showing up... You know how tourists are.
+They hate other tourists.
+I don't think the cook has ever recovered.
+
+GINGER
+So.. What's going on with your boss?
+
+ANNIE
+You three look like the, uh.. adventurous type.
+
+SEBELLUS
+Do you want someone to kill him?
+
+GINGER
+Sebellus, for the love- calm down.
+
+ANNIE
+*SIGH* I won't stop you if you wanted to try.
+
+INT.SHOP OFFICE.NIGHT
+
+OFFICE BOSS
+WHO IS THAT?! ANNIE? ARE YOU BACK NOW?!
+
+ANNIE
+*whisper* Right through those doors. Can't miss him.
+
+INT.SHOP OFFICE BACK.NIGHT
+
+There is a teddy bear that seems to be hanging from the ceiling with all sorts of gnarly limbs coming out of it.
+
+JEREMY
+Oh, that is UGLY.
+
+OFFICE BOSS
+Have these vessels come to file a complaint?
+
+SEBELLUS
+Yeah! We're gonna kill you because you're ugly!
+
+It launches into a battle against the teddy bear. They are able to barely defeat it, because Ginger's typically inaccurate crossbow attacks actually work here, since the creature is so large.
+
+ANNIE
+*FINALLY*. I can take a break. He was keeping me hostage in here.
+
+JEREMY
+Why were you out at the Carnival then?
+
+ANNIE
+He wanted pasta.
+
+GINGER
+W-What *was* that thing?
+
+ANNIE
+A cursed toy.
+I went to the fairies asking them to make it come to life.
+I, uh.. suppose I should have been more specific.
+
+JEREMY
+What's wrong with those fairies?
+
+GINGER
+Immortal spirits get bored and lose their minds.
+
+JEREMY
+Do you know how to get us to Canterbury?
+
+ANNIE
+There's a train, and, uh.. we sell luggage.
+It wouldn't be comfortable, but we've done it before.
+
+GINGER
+Well.. If we HAVE to..
+
+ANNIE
+You three can stay here for the night.
+I cannot thank you enough for that earlier. Genuinely.
+
+The screen fades to black.
+
+CUT TO:
+FLASHBACK
+
+INT.TRIP.DAY
+
+Servants are working around Vista. Sebellus seems to be trying to get peanut butter out of a jar.
+
+VISTA
+You've packed the gifts? Good, good...
+Sebellus, dear, could you please- Nevermind.
+You, could you get a knife for my son? This is unbearable.
+A DULL one! Thank you.
+
+INT.GINGER'S ROOM.DAY
+
+VISTA
+Dearest, are you feeling any better?
+
+GINGER
+No.
+
+VISTA
+I've reached out to Henry, but he's on holiday.
+I've asked the servants to check on you if you need anything.
+
+GINGER
+Thank you, mom.
+
+VISTA
+Of course. We will be back by dinner time.
+I love you, dear.
+
+GINGER
+I love you too mom.
+
+Vista leaves Ginger alone.
+
+INT.CARRIAGE.DAY
+
+Vista is in the carriage with Sebellus and her chief of staff.
+
+VISTA
+I worry about that girl.
+She reminds me of myself.
+
+CHIEF ADVISOR
+Well, look who you've become!
+
+VISTA
+Indeed.
+What is the count so far?
+
+CHIEF ADVISOR
+Great news.
+They're estimating the total human losses are above fifty. Some are upper quadrant residents.
+
+VISTA
+...
+
+CHIEF ADVISOR
+Grand Master Senatrix? Are you alright?
+
+VISTA
+...
+
+CUT TO:
+
+Ginger is trying to look for her mother in the castle. It's difficult because of how large it is.
+
+Eventually, she hears crying on the other side of a door.
+
+She opens the door, and Vista is curled up on the edge of a bed with a bottle of alcohol, weeping.
+
+GINGER
+Mom?
+
+It takes her a moment to calm down.
+
+VISTA
+Are you happy? Do the things I give you bring you happiness?
+At the very least... I want you to be happy.
+The humans are rotten.
+The muetos are rotten.
+Semura, I shouldn't... I shouldn't tell you this...
+...
+But the death...
+
+GINGER
+Y-You don't have to tell me.
+
+VISTA
+The spirits.. farm our souls.
+This dreadful war is for their sake.
+If I don't kill enough humans...
+My people will revolt. The spirits will take *our* souls.
+And then they'll give the throne to someone who doesn't care.
+I didn't mean to bring you into this life.
+I swim in a sea, a sea of death.
+I can't sink.
+
+ACT FOUR
+
+The three wake up. The city is burning.
+
+GINGER
+JEREMY!! JEREMY! WAKE UP!! FIRE!!
+
+SEBELLUS
+OH!! OHH!! I LOVE FIRE!!
+
+GINGER
+No! Get up! We've gotta get out of here!
+
+The three leave the building, and the square is entirely on fire. Everyone is panicking. Dragonfire has essentially destroyed the entire town.
+
+Vista is there in all her fury, surrounded by guards.
+
+VISTA
+WHOEVER YOU ARE, YOU WHO HAVE STOLEN MY CHILDREN,
+I WILL HAVE NO MERCY!
+
+She sees Jeremy and immediately runs to grab him by the neck.
+
+VISTA
+You. Human.
+I will sift you. Like wheat.
+
+GINGER
+MOM! STOP! HE DIDN'T KIDNAP US!
+HE WAS TRYING TO KEEP US SAFE!!
+
+VISTA
+(Hesitates)
+Explain yourself. Now.
+
+GINGER
+I actually found *him*, he was dumped down the garbage chute!!
+
+VISTA
+He's from New Berlin?
+
+GINGER
+He was there for school!
+
+VISTA
+(Loosens her grip)
+My daughter has no sense of direction.
+It seems as if you have none either.
+They should teach geography in human schools.
+
+GINGER
+No.. We.. We..
+
+VISTA
+Choose your next words carefully, Semura.
+
+GINGER
+(Bursts into tears)
+I had to leave. I had to go home.
+
+VISTA
+But...
+...
+...I see.
+Henry is wise. But he does not know everything.
+His mission was in vain.
+Sebellus, come here.
+
+Sebellus seems conflicted.
+
+VISTA
+Very well.
+The least I can do is escort you three to Canterbury.
+The human does not deserve to be involved in this.
+
+GINGER
+Mom-
+
+VISTA
+Do not call me 'mother'.
+*gestures to a servant*
+Clean up this village. Make sure the injured are taken care of.
+
+INT.TRAIN.DAY
+
+Jeremy, Vista, Ginger, and Sebellus get on the train.
+
+Ginger and Sebellus are sleeping, or at least trying to sleep, in the sleeping car. Jeremy is sitting at the table. Vista walks up to him, sullen.
+
+VISTA
+Human. Is what she said true?
+
+JEREMY
+Your majesty, I didn't know-
+
+VISTA
+Do not lie to me. I can smell fear.
+I will kill you if you mince words.
+
+JEREMY
+I swear that I didn't know why she wanted to go.
+I didn't even know who she was, I only found out yesterday.
+I-I don't mean to intrude on... whatever this is.
+
+Vista turns away from him.
+
+VISTA
+Do you know what we are?
+Animated, writhing flesh. Haunted by the gods.
+Stupid enough to be puppeted.
+Intelligent enough to be aware of it.
+My people, they consider me a goddess.
+And why shouldn't they?
+I am the most powerful.
+I will live forever.
+And yet... If *I* am a goddess...
+Then what does that make the spirits?
+I fear hell, human.
+I am afraid it is more of the same.
+Those two... are not my children.
+Semura has my body but not my soul.
+She cannot withstand eternity.
+We did not speak.
+
+JEREMY
+Yes, ma'am.
+
+VISTA
+Very good.
+
+INT.CANTERBURY.DAY
+
+The train arrives at the station. Vista escorts them off.
+
+VISTA
+Father has a townhouse here.
+Before you two leave... I want you to have a word with him.
+
+JEREMY
+...Who is your father?
+
+VISTA
+You know of him.
+
+They are led through the city until they get to a home.
+
+On the inside, there is a man at a desk. Facing away from them.
+
+HENRY
+Not now, friend, I'm busy.
+
+VISTA
+Father.
+
+HENRY
+Vista! What a surprise. And I see you've brought the children.
+The spirits have been troubling me. Sharing rumors.
+I hope they are mistaken.
+
+JEREMY
+DR. HENRY ERICKSON?!
+
+HENRY
+Who is this?
+
+JEREMY
+I. AM. YOUR. BIGGEST. FAN.
+
+VISTA
+You say it for yourself, Semura.
+
+Ginger is crying and cannot speak.
+
+HENRY
+Do you not want to go home with your mother?
+Are the treats and delights not enough for you?
+
+GINGER
+I-I... I can't take the death... anymore.
+Vista is not my mother.
+Y-You took me and gave me to her. Like a pet.
+S-She has to kill so many people to make you happy.
+
+VISTA
+Father.. Semura is correct.
+This death is 
+
+HENRY
+Oh, not me, child. I don't care.
+But I haven't been myself for a long time.
+
+Henry's head begins to crack, like an egg.
+
+HENRY
+Not for a long time.
+
+Everyone, including Vista, is horrified. He has transformed into some sort of bizarre monster.
+
+HENRY
+I know you want to rest, child.
+I can give you rest.
+I have perfected all I need to recreate your flesh.
+A proper heir, you might say.
+
+VISTA
+F-Father..
+How long have you been planning this??
+
+HENRY
+You were so strong, my child.
+But everyone has their limits.
+I thought I could postpone it...
+But I knew this day would come.
+
+The game then enters into a boss fight against Henry in the middle of his office. Vista joins the party!
+
+The fight goes through multiple phases: in the first phase, his body is spider-like, and Ginger's ranged attacks are effectual. However, he always goes after her first. She is taken out in the first few rounds.
+
+This leaves the other three to hold him back. He is eventually killed.
+
+HENRY
+Vista... I...
+...I'm scared...
+
+VISTA
+Father...
+
+Henry dies.
+
+Vista mourns her father.
+
+VISTA
+Father told me that when souls were borrowed,
+they would return to the person they came from.
+My precious daughter...
+I hope she is able to find happiness elsewhere.
+
+JEREMY
+Ginger? Ginger?!
+
+Jeremy realizes that she is dead. He is stunned.
+
+VISTA
+In the other room, there is a refrigerator.
+You will find a package of blood labeled 'Marelon'.
+Fetch it for me.
+
+In the other room is a refrigerator. Inside are bags of blood. One stands out in particular - it's labelled "Marelon".
+
+Jeremy is able to equip it and return to Vista.
+
+He has the overwhelming urge to destroy the room.
+
+If he destroys the room:
+
+    VISTA
+    Heavens, what have you done?!
+
+    JEREMY
+    I've had enough of this.
+    Flesh isn't clay. Now no one can 'replace' you.
+
+    VISTA
+    ...I see.
+
+JEREMY
+Can you save her?
+
+VISTA
+No.
+I suppose it is time for things to go back to the way they were.
+
+Vista bites the bag of blood and seems to drink it.
+Before too long, she begins to change -
+Her back opens up, like an insect shell,
+She emerges from it looking exactly like Ginger, but older.
+
+JEREMY
+Y-You...
+
+VISTA
+Human.
+This is my true form.
+In my purse, you will find enough money to fly home.
+I will be queen no more.
+Come, Sebellus. We will let them throw us out of the city.
+I must atone for the blood on my hands.
+
+Sebellus picks up the body of Ginger.
+
+JEREMY
+I...
+
+VISTA
+Thank you, human.
+
+JEREMY
+...Thank you-
+
+VISTA
+Vista.
+
+JEREMY
+Vista. Thank you.
+
+The four leave, to discover that Bloodflood (the dragon) has been causing havok in the city.
+
+VISTA
+That damn dragon, again...
+Human! RUN!
+
+Jeremy now has to run through the city to get to a plane before it takes off.
+
+He gets on the plane, barely just in time, as it takes off.
+
+If Jeremy destroyed the office:
+
+    NARRATOR
+    It was not long before the Masterdom of Animulus fell.
+    Their monarch and deity missing, the people fell into chaos.
+    Many turns their swords against themselves instead of the humans.
+    In the same way - the humans turned their swords against themselves.
+    And then, as sudden as a lightbulb, the killing ended.
+    The remnant of humans and monsters began to rebuild.
+    New people came to settle the empty land from across the sea.
+    New cities were built. New life sprung up.
+    There was peace.
+
+If Jeremy did not destroy the office:
+
+    NARRATOR
+    It was not long before the Masterdom of Animulus fell.
+    Their monarch and deity missing, the people fell into chaos.
+    Many turned their swords against themselves instead of the humans.
+    The humans discovered Henry's research.
+    Using this knowledge, they began to create new muetos.
+    Muetos of war.
+    But they did not understand what they had done, and soon,
+    The masterdom was empty.
+    A somber peace took hold of the land.
+
+INT.CABIN.DAY
+
+Vista, the woman in the cabin, is reading the letter.
+
+She smiles, reading the letter.
+
+VISTA
+Yes... I think I remember having a daughter...
+It was so long ago, now...
+
+She folds up the paper, puts it away, and then drinks a pill.
+
+VISTA
+I need... to forget...
+
+And then, Vista goes to tuck her sawdust doll in.
+
+VISTA
+Goodnight, Ginger.
+
+She then goes to sleep.
+
+THE END
