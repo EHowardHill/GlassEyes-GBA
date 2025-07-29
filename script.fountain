@@ -480,7 +480,7 @@ It's endearing.
 
 VISTA
 You know how the peasants think.
-They believe I am too amiable to the humans.
+They think I'm too amiable to the humans.
 
 HENRY
 Nonsense. They love you dearly.
@@ -496,10 +496,693 @@ VISTA
 I can't rest.
 I know when I wake up again that it'll be more of this.
 I keep changing my face. But it's always the same.
+Father, I want an *heir*. A proper heir.
+The strong are never good enough.
+The good are never strong enough.
 
 HENRY
-I understand, Vista.
+...I see.
+Well, your birthday is coming up.
 
 VISTA
-Father, I want an *heir*. A proper heir.
+Thank you, Father.
 
+HENRY
+Anything for you, my dear.
+
+ACT TWO
+
+INT.CELLAR.NIGHT
+
+Jeremy and Ginger wake up in a cellar, tied up. They look groggy.
+
+GINGER
+JEREMY!! JEREMY WAKE UP!!
+
+JEREMY
+Ugh.. Now my *head* hurts..
+
+GINGER
+T-They.. They took everything..
+
+JEREMY
+At least we found somewhere to stay for the night.
+What do you think these bottles are, wine?
+
+Jeremy has to solve a block-pushing sokoban puzzle by scooting in his chair. Eventually, he gets access to a blade and cuts himself and Ginger free.
+
+The angry mueto from earlier finds them in the cellar. He draws his sword.
+
+ANGRY MUETO
+Get back!
+
+JEREMY
+And I thought *I* was a sore loser.
+
+There is another battle sequence with Jeremy and Ginger. Neither of them can do anything. When it gets to the be the Angry Mueto's turn, suddenly a Marelon comes in from off-screen and slams his sword into his head, killing him instantly.
+
+JEREMY
+...
+
+GINGER
+SEBELLUS!! WHAT ON EARTH ARE YOU DOING HERE?!
+
+SEBELLUS
+Well I just killed a bad guy with my sword.
+
+GINGER
+Jeremy, this is my brother Sebellus.
+Sebellus, this is Jeremy.
+Is... Is mom nearby?
+
+SEBELLUS
+Haha, no, I saw you leave the house so I've been following you for days.
+I didn't tell nobody though.
+
+GINGER
+...I see. Sebellus, do you... uh... want to join us? We're heading to Canterbury.
+
+SEBELLUS
+Yeah!
+
+Jeremy, Sebellus, and Ginger escape from the cellar into the street. A lot of people seem to be standing around the gallows, as something is being read off.
+
+SPEAKER
+An announcement from Grand Master Senatrix!
+Two of her children - Princess Semura and Prince Sebellus -
+Have been kidnapped!
+She will stop at nothing until they are returned safely!
+
+SEBELLUS
+(Draws sword)
+We will not go peacefully!
+
+Everyone stops to look at them.
+
+They all produce pitchforks and begin chasing them. Jeremy has to lead them out of town, running. They navigate the town and escape!
+
+EXT.WOODS.NIGHT
+
+JEREMY
+This has been a lot of fun, but I'm heading off on my own now.
+I can't risk getting tied in with whatever you two have going on.
+
+GINGER
+I think you might have to...
+A whole village thinks you kidnapped us,
+And if my mom finds out...
+
+JEREMY
+Yeah, about that.
+YOU'RE *THE* PRINCESS SEMURA SENATRIX?!
+I don't want anything to do with you two
+OR your bloodthirsty mother!
+What the hell!
+
+GINGER
+She's not actually that bloodthirsty, she likes humans!
+
+JEREMY
+HA.
+
+GINGER
+I'm serious, she just has to put on a face!
+If she showed her true feelings, there'd be a revolt.
+
+JEREMY
+I guess it doesn't matter. You're right.
+I get dumped down a garbage chute and bump into *Princess Semura*.
+
+GINGER
+Just call me Ginger.
+
+JEREMY
+Fine. Whatever. Doesn't change my day.
+
+The three walk through the woods a bit. They encounter a few small enemies that they have to actually fight using the battle system - which is much easier since they have Sebellus.
+
+Optional encounters:
+
+A mueto is fishing over by the river.
+
+FISHER
+Howdy, strangers.
+You three look hungry.
+I'm feeling amicable today.
+If you have some gold, I'll give you fish.
+
+    If you have the photo from earlier:
+
+        FISHER
+        Oh.. I know that guy.
+        Sonnuvabitch, he always scared off my fish.
+        You do him in?
+
+        JEREMY
+        Not really, he did himself in.
+
+        FISHER
+        Eh, that's worth a fish.
+
+        SEBELLUS
+        Good fish! Town food'll give you worms.
+
+        GINGER
+        Sebellus!
+
+    If you try to keep talking to him:
+
+        FISHER
+        Busy. Got fish on my mind.
+
+A ghost is floating through the woods.
+
+GINGER
+Don't move..
+
+SEBELLUS
+What do you want, ghost?
+
+GHOST
+Ooooooooo
+
+SEBELLUS
+If you can't talk, are you the type of ghost who can move stuff?
+Move the dust around so I can figure out what you want.
+
+GINGER
+Stop talking to the ghost!!
+
+SEBELLUS
+Wait.. He's writing something!!
+..."ooooooo"
+
+JEREMY
+Oh for crying out loud.
+
+Finally, the three stumble across a house. It seems abandoned.
+
+GINGER
+Do you.. think anyone lives there?
+
+JEREMY
+Ugh.. I hope not.
+
+You may look around the house. There seem to be a lot of different items strewn around the house. There are photos which imply that it was once owned by a human family who had adopted a mueto.
+
+Jeremy looks at a frame.
+
+GINGER
+So.. what's *your* story?
+
+JEREMY
+I was supposed to be at orientation today.
+I enrolled at BGI but they couldn't authorize my identity.
+It's a big concern, apparently. Identity theft.
+Well, now that some random guy has my ID card...
+Yeah, that dream is over.
+
+GINGER
+You wanted to be a geneticist?
+
+JEREMY
+It's prestegious. And I was good at it.
+On second thought, maybe it's for the best.
+That city was awful. Just as bad as Avalon.
+Maybe this land is cursed.
+
+GINGER
+Was there anything you wanted to make?
+
+JEREMY
+No. Not really.
+Ugh. My mother is going to kill me.
+
+GINGER
+I guess we have that in common, heh.
+
+JEREMY
+That your mother is going to kill me?
+
+GINGER
+No. Heavens no. Oh, I hope not.
+
+If he checks the fridge.
+
+    - +1 Sandwich
+    - +1 Chocolate milk
+
+JEREMY
+What the heck, there's still food in here.
+
+SEBELLUS
+Yum.
+
+GINGER
+I don't like this place.
+
+There is a stairwell into the basement.
+
+Once they get to the basement, there's a terrible noise upstairs.
+
+GINGER
+...Oh. My. Gosh.
+
+JEREMY
+What?!
+
+GINGER
+I think I know why this place is abandoned.
+
+Crash!
+
+GINGER
+D-Do you know.. Who Bloodflood is?
+
+SEBELLUS
+Oh dear.
+
+JEREMY
+I feel like his name says enough.
+
+GINGER
+We've gotta make sure the roof doesn't collapse!!
+
+A mini-game begins where Jeremy has to make sure that the roof doesn't collapse. I'm sure I'll decide something fun for this part.
+
+GINGER
+Look! A tunnel!
+
+The three escape through the tunnel, though there's more gameplay in that. The mouse guy reappears.
+
+If you fed him the turkey:
+
+    MOUSE
+    What's going on here?
+
+    JEREMY
+    What do you mean "what's going on here"?! What are you doing here?
+
+    MOUSE
+    I'm a mouse, we tunnel, it's our thing.
+
+    GINGER
+    What's going on up top?
+
+    MOUSE
+    Not pretty. Big dragon. Everything's gone.
+    Gorgeous house though. Real shame. I was gonna raid it tonight.
+    Oh... Thanks for the turkey, by the way.
+
+    JEREMY
+    No problem.
+
+    MOUSE
+    Follow me.
+
+If not:
+
+    MOUSE
+    Hey! You again! You owe me a turkey!
+
+    JEREMY
+    I'm sorry, I don't-... Look-
+
+    MOUSE
+    I knew I couldn't trust a filthy human.
+
+    There is a battle moment with the mouse.
+    He has no items on him.
+
+    GINGER
+    What was that about?
+
+    JEREMY
+    Nevermind.
+
+Eventually the three break free of the tunnel. A dragon is destroying the forest with fire.
+
+GINGER
+My mother was planning to destroy that house for ages.
+I think she was paranoid that they'd cause problems.
+
+JEREMY
+Your mother has a dragon?
+
+GINGER
+My mother is the Grand Master, technically she has everything.
+
+JEREMY
+Sick.
+I mean that as a compliment.
+
+GINGER
+Yeah, I figured.
+
+The three continue walking a little bit, until they find a ferry.
+
+FERRYMAN
+10 gold to cross the river.
+
+GINGER
+That's a lot of gold.
+
+FERRYMAN
+I don't see *you* with a boat.
+
+SEBELLUS
+And Canterbury is on the other side?
+
+FERRYMAN
+Maybe. Maybe not. If it isn't, you can pay me to take you back.
+
+JEREMY
+Good grief, is everyone here like this?
+
+If yes gold:
+
+    FERRYMAN
+    Alright, everyone hop on.
+
+If no gold:
+
+    FERRYMAN
+    I'll tell you what. Give me one gold and I'll give you a secret you won't regret.
+
+    If you give him one gold:
+        FERRYMAN
+        Yes. They're all like this.
+
+        SEBELLUS
+        Okay, time to fight!
+
+        Battle sequence with the Ferryman.
+
+        If you win:
+
+        FERRYMAN
+        Okay! Okay! You win!
+        I'll take you but you have to pay if you want to come back, alright?
+
+The three take the boat and begin to cross the channel.
+
+SEBELLUS
+Alright, I'll take the first shift. You both sleep!
+
+Ginger goes to sleep next to her brother, while Jeremy gets a proper chair.
+
+The moment they go to sleep, Sebellus instantly goes to sleep.
+
+CUT TO:
+FLASHBACK
+
+INT.CASTLE DINING ROOM.DAY
+
+ADVISOR
+Perhaps, your majesty, you haven't considered-
+
+VISTA
+I said. What. I said. I have to kill seven humans.
+No more. No less. Withdraw after you get to the count.
+
+ADVISOR
+Yes, your majesty.
+
+There is a knock on the door.
+
+HENRY
+Vista?
+
+VISTA
+Father-!
+
+He opens the door and closes it behind himself.
+
+HENRY
+How is the son I created for you?
+
+VISTA
+Thank you for him. He's delightful.
+
+HENRY
+But he's a half-life. His soul is artificial.
+He was a gift to tide you over until the true gift was ready.
+You wanted a daughter, yes? After your own heart?
+And so it shall be. You may enter, dear.
+
+Ginger walks in, wearing a dress.
+
+VISTA
+Oh, Father-
+
+HENRY
+I saved the last bit of my original DNA for two hundred years.
+It is now all gone. She is the most precious gift I could give you.
+
+GINGER
+I...
+
+VISTA
+Speak, child, what is your name?
+
+GINGER
+*cries* I-I... I don't know...
+
+HENRY
+There is something you should know, Vista. She is ensouled. Like you.
+
+VISTA
+Where did you get her soul from?
+
+HENRY
+My Master is low on souls, so..
+I did something that no one has ever done before.
+
+VISTA
+You don't say-
+
+HENRY
+She has the soul of a human. An orphan, of course.
+She came suggested to me by my master.
+She is very scared. But no one is better for her than you.
+
+VISTA
+Dear.. You're such a darling.
+I promise I won't bite. Would you care to join me?
+I have something to show you.
+
+Ginger is shaking and terrified. But she nods.
+
+INT.HALLWAY.DAY
+
+They walk past many photographs.
+
+VISTA
+I know my father is a strange man, but he is kind.
+Everything must feel terribly strange to you right now.
+Do you see these photographs? All of these different faces?
+We are Marelons - a royal species. There are only three of us.
+We can shed our forms and change. It is what gives us our immortality.
+At one time, many years ago, I looked exactly the same as you.
+
+Vista takes Ginger into a room.
+
+INT.ROOM.DAY
+
+It's decorated like a human house.
+
+VISTA
+I grew up in a human home, much like the one you likely came from.
+I made sure that this castle had a replica to comfort me in hard times.
+It is my birthday today, but... It is yours too, yes?
+Why don't we make a cake then?
+
+There is a short minigame where Vista and Ginger make a cake together.
+
+VISTA
+That looks wonderful, dear.
+Would you like to blow out the candles together?
+
+They do so.
+
+VISTA
+Tell me... What is your name?
+
+GINGER
+Virginia, but I go by 'Ginger'.
+
+VISTA
+Ginger... What a wonderful name.
+You may be known as Semura, but I will call you Ginger.
+Unless you get into trouble.
+Come, take some cake. How about we watch a movie?
+
+ACT THREE
+
+EXT.SHORE.DAY
+
+The ferry finally arrives.
+
+FERRYMAN
+Alright, you three get off.
+
+JEREMY
+Where are we?
+
+FERRYMAN
+About a day's trek to Flayithro. I'd go quickly though.
+
+GINGER
+How come?
+
+FERRYMAN
+Word of your disappearance is spreading and, uh...
+Princess, don't tell Grand Master Senatrix I helped you, alright?
+I like my skin being *on* my body.
+
+EXT.FOREST.DAY
+
+The three head off into the forest. It's not long before they find an honest-to-goodness road. They begin walking along it.
+
+Optional encounters in the woods:
+
+GINGER
+Oh, Jeremy, please for the love of all things good and holy,
+Do NOT look up right now.
+
+SEBELLUS
+Why not- OH.
+
+Jeremy looks up and sees what looks like dozens of ghost children staring down at him.
+
+Suddenly, a girl in a witch hat appears out of nowhere. This is Naomi.
+
+NAOMI
+HI THERE STRANGERS
+
+GINGER
+Ugh.
+
+JEREMY
+Have you two met?
+
+GINGER
+...No.
+
+JEREMY
+I don't believe you.
+
+NAOMI
+MY NAME IS NAOMI AND I AM P.R. FOR THE FAIRIES
+WE GET A BAD REPUTATION AND HONESTLY ITS SO UNFAIR
+ANYWAY WE WONT LET YOU THROUGH UNTIL YOU SOLVE OUR RIDDLE
+
+SEBELLUS
+Oh, oh, oh, I'm good at these.
+
+JEREMY
+And if we don't want to do that?
+
+NAOMI
+I TURN YOU TO STONE LIKE THE WORM GUYS DAUGHTER
+ITS LIKE THE EASIEST SPELL TOO
+
+GINGER
+Please... Stop shouting...
+
+NAOMI
+OK HERE IS THE RIDDLE
+WHAT IS ROUND LIKE A ROCK
+SOUND LIKE A ROCK
+ON THE GROUND LIKE A ROCK
+AND OFTEN FOUND LIKE A ROCK
+ITS IN THE WOODS NOW GO AND GET IT
+
+Naomi disappears.
+
+GINGER
+Spirits like that are in control of the entire continent.
+
+JEREMY
+I suppose that explains some things.
+
+The three search around the forest, getting into simple battles and solving puzzles. Eventually, they find a rock.
+
+If they bring the rock back to Naomi:
+
+NAOMI
+VERY GOOD YOU GOT THE ROCK
+
+JEREMY
+I was offering this as a joke more than anything else.
+
+NAOMI
+NAH IT COUNTS YOU GUYS ARE FREE TO GO
+
+JEREMY
+Before I go... why?
+
+NAOMI
+WE WANTED TO SLOW YOU DOWN TEEHEE
+
+JEREMY
+What did *we* ever do to you?
+
+NAOMI
+FAIRIES ONLY TOLERATE LIFE BECAUSE IT MAKES MORE DEATH
+
+Naomi then disappears into the trees.
+
+GINGER
+The land doesn't want us to go.
+
+JEREMY
+The land is gonna have to try harder than that.
+
+INT.FLAYITHRO VILLAGE.DAY
+
+Eventually, the three arrive at Flayithro Village.
+
+It's a little nicer than Avalon, but it still feels sickly.
+
+Here are some optional encounters:
+
+If you enter the fortune teller room:
+
+FORTUNE TELLER
+AH! ..Oh, I'm sorry.. I don't get customers often.
+What can I do you for?
+
+One fortune costs one gold.
+
+If you get a fortune:
+
+FORTUNE TELLER
+Alright.. Crystal ball, crystal ball..
+Tell me one, tell me all..
+...The spirits say that you will be found my the queen..
+They say it isn't worth fighting back so you should give up now..
+
+JEREMY
+Oh, good grief. I want my gold back. That wasn't a real fortune.
+
+FORTUNE TELLER
+Actually it was, most of my fortunes are like "you will have a happy life".
+That was very very specific and honestly I'm a bit scared.
+I'm not sure that's ever happened before.
+
+If you enter the barber shop:
+
+There are two men: Manuel and Luigi.
+
+MANUEL
+Let me guess, you are here for a haircut.
+
+(Jeremy is bald)
+
+JEREMY
+Very funny.
+
+MANUEL
+How about you grow some hair first and then.. uh..
+We'll see what we can do, yes?
