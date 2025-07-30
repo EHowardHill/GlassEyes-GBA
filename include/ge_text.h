@@ -7,7 +7,6 @@
 #include "bn_string.h"
 #include "bn_sprite_ptr.h"
 #include "bn_regular_bg_ptr.h"
-
 #include "ge_structs.h"
 
 using namespace bn;
@@ -52,26 +51,33 @@ struct text
 {
     vector<sprite_ptr, 20> letters;
     vector_2 start;
+    int index = 0;
+    int current_x = 0;
+    bool active = false;
+    string<20> reference; // Changed from const reference to owned string
 
     text(const string<20> &value, vector_2 start_ = {0, 0});
 
-    void update(const string<20> &value);
+    void init(const string<20> &value);
+    void update(); // Added missing update declaration
     void set_position(int x, int y);
     void set_visible(bool visible);
+    bool is_ended();
 };
 
 struct dialogue_line
 {
     int id = 0;
-    const sprite_item *character;
+    const sprite_item *character = nullptr;
     int emotion = EM_DEFAULT;
     int action = ACT_SPEAK;
-    const string<20> raw_text[3];
-    vector_2 navigate;
+    string<20> raw_text[3]; // Removed const to allow assignment
+    vector_2 navigate = {0, 0};
     int speed = SP_DEFAULT;
-    int branches[3];
+    int branches[3] = {0, 0, 0};
 
-    static dialogue_line end_marker() {
+    static dialogue_line end_marker()
+    {
         dialogue_line line;
         line.character = nullptr;
         line.action = ACT_END;
@@ -81,7 +87,7 @@ struct dialogue_line
     // Default constructor
     dialogue_line() = default;
 
-    // Full constructor
+    // Constructor for simple dialogue
     dialogue_line(
         const sprite_item *char_,
         int emotion_ = EM_DEFAULT,
@@ -91,34 +97,39 @@ struct dialogue_line
         const string<20> &line3 = "") : character(char_),
                                         emotion(emotion_),
                                         action(action_),
-                                        raw_text{line1, line2, line3}
+                                        navigate({0, 0}),
+                                        speed(SP_DEFAULT),
+                                        branches{0, 0, 0}
     {
-        navigate = {0, 0};
-        speed = SP_DEFAULT;
+        raw_text[0] = line1;
+        raw_text[1] = line2;
+        raw_text[2] = line3;
     }
 
-    // Full constructor
+    // Full constructor with all parameters
     dialogue_line(
-        sprite_item *char_,
-        int emotion_ = EM_DEFAULT,
-        int action_ = ACT_SPEAK,
-        const string<20> &line1 = "",
-        const string<20> &line2 = "",
-        const string<20> &line3 = "",
-        vector_2 navigate_ = {0, 0},
-        int speed_ = SP_DEFAULT,
-        int branch1 = 0,
-        int branch2 = 0,
-        int branch3 = 0,
-        int id_ = 0) : id(id_),
-                       character(char_),
-                       emotion(emotion_),
-                       action(action_),
-                       raw_text{line1, line2, line3},
-                       navigate(navigate_),
-                       speed(speed_),
-                       branches{branch1, branch2, branch3}
+        const sprite_item *char_,
+        int emotion_,
+        int action_,
+        const string<20> &line1,
+        const string<20> &line2,
+        const string<20> &line3,
+        vector_2 navigate_,
+        int speed_,
+        int branch1,
+        int branch2,
+        int branch3,
+        int id_) : id(id_),
+                   character(char_),
+                   emotion(emotion_),
+                   action(action_),
+                   navigate(navigate_),
+                   speed(speed_),
+                   branches{branch1, branch2, branch3}
     {
+        raw_text[0] = line1;
+        raw_text[1] = line2;
+        raw_text[2] = line3;
     }
 };
 
@@ -136,10 +147,12 @@ struct dialogue_box
     optional<sprite_ptr> pointer;
     optional<regular_bg_ptr> box;
     int size;
+    int ticker = 0;
 
     dialogue_box();
 
-    ~dialogue_box() {
+    ~dialogue_box()
+    {
         character.reset();
         pointer.reset();
         box.reset();

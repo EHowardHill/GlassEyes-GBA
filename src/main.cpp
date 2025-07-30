@@ -43,6 +43,8 @@ int main()
 
         if (db.has_value())
         {
+            db.value().update();
+
             if (keypad::a_pressed())
             {
                 db.value().index++;
