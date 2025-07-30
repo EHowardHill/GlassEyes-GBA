@@ -34,6 +34,10 @@ ACT ONE
 
 INT.GARBAGE CAVE.DAY
 
+Name the fallen human!
+The player is allowed to choose a name.
+For the time being - let's call him "Jeremy".
+
 His name is Jeremy.
 The man wakes up. His leg is broken.
 He's on a pile of trash.
@@ -87,6 +91,12 @@ Option B:
 
     The mouse leaves.
 
+Jeremy is a chemist. He's very good at mixing things.
+There are lots of small items to pick up.
+He has a mechanic where he can bond them together to create new elements.
+Using the materials he finds, he can make smoke bombs and other explosives.
+This becomes a mechanic he uses to navigate through the environment.
+
 Jeremy encounters a couple of small fights with bugs.
 
 Eventually he reaches the end of the garbage cave and collapses.
@@ -126,7 +136,7 @@ JEREMY
 Nice to, uh, meet you. I'm Jeremy.
 
 GINGER
-We should go to Avalon, they've got magic that'll help with your leg. and it's on the way to Canterbury.
+We should go to Avalon, they've got potions that'll help with your leg. and it's on the way to Canterbury.
 
 JEREMY
 What's in Canterbury?
@@ -208,6 +218,17 @@ How do I know you aren't charging to look at a statue?
 
 OLD MUETO
 Only one way to find out.
+
+If you go in to see the statue, you can see what clearly looks like a headstone of a worm.
+
+Headstone message:
+BORN TO LIFE
+BORN TO SQUIRM
+REST IN PEACE
+BELOVED WORM
+
+JEREMY
+I don't know why I expected anything else.
 
 There's a shop that is selling things.
 
@@ -298,7 +319,7 @@ Without disguise:
         If they don't:
 
             BUTCHER
-            Here, have a steak. Hell, have two.
+            Here, have a steak. Heck, have two.
 
             JEREMY
             Three steaks.
@@ -360,10 +381,10 @@ JEREMY
 What village are you from?
 
 GINGER
-I'm from Animulus.
+I'm from the capitol.
 
 OLD LADY
-*cackles* Animulus. I bet they don't have any good hangins' out there.
+*cackles* The capitol. I bet they don't have any good hangins' out there.
 
 GINGER
 I think she's gone senile.
@@ -411,6 +432,21 @@ No one is allowed to leave.
 Not even humans.
 Proclamation of Grand Master Senatrix.
 
+Incidental dialogue:
+
+JEREMY
+Is it just me, or is everyone obsessed with death here?
+
+GINGER
+No, no, it's not just you.
+We think about it a lot.
+Something in the air, I think.
+
+JEREMY
+If it is, I can smell it.
+
+INT.TAVERN.DAY
+
 Ginger and Jeremy enter the tavern.
 
 If they go up to the front.
@@ -437,9 +473,10 @@ He is able to buy:
 There is a mueto playing with darts.
 
 DARTS MAN
-Oh.. Look who the cat dragged in.
+Well look who the cat dragged in.
 
 JEREMY
+Speaking of which, I don't remember if I ever thanked you for that.
 Thank you for that, by the way.
 
 DARTS MAN
@@ -450,6 +487,14 @@ If you win the game, enough to get 10 gold, one of the muetos gets angry.
 
 ANGRY MUETO
 Hey! That filthy human lost all my money!
+I don't know why Senatrix doesn't kill the lot of them already,
+Good for nothing, ugly freaks.
+
+GINGER
+Hey!
+
+ANGRY MUETO
+You stay out of this, sweetheart.
 
 JEREMY
 We can play again if you want.
@@ -479,8 +524,9 @@ I don't know why you insist on training that dragon.
 It's endearing.
 
 VISTA
-You know how the peasants think.
-They think I'm too amiable to the humans.
+You know how my people think.
+I need him to keep watch.
+I can't show mercy to the humans.
 
 HENRY
 Nonsense. They love you dearly.
@@ -548,7 +594,7 @@ GINGER
 SEBELLUS!! WHAT ON EARTH ARE YOU DOING HERE?!
 
 SEBELLUS
-Well I just killed a bad guy with my sword.
+I just killed a guy with my sword, that's what!
 
 GINGER
 Jeremy, this is my brother Sebellus.
@@ -606,8 +652,8 @@ JEREMY
 HA.
 
 GINGER
-I'm serious, she just has to put on a face!
-If she showed her true feelings, there'd be a revolt.
+I'm serious! She just puts on a face!
+If she showed her true feelings, there'd be a revolt!
 
 JEREMY
 I guess it doesn't matter. You're right.
@@ -697,19 +743,28 @@ So.. what's *your* story?
 
 JEREMY
 I was supposed to be at orientation today.
-I enrolled at BGI but they couldn't authorize my identity.
+I enrolled at New Berlin University but they couldn't authorize my identity.
 It's a big concern, apparently. Identity theft.
-Well, now that some random guy has my ID card...
+Well, I got robbed, now some random guy has my ID card...
 Yeah, that dream is over.
 The thing about genetics, it's only *legal* in New Berlin.
 But that city was awful. Just as bad as Avalon.
 Ugh. My mother is going to kill me.
 
 GINGER
-You wanted to be a geneticist?
+You and me both.
 
 JEREMY
-Dr. Henry Erickson? He's my hero.
+Your mother is going to kill me?
+
+GINGER
+No- Heavens no. I hope not.
+
+He finds a photo taken in New Berlin, a statue of Henry Erickson.
+
+JEREMY
+Hey- Look, they got a photo of the Dr. Henry Erickson statue.
+That guy was my hero growing up.
 Did you know that most muetos were created by him alone?
 We lost most of his techniques.
 All we can make these days are small, useless creatures.
@@ -931,13 +986,13 @@ HENRY
 How is the son I created for you?
 
 VISTA
-Thank you for him. He's delightful.
+Thank you for him. He's delightful. He is a... bit...
 
 HENRY
-But he's a half-life. His soul is artificial.
+I understand he's a half-life.
 He was a gift to tide you over until the true gift was ready.
-You wanted a daughter, yes? After your own heart?
-And so it shall be. You may enter, dear.
+You wanted a daughter, yes? An heir after your own heart?
+So it shall be. You may enter, dear.
 
 Ginger walks in, wearing a dress.
 
@@ -965,14 +1020,14 @@ Where did you get her soul from?
 
 HENRY
 My Master is low on souls, so..
-I did something that no one has ever done before.
+I tried something that I have not attempted in a long time.
 
 VISTA
 You don't say-
 
 HENRY
 She has the soul of a human. An orphan, of course.
-She came suggested to me by my master.
+The soul came suggested to me by my master.
 She is very scared. But no one is better for her than you.
 
 VISTA
@@ -1082,7 +1137,8 @@ JEREMY
 I don't believe you.
 
 NAOMI
-MY NAME IS NAOMI AND I AM P.R. FOR THE FAIRIES
+MY NAME IS NAOMI AND I SPEAK FOR THE FAIRIES
+THEYRE SHY
 WE GET A BAD REPUTATION AND HONESTLY ITS SO UNFAIR
 ANYWAY WE WONT LET YOU THROUGH UNTIL YOU SOLVE OUR RIDDLE
 
@@ -1120,7 +1176,7 @@ The three search around the forest, getting into simple battles and solving puzz
 If they bring the rock back to Naomi:
 
 NAOMI
-VERY GOOD YOU GOT THE ROCK
+AW YEAH ITS A ROCK
 
 JEREMY
 I was offering this as a joke more than anything else.
@@ -1138,7 +1194,7 @@ JEREMY
 What did *we* ever do to you?
 
 NAOMI
-FAIRIES ONLY TOLERATE LIFE BECAUSE IT MAKES MORE DEATH
+SPIRITS OF THE LAND ONLY TOLERATE LIFE BECAUSE IT MAKES MORE DEATH
 
 Naomi then disappears into the trees.
 
@@ -1169,7 +1225,7 @@ If you get a fortune:
 FORTUNE TELLER
 Alright.. Crystal ball, crystal ball..
 Tell me one, tell me all..
-...The spirits say that you will be found my the queen..
+...The spirits say that you will be found by the queen..
 They say it isn't worth fighting back so you should give up now..
 
 JEREMY
@@ -1226,12 +1282,15 @@ In that case- TASTE STEEL!
 
 The battle mechanic breaks out. However, the guard instantly one-shots the three if they try to fight.
 
+SEBELLUS
+Ugh... Steel doesn't taste very good...
+
 If you go in the shop office:
 
 INT.SHOP OFFICE.DAY
 
 ANNIE
-Oh thank goodness tourists
+Oh thank goodness tourists-
 Hey, look, I sell things, I don't.. SIGH
 I don't know how tourists think, okay?
 The Carnival is tonight, and I need to put out these fliers.
@@ -1250,7 +1309,7 @@ OFFICE BOSS
 ARE THOSE FLIERS PUT UP YET?!
 
 ANNIE
-Yes, Mr. Malcomovich!
+Yes, Mr. Bear!
 
 GINGER
 Are you okay?
@@ -1279,7 +1338,7 @@ SHACK GUY
 Hey- This isn't a place for dilly-dalliers, back of the line if you can't decide.
 
 SEBELLUS
-What's *his* problem?
+What's your problem?
 
 SHACK GUY
 YOU ARE! MOVE!
@@ -1325,15 +1384,17 @@ JEREMY
 Oh, that is UGLY.
 
 OFFICE BOSS
-Have these vessels come to file a complaint?
+HAVE YOU VESSELS COME TO COMPLAIN ABOUT OUR SERVICE?
 
 SEBELLUS
 Yeah! We're gonna kill you because you're ugly!
 
 It launches into a battle against the teddy bear. They are able to barely defeat it, because Ginger's typically inaccurate crossbow attacks actually work here, since the creature is so large.
 
+It drops a certain chemical that Jeremy can make into mega bombs on the fly. He can collect them during the attack sequences when you dodge his attacks.
+
 ANNIE
-*FINALLY*. I can take a break. He was keeping me hostage in here.
+*FINALLY*.. I can take a break. He was keeping me hostage in here.
 
 JEREMY
 Why were you out at the Carnival then?
@@ -1348,12 +1409,14 @@ ANNIE
 A cursed toy.
 I went to the fairies asking them to make it come to life.
 I, uh.. suppose I should have been more specific.
+It was a childhood bear, and I thought destroying it would make me more sad..
+But honestly, I was over it a long time ago.
 
 JEREMY
 What's wrong with those fairies?
 
 GINGER
-Immortal spirits get bored and lose their minds.
+Immortal spirits. They get bored and lose their minds.
 
 JEREMY
 Do you know how to get us to Canterbury?
@@ -1368,6 +1431,7 @@ Well.. If we HAVE to..
 ANNIE
 You three can stay here for the night.
 I cannot thank you enough for that earlier. Genuinely.
+Ugh.
 
 The screen fades to black.
 
@@ -1417,10 +1481,10 @@ I worry about that girl.
 She reminds me of myself.
 
 CHIEF ADVISOR
-Well, look who you've become!
+In all the good ways too, your majesty?
 
 VISTA
-Indeed.
+You may say that.
 What is the count so far?
 
 CHIEF ADVISOR
@@ -1463,12 +1527,14 @@ Y-You don't have to tell me.
 
 VISTA
 The spirits.. farm our souls.
-This dreadful war is for their sake.
+This dreadful eternal war? It's for their sake.
+It's a blood ritual.
 If I don't kill enough humans...
 My people will revolt. The spirits will take *our* souls.
 And then they'll give the throne to someone who doesn't care.
 I didn't mean to bring you into this life.
 I swim in a sea, a sea of death.
+And I can't sink.
 I can't sink.
 
 ACT FOUR
@@ -1482,7 +1548,7 @@ SEBELLUS
 OH!! OHH!! I LOVE FIRE!!
 
 GINGER
-No! Get up! We've gotta get out of here!
+No! Sebellus! Stop! Jeremy, get up!!
 
 The three leave the building, and the square is entirely on fire. Everyone is panicking. Dragonfire has essentially destroyed the entire town.
 
@@ -1519,7 +1585,7 @@ VISTA
 (Loosens her grip)
 My daughter has no sense of direction.
 It seems as if you have none either.
-They should teach geography in human schools.
+Do they not teach geography in human schools?
 
 GINGER
 No.. We.. We..
@@ -1591,9 +1657,10 @@ Then what does that make the spirits?
 I fear hell, human.
 I am afraid it is more of the same.
 Those two... are not my children.
-Semura has my body but not my soul.
+Semura has my body, but not my soul.
 She cannot withstand eternity.
-We did not speak.
+...
+We did not have this conversation.
 
 JEREMY
 Yes, ma'am.
@@ -1637,10 +1704,11 @@ HENRY
 Who is this?
 
 JEREMY
-I. AM. YOUR. BIGGEST. FAN.
+I am your biggest fan... I.. I'm sorry.
 
 VISTA
-You say it for yourself, Semura.
+Human. Now is not the time.
+Semura. You may speak for yourself.
 
 Ginger is crying and cannot speak.
 
@@ -1789,7 +1857,7 @@ He gets on the plane, barely just in time, as it takes off.
 If Jeremy destroyed the office:
 
     NARRATOR
-    It was not long before the Masterdom of Animulus fell.
+    The Masterdom of Animulus collapsed.
     Their monarch and deity missing, the people fell into chaos.
     Many turns their swords against themselves instead of the humans.
     In the same way - the humans turned their swords against themselves.
@@ -1802,7 +1870,7 @@ If Jeremy destroyed the office:
 If Jeremy did not destroy the office:
 
     NARRATOR
-    It was not long before the Masterdom of Animulus fell.
+    The Masterdom of Animulus collapsed.
     Their monarch and deity missing, the people fell into chaos.
     Many turned their swords against themselves instead of the humans.
     The humans discovered Henry's research.
