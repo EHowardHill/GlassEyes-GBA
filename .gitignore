@@ -1,4 +1,5 @@
-build/
 *.gba
 *.elf
 *.sav
+build/
+butano/
