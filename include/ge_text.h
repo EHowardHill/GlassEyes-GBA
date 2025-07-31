@@ -7,6 +7,7 @@
 #include "bn_string.h"
 #include "bn_sprite_ptr.h"
 #include "bn_regular_bg_ptr.h"
+
 #include "ge_structs.h"
 
 using namespace bn;
@@ -47,21 +48,40 @@ enum emotion
     EM_WAT
 };
 
+enum size
+{
+    SIZE_NORMAL,
+    SIZE_SMALL,
+    SIZE_LARGE
+};
+
+struct letter
+{
+    optional<sprite_ptr> sprite;
+    vector_2 ideal_position;
+    vector_2 temp_position;
+    int char_index;
+
+    letter(char ch, vector_2 ideal_position_);
+
+    void update(bool shake, int size);
+};
+
 struct text
 {
-    vector<sprite_ptr, 20> letters;
+    vector<letter, 20> letters;
     vector_2 start;
     int index = 0;
     int current_x = 0;
     bool active = false;
     string<20> reference; // Changed from const reference to owned string
+    int size = SIZE_NORMAL;
 
     text(const string<20> &value, vector_2 start_ = {0, 0});
 
     void init(const string<20> &value);
     void update(); // Added missing update declaration
     void set_position(int x, int y);
-    void set_visible(bool visible);
     bool is_ended();
 };
 
@@ -75,6 +95,8 @@ struct dialogue_line
     vector_2 navigate = {0, 0};
     int speed = SP_DEFAULT;
     int branches[3] = {0, 0, 0};
+    bool shake = false;
+    int size = SIZE_NORMAL;
 
     static dialogue_line end_marker()
     {
@@ -94,12 +116,16 @@ struct dialogue_line
         int action_ = ACT_SPEAK,
         const string<20> &line1 = "",
         const string<20> &line2 = "",
-        const string<20> &line3 = "") : character(char_),
-                                        emotion(emotion_),
-                                        action(action_),
-                                        navigate({0, 0}),
-                                        speed(SP_DEFAULT),
-                                        branches{0, 0, 0}
+        const string<20> &line3 = "",
+        bool shake_ = false,
+        int size_ = SIZE_NORMAL) : character(char_),
+                                   emotion(emotion_),
+                                   action(action_),
+                                   navigate({0, 0}),
+                                   speed(SP_DEFAULT),
+                                   branches{0, 0, 0},
+                                   shake(shake_),
+                                   size(size_)
     {
         raw_text[0] = line1;
         raw_text[1] = line2;

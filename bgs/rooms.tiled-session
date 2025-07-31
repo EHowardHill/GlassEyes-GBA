@@ -1,0 +1,24 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "exportAsImage.includeBackgroundColor": true,
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+    },
+    "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
+    "map.height": 8,
+    "map.width": 8,
+    "openFiles": [
+    ],
+    "project": "rooms.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.transparentColor": "#000000",
+    "tileset.useTransparentColor": true
+}

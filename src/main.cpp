@@ -8,7 +8,12 @@
 // Sprites
 #include "bn_sprite_items_wizard.h"
 #include "bn_sprite_items_db_ch_jeremy.h"
+#include "bn_sprite_items_db_ch_vista.h"
 
+#include "bn_regular_bg_items_floor_wood01.h"
+#include "bn_regular_bg_items_room_cabin_01.h"
+
+#include "ge_globals.h"
 #include "ge_sprites.h"
 #include "ge_text.h"
 
@@ -17,10 +22,15 @@ using namespace bn;
 int main()
 {
     core::init();
+    global_data_ptr = new global_data();
+
+    auto floor = regular_bg_items::floor_wood01.create_bg(0, 0);
+    auto items = regular_bg_items::room_cabin_01.create_bg(0, 48);
 
     conversation test_convo = {
-        {&sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_SPEAK, "Hello?", "Is this working?", ""},
-        {&sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_SPEAK, "YES!", "It's working!!", ""},
+        {&sprite_items::db_ch_vista, EM_DEFAULT, ACT_SPEAK, "Hello?", "Is this working?"},
+        {&sprite_items::db_ch_jeremy, EM_LAUGH, ACT_SPEAK, "", "HA... HA HA...", "", true, SIZE_LARGE},
+        {&sprite_items::db_ch_jeremy, EM_EMBARRASSED, ACT_SPEAK, "Ope", "Sorry bout that", "", false, SIZE_SMALL},
         dialogue_line::end_marker()};
 
     optional<dialogue_box> db;
@@ -32,15 +42,8 @@ int main()
     db.value().load(&test_convo);
     db.value().init();
 
-    int angle = 90;
-    auto wizard = sprite_items::wizard.create_sprite(0, 0);
-
     while (true)
     {
-        angle++;
-        angle = angle % 360;
-        wizard.set_rotation_angle(angle);
-
         if (db.has_value())
         {
             db.value().update();

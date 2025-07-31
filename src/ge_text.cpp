@@ -3,6 +3,9 @@
 #include "bn_log.h"
 #include "bn_sound_items.h"
 #include "bn_sound_items_info.h"
+#include "bn_random.h"
+
+#include "ge_globals.h"
 #include "ge_text.h"
 
 // Sprites
@@ -22,9 +25,66 @@ constexpr char alphabet[] = {
     '[', ']', '\\', '{', '}', '|', ';', '\'', ':', '"', ',', '.', '/',
     '<', '>', '?'};
 
+letter::letter(char ch, vector_2 ideal_position_) : ideal_position(ideal_position_)
+{
+    char_index = -1;
+
+    for (size_t i = 0; i < sizeof(alphabet); ++i)
+    {
+        if (ch == alphabet[i])
+        {
+            char_index = i;
+            break;
+        }
+    }
+
+    if (char_index > -1)
+    {
+        sprite = sprite_items::spr_font_01.create_sprite(ideal_position_.x, ideal_position_.y, char_index);
+    }
+}
+
+void letter::update(bool shake, int size)
+{
+    if (size == SIZE_LARGE)
+    {
+        sprite.value().set_scale(2, 2);
+    }
+    else if (size == SIZE_SMALL)
+    {
+        sprite.value().set_scale(0.75, 0.75);
+    }
+
+    if (shake)
+    {
+        temp_position = {
+            ideal_position.x + global_data_ptr->bn_random.get_int(6) - 3,
+            ideal_position.y + global_data_ptr->bn_random.get_int(6) - 3,
+        };
+
+        if (sprite.value().x().integer() < temp_position.x.integer())
+        {
+            sprite.value().set_x(sprite.value().x() + 1);
+        }
+        else if (sprite.value().x() > temp_position.x.integer())
+        {
+            sprite.value().set_x(sprite.value().x() - 1);
+        }
+
+        if (sprite.value().y().integer() < temp_position.y.integer())
+        {
+            sprite.value().set_y(sprite.value().y() + 1);
+        }
+        else if (sprite.value().y().integer() > temp_position.y.integer())
+        {
+            sprite.value().set_y(sprite.value().y() - 1);
+        }
+    }
+}
+
 text::text(const string<20> &value, vector_2 start_) : start(start_)
 {
-    init(value); // Changed from update to init
+    init(value);
 }
 
 void text::init(const string<20> &value)
@@ -44,30 +104,35 @@ void text::update()
 
     sound_items::snd_dialogue_generic.play();
 
-    char ch = reference[index]; // Declared ch variable
+    char ch = reference[index];
+
+    int current_size = SIZE_NORMAL;
+    int spacing = 8; // Default character spacing
+
+    // Adjust spacing based on size
+    if (current_size == SIZE_LARGE)
+    {
+        spacing = 16; // Larger spacing for large text
+    }
+    else if (current_size == SIZE_SMALL)
+    {
+        spacing = 6; // Smaller spacing for small text
+    }
 
     if (ch == ' ')
     {
-        current_x += 8;
+        current_x += spacing; // Use the size-adjusted spacing
         index++;
         return;
     }
 
-    int char_index = -1;
-    for (size_t i = 0; i < sizeof(alphabet); ++i)
-    {
-        if (ch == alphabet[i])
-        {
-            char_index = i;
-            break;
-        }
-    }
+    // Create letter at current position
+    letter new_letter = {ch, {start.x + current_x, start.y}};
 
-    if (char_index != -1 && letters.size() < letters.max_size())
+    if (new_letter.char_index > -1)
     {
-        sprite_ptr letter = sprite_items::spr_font_01.create_sprite(start.x + current_x, start.y, char_index);
-        letters.push_back(move(letter));
-        current_x += 8;
+        letters.push_back(new_letter);
+        current_x += spacing; // Use size-adjusted spacing instead of hardcoded 8
         index++;
     }
 }
@@ -84,16 +149,8 @@ void text::set_position(int x, int y)
     int current_x_pos = x;
     for (auto &letter : letters)
     {
-        letter.set_position(current_x_pos, y);
+        letter.ideal_position = {current_x_pos, y};
         current_x_pos += 8;
-    }
-}
-
-void text::set_visible(bool visible)
-{
-    for (auto &letter : letters)
-    {
-        letter.set_visible(visible);
     }
 }
 
@@ -145,6 +202,7 @@ void dialogue_box::init()
     for (int t = 0; t < 3; t++)
     {
         lines[t].init(line.raw_text[t]);
+        lines[t].size = line.size;
     }
 }
 
@@ -152,6 +210,14 @@ void dialogue_box::update()
 {
     auto l = (*active_conversation)[index];
     character.value().set_tiles(l.character->tiles_item(), (l.emotion * 2));
+
+    for (int t = 0; t < 3; t++)
+    {
+        for (auto &letter_ : lines[t].letters)
+        {
+            letter_.update(l.shake, l.size);
+        }
+    }
 
     if (!active_conversation || (lines[0].is_ended() && lines[1].is_ended() && lines[2].is_ended()))
     {
@@ -167,7 +233,7 @@ void dialogue_box::update()
             character.value().set_tiles(l.character->tiles_item(), (l.emotion * 2) + 1);
         }
 
-        if (ticker % 4 == 0)
+        if (ticker % 3 == 0)
         {
             for (int t = 0; t < 3; t++)
             {
