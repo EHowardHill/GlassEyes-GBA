@@ -3,3 +3,4 @@
 *.sav
 build/
 /butano
+.DS_Store
