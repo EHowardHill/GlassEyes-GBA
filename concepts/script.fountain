@@ -42,30 +42,30 @@ His name is Jeremy.
 The man wakes up. His leg is broken.
 He's on a pile of trash.
 
-A mouse-like creature walks up to him. His name is Viskers.
+A mouse-like creature walks up to him. His name is VISKER.
 
-VISKERS
+VISKER
 Oh- Sorry, hate to bother,
 *Typically* the humans they dump down the garbage are dead.
 
 JEREMY
 (Terrified)
 
-VISKERS
+VISKER
 No, no, no.. Relax, I'm not going to eat you *now*.
 I'll let you die first.
 
 JEREMY
 H-How do I get out of here?
 
-VISKERS
+VISKER
 Why would I tell you that? I like you where you are.
 
 Option A:
     JEREMY
     Leave me alone!
 
-    VISKERS
+    VISKER
     Fine! Good grief... What's his problem?
 
     The mouse leaves.
@@ -76,7 +76,7 @@ Option B:
     If you get me out of here, I'll, uh..
     I'll make sure to repay you!
 
-    VISKERS
+    VISKER
     ...fine, but I'm a hungry man.
     You'll want to take a left, then a right, then another left.
     Once you get to the woods, don't stop until Avalon.
@@ -84,7 +84,7 @@ Option B:
     JEREMY
     Thank you..
 
-    VISKERS
+    VISKER
     When you get to the village,
     Send someone back here with a turkey or something, alright?
     I love it when they send turkey down the chute.
@@ -841,19 +841,19 @@ The three escape through the tunnel, though there's more gameplay in that. The m
 
 If you fed him the turkey:
 
-    VISKERS
+    VISKER
     What's going on here?
 
     JEREMY
     What do you mean "what's going on here"?! What are you doing here?
 
-    VISKERS
+    VISKER
     I'm a mouse, we tunnel, it's our thing.
 
     GINGER
     What's going on up top?
 
-    VISKERS
+    VISKER
     Not pretty. Big dragon. Everything's gone.
     Gorgeous house though. Real shame. I was gonna raid it tonight.
     Oh... Thanks for the turkey, by the way.
@@ -861,18 +861,18 @@ If you fed him the turkey:
     JEREMY
     No problem.
 
-    VISKERS
+    VISKER
     Follow me.
 
 If not:
 
-    VISKERS
+    VISKER
     Hey! You again! You owe me a turkey!
 
     JEREMY
     I'm sorry, I don't-... Look-
 
-    VISKERS
+    VISKER
     I knew I couldn't trust a filthy human.
 
     There is a battle moment with the mouse.
@@ -887,21 +887,22 @@ If not:
 Eventually the three break free of the tunnel. A dragon is destroying the forest with fire.
 
 GINGER
-My mother was planning to destroy that house for ages.
-I think she was paranoid that they'd cause problems.
+I knew this was going to happen..
+Mother had this house in her war room.
+Those people are dead now.
 
-JEREMY
-Your mother has a dragon?
-
-GINGER
-My mother is the Grand Master, technically she has everything.
-
-JEREMY
-Sick.
-I mean that as a compliment.
+Ginger's eyes turn from blue to purple.
 
 GINGER
-Yeah, I figured.
+I need to go back.. I need to go back..
+
+JEREMY
+Ginger, snap out of it.
+
+Her eyes switch back to blue.
+
+GINGER
+I'm sorry.. I don't know what got over me.
 
 The three continue walking a little bit, until they find a ferry.
 
@@ -1108,7 +1109,58 @@ EXT.FOREST.DAY
 
 The three head off into the forest. It's not long before they find an honest-to-goodness road. They begin walking along it.
 
-Optional encounters in the woods:
+They find a worried mother with five children. She resembles a duck.
+
+DUCK MOM
+Excuse me, h-have you seen my baby?
+
+JEREMY
+You, uh.. seem to have quite a few, ma'am.
+
+DUCK MOM
+He ran off and I can't find him!!
+Please help me find him!! I beg you!!
+
+If you continue on this quest, you will eventually find a skeleton playing banjo.
+
+JEREMY
+Excuse me, have you seen a missing.. uh.. duck?
+
+SKELETON
+Little ducks get eaten out here...
+Can't have the little ones taking our food...
+
+GINGER
+Uh.. I don't like this skeleton..
+
+SKELETON
+You smell like a new soul.
+I don't like that.
+
+A battle sequence against the skeleton!
+
+If you win the battle:
+
+A duckling comes out from behind a bush, shaking.
+
+GINGER
+Hey, there there little guy..
+Bless his heart, he looks terrified.
+
+JEREMY
+I would be too if a skeleton tried to eat me.
+
+You deliver him back to the mother.
+
+DUCK MOM
+Oh.. Thank you! Thank you three!
+Here, as a token of my gratitude-
+It's not much, but it should still work.
+
+You recieve... expired coupon.
+Can't be redeemed anymore.
+
+Eventually, you encounter:
 
 GINGER
 Oh, Jeremy, please for the love of all things good and holy,
@@ -1526,11 +1578,52 @@ GINGER
 Y-You don't have to tell me.
 
 VISTA
-The spirits.. farm our souls.
-This dreadful eternal war? It's for their sake.
-It's a blood ritual.
+You precious thing..
+I hate to ask you this, but..
+My pain medicine. It's in my secret garden.
+
+GINGER
+But I thought I wasn't supposed to go in there.
+
+VISTA
+You may go. Here is the key.
+Go and fetch some medicine for my head.
+
+You as Ginger go through the castle with the key and enter the secret garden.
+
+It isn't a garden at all - but a graveyard.
+
+If you look through the headstones, you notice that it has the names of many of Vista's former children.
+
+Hundreds of children. Some of them lived full lives. All of them died.
+
+If you enter the building in the back, it gets pitch black.
+
+Ginger hears a voice in her head.
+
+VOICE IN BACK OF GINGER'S HEAD
+The spirits do not welcome you here.
+
+GINGER
+Medicine... Medicine...
+
+A bottle of medicine rolls to Ginger from the darkness.
+
+She runs out in fear and returns.
+
+Ginger hands the bottle to Vista.
+
+VISTA
+Thank you.. My dear..
+
+GINGER
+Who.. are the spirits?
+
+VISTA
+My child..
 If I don't kill enough humans...
-My people will revolt. The spirits will take *our* souls.
+My people will revolt.
+And the spirits will take *our* souls.
 And then they'll give the throne to someone who doesn't care.
 I didn't mean to bring you into this life.
 I swim in a sea, a sea of death.
@@ -1613,7 +1706,12 @@ The least I can do is escort you three to Canterbury.
 The human does not deserve to be involved in this.
 
 GINGER
-Mom-
+M-Mom..
+
+Ginger's eyes turn purple again.
+
+GINGER
+I'm sorry, I swear I'll make it up to you, I-
 
 VISTA
 Do not call me 'mother'.
@@ -1663,10 +1761,21 @@ She cannot withstand eternity.
 We did not have this conversation.
 
 JEREMY
-Yes, ma'am.
+Your majesty, I have a question.
 
 VISTA
-Very good.
+...
+Make it short.
+
+JEREMY
+Ginger's eyes, maybe it was a trick of the light-
+They're usually blue, but whenever she panicked, they turned purple.
+What's up with that?
+
+VISTA
+Semura is a clone of my original form.
+She has purple eyes.
+You must have been mistaken.
 
 INT.CANTERBURY.DAY
 
