@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "tilesets/floor_wood01.tsx",
     "expandedProjectPaths": [
     ],
     "exportAsImage.includeBackgroundColor": true,
@@ -20,16 +20,16 @@
     },
     "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
     "map.height": 8,
+    "map.lastUsedFormat": "tmx",
     "map.width": 8,
     "openFiles": [
-        "tilesets/room01.tsx",
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
-        "tilesets/room01.tsx",
-        "tilesets/floor_wood01.tsx"
+        "tilesets/floor_wood01.tsx",
+        "tilesets/room01.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.transparentColor": "#000000",

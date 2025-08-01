@@ -5,8 +5,7 @@
 #include "bn_string.h"
 #include "bn_keypad.h"
 
-// Sprites
-#include "bn_sprite_items_wizard.h"
+// Face Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_db_ch_vista.h"
 
@@ -42,6 +41,8 @@ int main()
     db.value().load(&test_convo);
     db.value().init();
 
+    character vista = {CHAR_VISTA, {0, 0}, false};
+
     while (true)
     {
         if (db.has_value())
@@ -61,6 +62,7 @@ int main()
             }
         }
 
+        vista.update();
         v_sprite_ptr::update();
         core::update();
     }
