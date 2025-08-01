@@ -15,6 +15,7 @@
 #include "ge_globals.h"
 #include "ge_sprites.h"
 #include "ge_text.h"
+#include "ge_maps.h"
 
 using namespace bn;
 
