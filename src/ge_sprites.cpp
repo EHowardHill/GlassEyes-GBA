@@ -1,3 +1,4 @@
+#include "bn_log.h"
 #include "bn_sprites.h"
 #include "bn_sprite_item.h"
 #include "bn_sprite_ptr.h"
@@ -211,11 +212,20 @@ void character::update_sprite_item(int index_)
 
 void character::update()
 {
-
     // Move
     if (!npc)
     {
         bool moving = false;
+
+        if (v_sprite.bounds.position.y > -32 - 16 && v_sprite.bounds.position.y < 32 + 16)
+        {
+            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+        }
+
+        if (v_sprite.bounds.position.x > 0 && v_sprite.bounds.position.x < 0)
+        {
+            v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
+        }
 
         if (bn::keypad::up_held())
         {

@@ -1,14 +1,21 @@
 // ge_maps.cpp
 
 #include "ge_maps.h"
-#include "bn_regular_bg_items_room_cabin_01.h"
+#include "ge_sprites.h"
 
-// Create empty actions array (all zeros)
-constexpr array<array<int, 2048>, 2048> empty_actions = {};
+#include "bn_regular_bg_ptr.h"
 
-// Define the map with proper initialization
-constexpr map map_room_01 = {
-    {8, 8},
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    empty_actions,
-    &bn::regular_bg_items::room_cabin_01};
+map_manager::map_manager(const regular_bg_item *item_, const map *current_map_)
+    : current_map(current_map_)
+{
+    floor_ptr = item_->create_bg(0, 0);
+    collider_ptr = current_map_->bg_item_ptr->create_bg(0, 0);
+}
+
+void map_manager::update()
+{
+    vector_2 * cam = &v_sprite_ptr::camera;
+
+    floor_ptr.value().set_position(-cam->x, -cam->y);
+    collider_ptr.value().set_position(-cam->x, -cam->y);
+}

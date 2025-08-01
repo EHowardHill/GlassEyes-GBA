@@ -10,12 +10,13 @@
 #include "bn_sprite_items_db_ch_vista.h"
 
 #include "bn_regular_bg_items_floor_wood01.h"
-#include "bn_regular_bg_items_room_cabin_01.h"
 
 #include "ge_globals.h"
 #include "ge_sprites.h"
 #include "ge_text.h"
 #include "ge_maps.h"
+
+#include "ge_map_data.cpp"
 
 using namespace bn;
 
@@ -24,8 +25,7 @@ int main()
     core::init();
     global_data_ptr = new global_data();
 
-    auto floor = regular_bg_items::floor_wood01.create_bg(0, 0);
-    auto items = regular_bg_items::room_cabin_01.create_bg(0, 48);
+    map_manager current_map(&bn::regular_bg_items::floor_wood01, &map_room01);
 
     conversation test_convo = {
         {&sprite_items::db_ch_vista, EM_DEFAULT, ACT_SPEAK, "Hello?", "Is this working?"},
@@ -64,6 +64,7 @@ int main()
         }
 
         vista.update();
+        current_map.update();
         v_sprite_ptr::update();
         core::update();
     }
