@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python3 rebuild-maps.py
+python3 generate-maps.py
 make -j$(nproc)

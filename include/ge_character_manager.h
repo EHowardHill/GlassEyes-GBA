@@ -1,0 +1,43 @@
+// ge_character_manager.h
+
+#ifndef GE_CHARACTER_MANAGER_H
+#define GE_CHARACTER_MANAGER_H
+
+#include "bn_list.h"
+#include "bn_unique_ptr.h"
+#include "ge_sprites.h"
+
+using namespace bn;
+
+class character_manager
+{
+private:
+    list<unique_ptr<character>, 64> characters;
+    character *player_ptr;
+
+public:
+    character_manager();
+
+    character *add_character(int index, vector_2 position, bool is_npc = true);
+    bool remove_character(character *ch);
+    void clear_npcs();
+    character *get_player() { return player_ptr; }
+    character *find_at_position(vector_2 pos, int tolerance = 32);
+    character *find_by_index(int index);
+    void update(map_manager *current_map);
+    int size() const { return characters.size(); }
+
+    template <typename Func>
+    void for_each(Func func)
+    {
+        for (auto &ch : characters)
+        {
+            if (ch)
+            {
+                func(ch.get());
+            }
+        }
+    }
+};
+
+#endif // GE_CHARACTER_MANAGER_H

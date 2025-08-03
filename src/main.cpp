@@ -4,10 +4,13 @@
 #include "bn_regular_bg_item.h"
 #include "bn_string.h"
 #include "bn_keypad.h"
+#include "bn_list.h"
 
 // Face Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_db_ch_vista.h"
+
+#include "bn_sprite_items_spr_vista_01.h"
 
 #include "bn_regular_bg_items_floor_wood01.h"
 
@@ -15,6 +18,7 @@
 #include "ge_sprites.h"
 #include "ge_text.h"
 #include "ge_maps.h"
+#include "ge_character_manager.h"
 
 #include "ge_map_data.cpp"
 
@@ -26,11 +30,10 @@ int main()
     global_data_ptr = new global_data();
 
     map_manager current_map(&bn::regular_bg_items::floor_wood01, &map_room01);
+    character_manager char_mgr;
 
     conversation test_convo = {
-        {&sprite_items::db_ch_vista, EM_DEFAULT, ACT_SPEAK, "Hello?", "Is this working?"},
-        {&sprite_items::db_ch_jeremy, EM_LAUGH, ACT_SPEAK, "", "HA... HA HA...", "", true, SIZE_LARGE},
-        {&sprite_items::db_ch_jeremy, EM_EMBARRASSED, ACT_SPEAK, "Ope", "Sorry bout that", "", false, SIZE_SMALL},
+        {nullptr, EM_DEFAULT, ACT_SPEAK, "Most days were the", "same for Vista,"},
         dialogue_line::end_marker()};
 
     optional<dialogue_box> db;
@@ -39,10 +42,21 @@ int main()
         db = db_test;
     }
 
-    db.value().load(&test_convo);
-    db.value().init();
+    for (int y = 0; y < current_map.current_map->size.y.integer(); y++)
+    {
+        for (int x = 0; x < current_map.current_map->size.x.integer(); x++)
+        {
+            int tile = x + (y * current_map.current_map->size.x.integer());
 
-    character vista = {CHAR_VISTA, {0, 0}, false};
+            if (current_map.current_map->characters[tile] != 0)
+            {
+                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y}, false);
+            }
+        }
+    }
+
+    db.value().load(&test_convo);
+    db.value().init(&char_mgr);
 
     while (true)
     {
@@ -53,17 +67,17 @@ int main()
             if (keypad::a_pressed())
             {
                 db.value().index++;
-                db.value().init();
+                db.value().init(&char_mgr);
             }
 
             if (db.value().is_ended())
             {
-                BN_LOG("RESET!");
                 db.reset();
             }
         }
 
-        vista.update();
+        // Update all characters
+        char_mgr.update(&current_map);
         current_map.update();
         v_sprite_ptr::update();
         core::update();

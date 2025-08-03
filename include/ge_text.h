@@ -9,6 +9,8 @@
 #include "bn_regular_bg_ptr.h"
 
 #include "ge_structs.h"
+#include "ge_sprites.h"
+#include "ge_character_manager.h"
 
 using namespace bn;
 
@@ -88,11 +90,15 @@ struct text
 struct dialogue_line
 {
     int id = 0;
-    const sprite_item *character = nullptr;
+    const sprite_item *portrait = nullptr;
     int emotion = EM_DEFAULT;
     int action = ACT_SPEAK;
     string<20> raw_text[3]; // Removed const to allow assignment
+
+    int index;
+    const animation *spr_animation;
     vector_2 navigate = {0, 0};
+
     int speed = SP_DEFAULT;
     int branches[3] = {0, 0, 0};
     bool shake = false;
@@ -101,7 +107,7 @@ struct dialogue_line
     static dialogue_line end_marker()
     {
         dialogue_line line;
-        line.character = nullptr;
+        line.portrait = nullptr;
         line.action = ACT_END;
         return line;
     }
@@ -118,10 +124,14 @@ struct dialogue_line
         const string<20> &line2 = "",
         const string<20> &line3 = "",
         bool shake_ = false,
-        int size_ = SIZE_NORMAL) : character(char_),
+        int index_ = 0,
+        vector_2 navigate_ = {0, 0},
+        int size_ = SIZE_NORMAL) : portrait(char_),
                                    emotion(emotion_),
                                    action(action_),
-                                   navigate({0, 0}),
+                                   index(index_),
+                                   spr_animation(nullptr),
+                                   navigate(navigate_),
                                    speed(SP_DEFAULT),
                                    branches{0, 0, 0},
                                    shake(shake_),
@@ -140,15 +150,19 @@ struct dialogue_line
         const string<20> &line1,
         const string<20> &line2,
         const string<20> &line3,
+        int index_,
+        const animation *spr_animation_,
         vector_2 navigate_,
         int speed_,
         int branch1,
         int branch2,
         int branch3,
         int id_) : id(id_),
-                   character(char_),
+                   portrait(char_),
                    emotion(emotion_),
                    action(action_),
+                   index(index_),
+                   spr_animation(spr_animation_),
                    navigate(navigate_),
                    speed(speed_),
                    branches{branch1, branch2, branch3}
@@ -169,7 +183,7 @@ struct dialogue_box
         {"", {-42, 32 + 16 + 16}}};
     conversation *active_conversation;
     int index;
-    optional<sprite_ptr> character;
+    optional<sprite_ptr> portrait;
     optional<sprite_ptr> pointer;
     optional<regular_bg_ptr> box;
     int size;
@@ -179,13 +193,13 @@ struct dialogue_box
 
     ~dialogue_box()
     {
-        character.reset();
+        portrait.reset();
         pointer.reset();
         box.reset();
     }
 
     void load(conversation *new_conversation);
-    void init();
+    void init(character_manager * ch_man);
     void update();
     bool is_ended();
 };

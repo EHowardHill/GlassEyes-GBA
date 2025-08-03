@@ -179,7 +179,7 @@ for map in maps:
         "bgs/tilesets/" + tileset_root.findall(".//image")[0].attrib["source"]
     )
 
-    print(tileset_path)
+    lbl_blue = int(root.find(".//tileset[@source='../tilesets/blue-labels.tsx']").attrib["firstgid"]) - 1
 
     # Find all layer elements
     layers = root.findall(".//layer")
@@ -196,8 +196,14 @@ for map in maps:
         map_data[map_name]["height"] = height
         map_data[map_name][layer_name] = data_element.replace("\n", "\n\t")
 
-        if layer_name == "colliders":
-            tile_basis = [int(x) for x in data_element.replace("\n", "").split(",")]
+        if layer_name in ["colliders", "decor"]:
+            list2 = [int(x) for x in data_element.replace("\n", "").split(",")]
+            if tile_basis == []:
+                tile_basis = [0 for _ in list2]
+            tile_basis = [b if b != 0 else a for a, b in zip(tile_basis, list2)]
+
+        elif layer_name == "characters":
+            map_data[map_name][layer_name] = ','.join([str(int(x) - lbl_blue if int(x) != 0 else 0) for x in data_element.replace("\n", "").split(",")])
 
     create_tiled_bmp(
         tileset_path,
@@ -227,6 +233,7 @@ constexpr map map_$name = {
     {$raw_width, $raw_height},
     {\n\t$colliders\n    },
     {\n\t$actions\n    },
+    {\n\t$characters\n    },
     &bn::regular_bg_items::map_$name};
 
 """

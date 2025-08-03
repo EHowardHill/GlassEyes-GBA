@@ -1,0 +1,1536 @@
+ge_character_manager.cpp: 
+
+#include "bn_list.h"
+#include "bn_unique_ptr.h"
+
+#include "ge_sprites.h"
+#include "ge_character_manager.h"
+#include "ge_maps.h"
+
+// Implementation in ge_character_manager.cpp
+character_manager::character_manager() : player_ptr(nullptr)
+{
+}
+
+character *character_manager::add_character(int index, vector_2 position, bool is_npc)
+{
+    if (characters.size() >= 64)
+        return nullptr;
+
+    // Create new character
+    characters.push_back(make_unique<character>(index, position, is_npc));
+    character *new_char = characters.back().get();
+
+    // Track player
+    if (!is_npc && !player_ptr)
+    {
+        player_ptr = new_char;
+    }
+
+    return new_char;
+}
+
+bool character_manager::remove_character(character *ch)
+{
+    if (!ch || ch == player_ptr)
+        return false; // Don't remove player
+
+    for (auto it = characters.begin(); it != characters.end(); ++it)
+    {
+        if (it->get() == ch)
+        {
+            characters.erase(it);
+            return true;
+        }
+    }
+    return false;
+}
+
+void character_manager::clear_npcs()
+{
+    auto it = characters.begin();
+    while (it != characters.end())
+    {
+        if ((*it)->npc)
+        {
+            it = characters.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
+character *character_manager::find_at_position(vector_2 pos, int tolerance)
+{
+    for (auto &ch : characters)
+    {
+        if (ch)
+        {
+            int dx = abs(ch->v_sprite.bounds.position.x.integer() - pos.x.integer());
+            int dy = abs(ch->v_sprite.bounds.position.y.integer() - pos.y.integer());
+
+            if (dx <= tolerance && dy <= tolerance)
+            {
+                return ch.get();
+            }
+        }
+    }
+    return nullptr;
+}
+
+character *character_manager::find_by_index(int index)
+{
+    for (auto &ch : characters)
+    {
+        if (ch && ch->index == index)
+        {
+            return ch.get();
+        }
+    }
+    return nullptr;
+}
+
+void character_manager::update(map_manager *current_map)
+{
+    for (auto &ch : characters)
+    {
+        if (ch)
+        {
+            ch->update(current_map);
+        }
+    }
+}
+
+ge_globals.cpp: 
+// ge_globals.cpp
+
+#include "ge_globals.h"
+
+// Definition of the global pointer - this should only exist in one source file
+global_data *global_data_ptr = nullptr;
+
+ge_maps.cpp: 
+// ge_maps.cpp
+
+#include "bn_log.h"
+#include "bn_regular_bg_ptr.h"
+
+#include "ge_maps.h"
+#include "ge_sprites.h"
+#include "ge_character_manager.h"
+
+map_manager::map_manager(const regular_bg_item *item_, const map *current_map_)
+    : current_map(current_map_)
+{
+    floor_ptr = item_->create_bg(0, 0);
+    collider_ptr = current_map_->bg_item_ptr->create_bg(0, 0);
+}
+
+void map_manager::update()
+{
+    vector_2 *cam = &v_sprite_ptr::camera;
+
+    vector_2 offset = {
+        current_map->raw_size.x / 2,
+        current_map->raw_size.y / 2};
+
+    floor_ptr.value().set_position(-cam->x, -cam->y);
+    collider_ptr.value().set_position(-cam->x + offset.x, -cam->y + offset.y);
+}
+
+int map_manager::collision(vector_2 location)
+{
+    // Get the tile coordinates - no arbitrary offsets
+    // We need to check multiple points for the character's bounding box
+    int tile_x = location.x.integer() / 32;
+    int tile_y = location.y.integer() / 32;
+
+    // Clamp to map bounds
+    if (tile_x < 0 || tile_x >= current_map->size.x.integer() ||
+        tile_y < 0 || tile_y >= current_map->size.y.integer())
+    {
+        return 1; // Out of bounds is considered a collision
+    }
+
+    int tile_index = tile_x + (tile_y * current_map->size.x.integer());
+    return current_map->collisions[tile_index];
+}
+
+bool map_manager::check_box_collision(bound box)
+{
+    // Check all four corners of the bounding box
+    int left = (box.position.x.integer() - box.width.integer() / 2);
+    int right = (box.position.x.integer() + box.width.integer() / 2 - 1);
+    int top = (box.position.y.integer() - box.height.integer() / 2);
+    int bottom = (box.position.y.integer() + box.height.integer() / 2 - 1);
+    
+    // Check corners
+    if (collision({left, top}) > 0) return true;
+    if (collision({right, top}) > 0) return true;
+    if (collision({left, bottom}) > 0) return true;
+    if (collision({right, bottom}) > 0) return true;
+    
+    // For wider sprites, also check middle points
+    if (box.width.integer() > 32)
+    {
+        int mid_x = box.position.x.integer();
+        if (collision({mid_x, top}) > 0) return true;
+        if (collision({mid_x, bottom}) > 0) return true;
+    }
+    
+    if (box.height.integer() > 32)
+    {
+        int mid_y = box.position.y.integer();
+        if (collision({left, mid_y}) > 0) return true;
+        if (collision({right, mid_y}) > 0) return true;
+    }
+    
+    return false;
+}
+
+ge_map_data.cpp: 
+// Auto-Generated Map Template
+
+#include "ge_maps.h"
+#include "bn_regular_bg_items_map_room01.h"
+
+constexpr map map_room01 = {
+    {12, 8},
+    {512, 512},
+    {
+	10,1,3,15,16,6,6,22,20,21,6,9,
+	8,2,4,13,14,0,0,23,17,18,19,7,
+	8,0,0,0,0,0,0,0,0,0,0,7,
+	8,0,0,0,0,0,0,0,0,0,0,7,
+	8,0,0,0,0,0,0,0,0,0,0,7,
+	8,30,0,0,0,0,0,0,0,0,30,7,
+	8,31,0,0,0,0,0,0,0,0,31,7,
+	11,5,5,5,5,5,5,5,5,5,5,12
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_room01};
+
+
+
+
+ge_sprites.cpp: 
+#include "bn_log.h"
+#include "bn_sprites.h"
+#include "bn_sprite_item.h"
+#include "bn_sprite_ptr.h"
+
+// Body Sprites
+#include "bn_sprite_items_spr_vista_01.h"
+
+#include "ge_structs.h"
+#include "ge_sprites.h"
+#include "ge_maps.h"
+
+using namespace bn;
+
+// Static member definitions
+vector<v_sprite_ptr *, 12> v_sprite_ptr::manager;
+vector_2 v_sprite_ptr::camera = {0, 0};
+
+bool within_bounds(bound me, bound you)
+{
+    int me_x = me.position.x.integer();
+    int me_y = me.position.y.integer();
+    int you_x = you.position.x.integer();
+    int you_y = you.position.y.integer();
+    int width = you.width.integer() / 2;
+    int height = you.height.integer() / 2;
+
+    return (me_x > you_x - width && me_x < you_x + width) && (me_y > you_y - height && me_y < you_y + height);
+}
+
+animation::animation(array<int, 64> frames_, int speed_, bool loop_) : frames(frames_), speed(speed_), loop(loop_) {
+
+                                                                       };
+
+v_sprite_ptr::v_sprite_ptr()
+    : sprite_item_ptr(nullptr), frame(0), tall(false)
+{
+    bounds.position = {0, 0};
+    bounds.width = 0;
+    bounds.height = 0;
+    manager.push_back(this);
+}
+
+v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position, int width, int height, int frame_, bool tall_)
+    : sprite_item_ptr(sprite_item_ptr_), frame(frame_), tall(tall_)
+{
+    bounds.position = position;
+    bounds.width = width;
+    bounds.height = height;
+    manager.push_back(this);
+}
+
+v_sprite_ptr::~v_sprite_ptr()
+{
+    // Remove this instance from the manager
+    for (auto it = manager.begin(); it != manager.end(); ++it)
+    {
+        if (*it == this)
+        {
+            manager.erase(it);
+            break;
+        }
+    }
+}
+
+void v_sprite_ptr::move(vector_2 direction)
+{
+    // Now we add the direction instead of subtracting
+    bounds.position.x = bounds.position.x + direction.x;
+    bounds.position.y = bounds.position.y + direction.y;
+}
+
+bound v_sprite_ptr::real_position() const
+{
+    return {
+        {bounds.position.x - camera.x, bounds.position.y - camera.y},
+        bounds.width,
+        bounds.height};
+}
+
+void v_sprite_ptr::set_frame(int frame_)
+{
+    frame = frame_;
+
+    if (sprite_ptr_raw.has_value())
+    {
+        if (tall)
+        {
+            // For tall sprites, top sprite uses frame * 2
+            sprite_ptr_raw.value().set_tiles(sprite_item_ptr->tiles_item(), frame * 2);
+
+            // Bottom sprite uses (frame * 2) + 1
+            if (sprite_ptr_bottom.has_value())
+            {
+                sprite_ptr_bottom.value().set_tiles(sprite_item_ptr->tiles_item(), (frame * 2) + 1);
+            }
+        }
+        else
+        {
+            // Regular sprites use frame directly
+            sprite_ptr_raw.value().set_tiles(sprite_item_ptr->tiles_item(), frame);
+        }
+    }
+}
+
+void v_sprite_ptr::update()
+{
+    for (auto *item : manager)
+    {
+        bound bounds = item->real_position();
+
+        if (item->sprite_ptr_raw.has_value())
+        {
+            // Sprite exists - check if it should be removed or updated
+            if (!within_bounds(bounds, screen))
+            {
+                // Out of bounds - remove sprites
+                item->sprite_ptr_raw.reset();
+                item->sprite_ptr_bottom.reset();
+            }
+            else
+            {
+                item->sprite_ptr_raw.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
+
+                // In bounds - update position and tiles
+                if (item->tall)
+                {
+                    item->sprite_ptr_bottom.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
+
+                    // For tall sprites, update both sprites
+                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y - 32);
+                    item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame * 2);
+
+                    if (item->sprite_ptr_bottom.has_value())
+                    {
+                        item->sprite_ptr_bottom.value().set_position(bounds.position.x, bounds.position.y);
+                        item->sprite_ptr_bottom.value().set_tiles(item->sprite_item_ptr->tiles_item(), (item->frame * 2) + 1);
+                    }
+                }
+                else
+                {
+                    // Regular sprite - update position and tiles
+                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y);
+                    item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame);
+                }
+            }
+        }
+        else if (within_bounds(bounds, screen))
+        {
+            // Sprite doesn't exist but is in bounds - create it
+            if (item->sprite_item_ptr != nullptr) // Safety check
+            {
+                if (item->tall)
+                {
+                    // Create both sprites for tall characters
+                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y - 32, item->frame * 2);
+                    item->sprite_ptr_bottom = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, (item->frame * 2) + 1);
+                }
+                else
+                {
+                    // Create single sprite for regular characters
+                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, item->frame);
+                }
+            }
+        }
+    }
+}
+
+character::character(int index_, vector_2 start_, bool npc_) : index(index_), npc(npc_)
+{
+    start.x = start_.x * 32;
+    start.y = start_.y * 32;
+
+    // Initialize v_sprite bounds position
+    // v_sprite_ptr::manager.push_back(&v_sprite);
+    v_sprite.bounds.position = start;
+    v_sprite.bounds.width = 32;
+    v_sprite.bounds.height = 32;
+
+    update_sprite_item(index_);
+    current_animation = &anim_stand;
+
+    if (!npc_ || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
+    {
+        v_sprite_ptr::camera.x = start.x;
+        v_sprite_ptr::camera.y = start.y;
+    }
+}
+
+bool character::is_tall() const
+{
+    switch (index)
+    {
+    case CHAR_VISTA:
+        return true; // Vista is a tall character
+    default:
+        return false;
+    }
+}
+
+void character::update_sprite_item(int index_)
+{
+    index = index_;
+    bool tall = is_tall();
+
+    switch (index)
+    {
+    case CHAR_VISTA:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_vista_01;
+        v_sprite.tall = tall;
+        break;
+    }
+
+    default:
+    {
+        break;
+    }
+    }
+
+    // Reset sprites
+    v_sprite.sprite_ptr_raw.reset();
+    v_sprite.sprite_ptr_bottom.reset();
+}
+
+void character::update(map_manager *current_map)
+{
+    vector_2 delta = {0, 0};
+
+    // First, let's fix the inverted delta system
+    // Make deltas positive in the direction of movement
+    if (!npc)
+    {
+        // Camera boundary code stays the same...
+        if (v_sprite_ptr::camera.x < (screen_width / 2))
+        {
+            v_sprite_ptr::camera.x = (screen_width / 2);
+        }
+
+        if (v_sprite_ptr::camera.y < (screen_height / 2))
+        {
+            v_sprite_ptr::camera.y = (screen_height / 2);
+        }
+
+        if (v_sprite.bounds.position.y > (screen_height / 2) &&
+            v_sprite.bounds.position.y < (current_map->current_map->size.y * 32) - (screen_height / 2))
+        {
+            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+        }
+
+        if (v_sprite.bounds.position.x > (screen_width / 2) &&
+            v_sprite.bounds.position.x < (current_map->current_map->size.x * 32) - (screen_width / 2) - 48)
+        {
+            v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
+        }
+
+        // Fixed delta directions - positive = right/down
+        if (bn::keypad::up_held())
+        {
+            delta.y = -1;
+        }
+
+        if (bn::keypad::down_held())
+        {
+            delta.y = 1;
+        }
+
+        if (bn::keypad::left_held())
+        {
+            delta.x = -1;
+        }
+
+        if (bn::keypad::right_held())
+        {
+            delta.x = 1;
+        }
+    }
+
+    // Fixed move_to logic with proper directions
+    if (move_to.x != 0 && move_to.y != 0)
+    {
+        int current_tile_x = v_sprite.bounds.position.x.integer() / 32;
+        int current_tile_y = v_sprite.bounds.position.y.integer() / 32;
+
+        if (move_to.x > current_tile_x)
+        {
+            delta.x = 1;
+        }
+        else if (move_to.x < current_tile_x)
+        {
+            delta.x = -1;
+        }
+
+        if (move_to.y > current_tile_y)
+        {
+            delta.y = 1;
+        }
+        else if (move_to.y < current_tile_y)
+        {
+            delta.y = -1;
+        }
+    }
+
+    // Fixed facing direction
+    if (delta.y > 0)
+    {
+        face = DIR_DOWN;
+    }
+    else if (delta.y < 0)
+    {
+        face = DIR_UP;
+    }
+
+    if (delta.x > 0)
+    {
+        face = DIR_RIGHT;
+    }
+    else if (delta.x < 0)
+    {
+        face = DIR_LEFT;
+    }
+
+    // Pixel-perfect collision detection
+    // Check future position for each axis separately
+    bound future_bounds_x = v_sprite.bounds;
+    future_bounds_x.position.x = future_bounds_x.position.x + delta.x;
+
+    bound future_bounds_y = v_sprite.bounds;
+    future_bounds_y.position.y = future_bounds_y.position.y + delta.y;
+
+    // Check X movement
+    if (current_map->check_box_collision(future_bounds_x))
+    {
+        delta.x = 0;
+    }
+
+    // Check Y movement
+    if (current_map->check_box_collision(future_bounds_y))
+    {
+        delta.y = 0;
+    }
+
+    // For diagonal movement, also check the combined movement
+    if (delta.x != 0 && delta.y != 0)
+    {
+        bound future_bounds_both = v_sprite.bounds;
+        future_bounds_both.position.x = future_bounds_both.position.x + delta.x;
+        future_bounds_both.position.y = future_bounds_both.position.y + delta.y;
+
+        if (current_map->check_box_collision(future_bounds_both))
+        {
+            // Try to slide along walls
+            // If diagonal fails but individual axes might work, keep the working axis
+            if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x))
+            {
+                delta.y = 0; // Can move X but not Y
+            }
+            else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y))
+            {
+                delta.x = 0; // Can move Y but not X
+            }
+            else
+            {
+                // Can't move in either direction
+                delta.x = 0;
+                delta.y = 0;
+            }
+        }
+    }
+
+    // Apply movement with fixed direction
+    v_sprite.bounds.position.x = v_sprite.bounds.position.x + delta.x;
+    v_sprite.bounds.position.y = v_sprite.bounds.position.y + delta.y;
+
+    bool moving = (delta.x != 0 || delta.y != 0);
+
+    // Animation and sprite update code remains the same...
+    if (moving && current_animation != &anim_walk)
+    {
+        current_animation = &anim_walk;
+    }
+    else if (!moving && current_animation != &anim_stand)
+    {
+        current_animation = &anim_stand;
+    }
+
+    // Rest of the update code...
+    if (v_sprite.sprite_ptr_raw.has_value())
+    {
+        if (ticker % 6 == 0)
+        {
+            frame = (frame + 1) % 4;
+        }
+
+        int new_frame = current_animation->frames[frame];
+
+        v_sprite.sprite_ptr_raw.value().set_horizontal_flip(false);
+        if (v_sprite.sprite_ptr_bottom.has_value())
+        {
+            v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(false);
+        }
+
+        switch (face)
+        {
+        case DIR_UP:
+            v_sprite.set_frame(new_frame + 6);
+            break;
+        case DIR_DOWN:
+            v_sprite.set_frame(new_frame);
+            break;
+        case DIR_LEFT:
+            v_sprite.set_frame(new_frame + 3);
+            v_sprite.sprite_ptr_raw.value().set_horizontal_flip(true);
+            if (v_sprite.sprite_ptr_bottom.has_value())
+            {
+                v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(true);
+            }
+            break;
+        case DIR_RIGHT:
+            v_sprite.set_frame(new_frame + 3);
+            break;
+        }
+    }
+
+    ticker++;
+}
+
+static character *find(list<character, 64> &characters, int index)
+{
+    for (character &ch : characters)
+    {
+        if (ch.index == index)
+        {
+            return &ch;
+        }
+    }
+
+    // Return first character if list isn't empty
+    if (!characters.empty())
+    {
+        return &(*characters.begin());
+    }
+
+    return nullptr; // List is empty
+}
+
+void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
+{
+    characters->emplace_back(character_id, location, npc);
+}
+
+ge_structs.cpp: 
+// ge_structs.cpp
+#include "bn_fixed.h"
+
+using namespace bn;
+
+constexpr int screen_width = 240;
+constexpr int screen_height = 160;
+
+struct vector_2
+{
+    fixed_t<4> x;
+    fixed_t<4> y;
+};
+
+struct bound
+{
+    vector_2 position;
+    fixed_t<4> width;
+    fixed_t<4> height;
+};
+
+constexpr bound screen = {{0, 0}, screen_width, screen_height};
+
+ge_text.cpp: 
+// Implementation file (ge_text.cpp)
+
+#include "bn_log.h"
+#include "bn_sound_items.h"
+#include "bn_sound_items_info.h"
+#include "bn_random.h"
+
+#include "ge_sprites.h"
+#include "ge_character_manager.h"
+#include "ge_globals.h"
+#include "ge_text.h"
+
+// Sprites
+#include "bn_sprite_items_db_ch_jeremy.h"
+#include "bn_sprite_items_spr_font_01.h"
+#include "bn_regular_bg_items_bg_dialogue_box.h"
+
+using namespace bn;
+
+constexpr char alphabet[] = {
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
+    '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
+    '[', ']', '\\', '{', '}', '|', ';', '\'', ':', '"', ',', '.', '/',
+    '<', '>', '?'};
+
+letter::letter(char ch, vector_2 ideal_position_) : ideal_position(ideal_position_)
+{
+    char_index = -1;
+
+    for (size_t i = 0; i < sizeof(alphabet); ++i)
+    {
+        if (ch == alphabet[i])
+        {
+            char_index = i;
+            break;
+        }
+    }
+
+    if (char_index > -1)
+    {
+        sprite = sprite_items::spr_font_01.create_sprite(ideal_position_.x, ideal_position_.y, char_index);
+    }
+}
+
+void letter::update(bool shake, int size)
+{
+    if (size == SIZE_LARGE)
+    {
+        sprite.value().set_scale(2, 2);
+    }
+    else if (size == SIZE_SMALL)
+    {
+        sprite.value().set_scale(0.75, 0.75);
+    }
+
+    if (shake)
+    {
+        temp_position = {
+            ideal_position.x + global_data_ptr->bn_random.get_int(6) - 3,
+            ideal_position.y + global_data_ptr->bn_random.get_int(6) - 3,
+        };
+
+        if (sprite.value().x().integer() < temp_position.x.integer())
+        {
+            sprite.value().set_x(sprite.value().x() + 1);
+        }
+        else if (sprite.value().x() > temp_position.x.integer())
+        {
+            sprite.value().set_x(sprite.value().x() - 1);
+        }
+
+        if (sprite.value().y().integer() < temp_position.y.integer())
+        {
+            sprite.value().set_y(sprite.value().y() + 1);
+        }
+        else if (sprite.value().y().integer() > temp_position.y.integer())
+        {
+            sprite.value().set_y(sprite.value().y() - 1);
+        }
+    }
+}
+
+text::text(const string<20> &value, vector_2 start_) : start(start_)
+{
+    init(value);
+}
+
+void text::init(const string<20> &value)
+{
+    reference = value;
+    letters.clear();
+    current_x = 0;
+    index = 0;
+}
+
+void text::update()
+{
+    if (index >= reference.size() || is_ended())
+    {
+        return;
+    }
+
+    sound_items::snd_dialogue_generic.play();
+
+    char ch = reference[index];
+
+    int current_size = SIZE_NORMAL;
+    int spacing = 8; // Default portrait spacing
+
+    // Adjust spacing based on size
+    if (current_size == SIZE_LARGE)
+    {
+        spacing = 16; // Larger spacing for large text
+    }
+    else if (current_size == SIZE_SMALL)
+    {
+        spacing = 6; // Smaller spacing for small text
+    }
+
+    if (ch == ' ')
+    {
+        current_x += spacing; // Use the size-adjusted spacing
+        index++;
+        return;
+    }
+
+    // Create letter at current position
+    letter new_letter = {ch, {start.x + current_x, start.y}};
+
+    if (new_letter.char_index > -1)
+    {
+        letters.push_back(new_letter);
+        current_x += spacing; // Use size-adjusted spacing instead of hardcoded 8
+        index++;
+    }
+}
+
+bool text::is_ended()
+{
+    return index >= reference.size() || reference[index] == '\0'; // Fixed end condition
+}
+
+void text::set_position(int x, int y)
+{
+    start.x = x;
+    start.y = y;
+    int current_x_pos = x;
+    for (auto &letter : letters)
+    {
+        letter.ideal_position = {current_x_pos, y};
+        current_x_pos += 8;
+    }
+}
+
+dialogue_box::dialogue_box()
+{
+    portrait = sprite_items::db_ch_jeremy.create_sprite(0, 0);
+    box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
+    pointer = sprite_items::spr_font_01.create_sprite(-52, 32, 73);
+    ticker = 0;
+    active_conversation = nullptr;
+    index = 0;
+    size = 0;
+}
+
+void dialogue_box::load(conversation *new_conversation)
+{
+    active_conversation = new_conversation;
+    index = 0;
+    size = 0;
+
+    for (int i = 0; i < 64; i++) // Changed from 128 to 64 to match typedef
+    {
+        if ((*active_conversation)[i].action == ACT_END)
+        {
+            break;
+        }
+        size++;
+    }
+}
+
+void dialogue_box::init(character_manager *ch_man)
+{
+    if (!active_conversation || is_ended())
+    {
+        return;
+    }
+
+    const dialogue_line &line = (*active_conversation)[index];
+
+    if (line.portrait != nullptr)
+    {
+        portrait = line.portrait->create_sprite(-84, 56, line.emotion);
+    }
+    else
+    {
+        portrait.reset();
+    }
+
+    if (line.navigate.x != 0 && line.navigate.y != 0)
+    {
+        auto ch = ch_man->find_by_index(line.index);
+        ch->move_to = line.navigate;
+    }
+
+    for (int t = 0; t < 3; t++)
+    {
+        lines[t].init(line.raw_text[t]);
+        lines[t].size = line.size;
+    }
+}
+
+void dialogue_box::update()
+{
+    if (!active_conversation || index >= size)
+    {
+        return;
+    }
+
+    auto l = (*active_conversation)[index];
+    portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2));
+
+    for (int t = 0; t < 3; t++)
+    {
+        for (auto &letter_ : lines[t].letters)
+        {
+            letter_.update(l.shake, l.size);
+        }
+    }
+
+    if (!active_conversation || (lines[0].is_ended() && lines[1].is_ended() && lines[2].is_ended()))
+    {
+        return;
+    }
+
+    ticker++;
+
+    if (l.speed == SP_DEFAULT)
+    {
+        if (ticker % 12 < 6)
+        {
+            portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2) + 1);
+        }
+
+        if (ticker % 3 == 0)
+        {
+            for (int t = 0; t < 3; t++)
+            {
+                if (!lines[t].is_ended())
+                {
+                    lines[t].update();
+                    return;
+                }
+            }
+        }
+    }
+}
+
+bool dialogue_box::is_ended()
+{
+    if (!active_conversation)
+    {
+        return true;
+    }
+    return (*active_conversation)[index].action == ACT_END;
+}
+
+main.cpp: 
+// main.cpp
+#include "bn_core.h"
+#include "bn_log.h"
+#include "bn_regular_bg_item.h"
+#include "bn_string.h"
+#include "bn_keypad.h"
+#include "bn_list.h"
+
+// Face Sprites
+#include "bn_sprite_items_db_ch_jeremy.h"
+#include "bn_sprite_items_db_ch_vista.h"
+
+#include "bn_sprite_items_spr_vista_01.h"
+
+#include "bn_regular_bg_items_floor_wood01.h"
+
+#include "ge_globals.h"
+#include "ge_sprites.h"
+#include "ge_text.h"
+#include "ge_maps.h"
+#include "ge_character_manager.h"
+
+#include "ge_map_data.cpp"
+
+using namespace bn;
+
+int main()
+{
+    core::init();
+    global_data_ptr = new global_data();
+
+    map_manager current_map(&bn::regular_bg_items::floor_wood01, &map_room01);
+    character_manager char_mgr;
+
+    conversation test_convo = {
+        {nullptr, EM_DEFAULT, ACT_SPEAK, "Most days were the", "same for Vista,"},
+        dialogue_line::end_marker()};
+
+    optional<dialogue_box> db;
+    {
+        dialogue_box db_test;
+        db = db_test;
+    }
+
+    for (int y = 0; y < current_map.current_map->size.y.integer(); y++)
+    {
+        for (int x = 0; x < current_map.current_map->size.x.integer(); x++)
+        {
+            int tile = x + (y * current_map.current_map->size.x.integer());
+
+            if (current_map.current_map->characters[tile] != 0)
+            {
+                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y}, false);
+            }
+        }
+    }
+
+    db.value().load(&test_convo);
+    db.value().init(&char_mgr);
+
+    while (true)
+    {
+        if (db.has_value())
+        {
+            db.value().update();
+
+            if (keypad::a_pressed())
+            {
+                db.value().index++;
+                db.value().init(&char_mgr);
+            }
+
+            if (db.value().is_ended())
+            {
+                db.reset();
+            }
+        }
+
+        // Update all characters
+        char_mgr.update(&current_map);
+        current_map.update();
+        v_sprite_ptr::update();
+        core::update();
+    }
+}
+
+ge_character_manager.h: 
+// ge_character_manager.h
+
+#ifndef GE_CHARACTER_MANAGER_H
+#define GE_CHARACTER_MANAGER_H
+
+#include "bn_list.h"
+#include "bn_unique_ptr.h"
+#include "ge_sprites.h"
+
+using namespace bn;
+
+class character_manager
+{
+private:
+    list<unique_ptr<character>, 64> characters;
+    character *player_ptr;
+
+public:
+    character_manager();
+
+    character *add_character(int index, vector_2 position, bool is_npc = true);
+    bool remove_character(character *ch);
+    void clear_npcs();
+    character *get_player() { return player_ptr; }
+    character *find_at_position(vector_2 pos, int tolerance = 32);
+    character *find_by_index(int index);
+    void update(map_manager *current_map);
+    int size() const { return characters.size(); }
+
+    template <typename Func>
+    void for_each(Func func)
+    {
+        for (auto &ch : characters)
+        {
+            if (ch)
+            {
+                func(ch.get());
+            }
+        }
+    }
+};
+
+#endif // GE_CHARACTER_MANAGER_H
+
+ge_globals.h: 
+// ge_globals.h
+
+#ifndef GE_GLOBALS_H
+#define GE_GLOBALS_H
+
+#include "bn_random.h"
+
+#include "ge_maps.h"
+
+class global_data
+{
+public:
+	bn::random bn_random;
+	map_manager *current_map_manager;
+
+	global_data()
+	{
+	}
+};
+
+// Declaration only - use 'extern' keyword
+extern global_data *global_data_ptr;
+
+#endif // GE_GLOBALS_H
+
+ge_maps.h: 
+// ge_maps.h
+
+#ifndef GE_MAPS_H
+#define GE_MAPS_H
+
+#include "bn_regular_bg_ptr.h"
+#include "bn_regular_bg_item.h"
+#include "bn_sound_item.h"
+#include "bn_array.h"
+#include "bn_optional.h"
+
+#include "ge_structs.h"
+
+// Floors
+#include "bn_regular_bg_items_floor_wood01.h"
+
+// Using bn namespace types
+using bn::array;
+using bn::regular_bg_item;
+using bn::sound_item;
+
+struct map
+{
+  vector_2 size;
+  vector_2 raw_size;
+  array<int, 2048> collisions;
+  array<array<int, 2048>, 2048> actions; // 2D array properly declared
+  array<int, 2048> characters;
+  const regular_bg_item *bg_item_ptr; // Should be const for constexpr
+
+  // Constexpr constructor for compile-time initialization
+  constexpr map(vector_2 size_,
+                vector_2 raw_size_,
+                const array<int, 2048> &collisions_,
+                const array<array<int, 2048>, 2048> &actions_,
+                const array<int, 2048> &characters_,
+                const regular_bg_item *bg_item_ptr_)
+      : size(size_),
+        raw_size(raw_size_),
+        collisions(collisions_),
+        actions(actions_),
+        characters(characters_),
+        bg_item_ptr(bg_item_ptr_) {}
+};
+
+struct map_manager
+{
+  optional<regular_bg_ptr> floor_ptr;
+  optional<regular_bg_ptr> collider_ptr;
+  const map *current_map;
+
+  map_manager(const regular_bg_item *item_, const map *current_map_);
+
+  void update();
+  int collision(vector_2 location);
+  bool check_box_collision(bound box);
+  int action(vector_2 location);
+};
+
+#endif
+
+ge_sprites.h: 
+// ge_sprites.h
+
+#ifndef GE_SPRITES_H
+#define GE_SPRITES_H
+
+#include "bn_core.h"
+#include "bn_array.h"
+#include "bn_sprites.h"
+#include "bn_sprite_item.h"
+#include "bn_sprite_ptr.h"
+#include "bn_optional.h"
+#include "bn_vector.h"
+#include "bn_keypad.h"
+#include "bn_list.h"
+
+#include "ge_structs.h"
+#include "ge_maps.h"
+
+using namespace bn;
+
+bool within_bounds(bound me, bound you);
+
+struct animation
+{
+    array<int, 64> frames = {0};
+    int speed = 1;
+    bool loop = true;
+
+    animation(array<int, 64> frames_, int speed_, bool loop_);
+};
+
+struct v_sprite_ptr
+{
+    static vector<v_sprite_ptr *, 12> manager;
+    static vector_2 camera;
+
+    const sprite_item *sprite_item_ptr;
+    optional<sprite_ptr> sprite_ptr_raw;
+    optional<sprite_ptr> sprite_ptr_bottom;  // For tall sprites
+    bound bounds;
+    int frame;
+    bool tall;  // Whether this sprite is tall (two blocks)
+
+    v_sprite_ptr();
+    v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position = {0, 0}, int width = 32, int height = 32, int frame_ = 0, bool tall_ = false);
+    ~v_sprite_ptr();
+
+    void move(vector_2 direction);
+    bound real_position() const;
+    void set_frame(int frame_);
+    static void update();
+};
+
+enum character_list
+{
+    CHAR_VISTA
+};
+
+// Define actual animation objects instead of macros
+const animation anim_walk({{0, 1, 0, 2}}, 1, true);
+const animation anim_stand({{0}}, 0, false);
+
+enum facing {
+    DIR_UP,
+    DIR_DOWN,
+    DIR_LEFT,
+    DIR_RIGHT
+};
+
+struct character
+{
+    int index = CHAR_VISTA;
+    vector_2 start;
+
+    v_sprite_ptr v_sprite;
+    const animation *current_animation;
+    int ticker = 0;
+    int frame = 0;
+    int face = DIR_DOWN;
+
+    bool npc = true;
+    vector_2 move_to = {0, 0};
+
+    character(int index_, vector_2 start_, bool npc_);
+
+    void update(map_manager * current_map);
+    void update_sprite_item(int index_);
+    bool is_tall() const;  // Helper to determine if character is tall
+
+    static void add(list<character, 64> * characters, int character_id, vector_2 location, bool npc);
+    static character * find(list<character, 64>& characters, int index);
+};
+
+#endif // GE_SPRITES_H
+
+ge_structs.h: 
+#ifndef GE_STRUCTS_H
+#define GE_STRUCTS_H
+
+#include "bn_fixed.h"
+
+using namespace bn;
+
+constexpr int screen_width = 240;
+constexpr int screen_height = 160;
+
+struct vector_2
+{
+    fixed_t<4> x = 0;
+    fixed_t<4> y = 0;
+};
+
+struct bound
+{
+    vector_2 position;
+    fixed_t<4> width;
+    fixed_t<4> height;
+    
+    // Default constructor
+    constexpr bound() : position(0, 0), width(0), height(0) {}
+    
+    // Constructor for initialization
+    constexpr bound(vector_2 pos, fixed_t<4> w, fixed_t<4> h) 
+        : position(pos), width(w), height(h) {}
+};
+
+const bound screen = {{0, 0}, screen_width, screen_height};
+
+#endif // GE_STRUCTS_H
+
+ge_text.h: 
+// ge_text.h
+
+#ifndef GE_TEXT_H
+#define GE_TEXT_H
+
+#include "bn_vector.h"
+#include "bn_string.h"
+#include "bn_sprite_ptr.h"
+#include "bn_regular_bg_ptr.h"
+
+#include "ge_structs.h"
+#include "ge_sprites.h"
+#include "ge_character_manager.h"
+
+using namespace bn;
+
+enum actions
+{
+    ACT_SPEAK,
+    ACT_EMOTE,
+    ACT_TURN,
+    ACT_WALK,
+    ACT_TELEPORT,
+    ACT_CUE_EVENT,
+    ACT_MULTIPLE_CHOICE,
+    ACT_END
+};
+
+enum speed
+{
+    SP_DEFAULT,
+    SP_SLOW,
+    SP_FAST,
+    SP_SHAKE
+};
+
+enum emotion
+{
+    EM_DEFAULT,
+    EM_HAPPY,
+    EM_EXCITED,
+    EM_ANGRY,
+    EM_SAD,
+    EM_DISAPPOINTED,
+    EM_SULLEN,
+    EM_SIDE_EYE,
+    EM_EMBARRASSED,
+    EM_LAUGH,
+    EM_ANNOYED,
+    EM_WAT
+};
+
+enum size
+{
+    SIZE_NORMAL,
+    SIZE_SMALL,
+    SIZE_LARGE
+};
+
+struct letter
+{
+    optional<sprite_ptr> sprite;
+    vector_2 ideal_position;
+    vector_2 temp_position;
+    int char_index;
+
+    letter(char ch, vector_2 ideal_position_);
+
+    void update(bool shake, int size);
+};
+
+struct text
+{
+    vector<letter, 20> letters;
+    vector_2 start;
+    int index = 0;
+    int current_x = 0;
+    bool active = false;
+    string<20> reference; // Changed from const reference to owned string
+    int size = SIZE_NORMAL;
+
+    text(const string<20> &value, vector_2 start_ = {0, 0});
+
+    void init(const string<20> &value);
+    void update(); // Added missing update declaration
+    void set_position(int x, int y);
+    bool is_ended();
+};
+
+struct dialogue_line
+{
+    int id = 0;
+    const sprite_item *portrait = nullptr;
+    int emotion = EM_DEFAULT;
+    int action = ACT_SPEAK;
+    string<20> raw_text[3]; // Removed const to allow assignment
+
+    int index;
+    const animation *spr_animation;
+    vector_2 navigate = {0, 0};
+
+    int speed = SP_DEFAULT;
+    int branches[3] = {0, 0, 0};
+    bool shake = false;
+    int size = SIZE_NORMAL;
+
+    static dialogue_line end_marker()
+    {
+        dialogue_line line;
+        line.portrait = nullptr;
+        line.action = ACT_END;
+        return line;
+    }
+
+    // Default constructor
+    dialogue_line() = default;
+
+    // Constructor for simple dialogue
+    dialogue_line(
+        const sprite_item *char_,
+        int emotion_ = EM_DEFAULT,
+        int action_ = ACT_SPEAK,
+        const string<20> &line1 = "",
+        const string<20> &line2 = "",
+        const string<20> &line3 = "",
+        bool shake_ = false,
+        int index_ = 0,
+        vector_2 navigate_ = {0, 0},
+        int size_ = SIZE_NORMAL) : portrait(char_),
+                                   emotion(emotion_),
+                                   action(action_),
+                                   index(index_),
+                                   spr_animation(nullptr),
+                                   navigate(navigate_),
+                                   speed(SP_DEFAULT),
+                                   branches{0, 0, 0},
+                                   shake(shake_),
+                                   size(size_)
+    {
+        raw_text[0] = line1;
+        raw_text[1] = line2;
+        raw_text[2] = line3;
+    }
+
+    // Full constructor with all parameters
+    dialogue_line(
+        const sprite_item *char_,
+        int emotion_,
+        int action_,
+        const string<20> &line1,
+        const string<20> &line2,
+        const string<20> &line3,
+        int index_,
+        const animation *spr_animation_,
+        vector_2 navigate_,
+        int speed_,
+        int branch1,
+        int branch2,
+        int branch3,
+        int id_) : id(id_),
+                   portrait(char_),
+                   emotion(emotion_),
+                   action(action_),
+                   index(index_),
+                   spr_animation(spr_animation_),
+                   navigate(navigate_),
+                   speed(speed_),
+                   branches{branch1, branch2, branch3}
+    {
+        raw_text[0] = line1;
+        raw_text[1] = line2;
+        raw_text[2] = line3;
+    }
+};
+
+typedef const dialogue_line conversation[64];
+
+struct dialogue_box
+{
+    text lines[3] = {
+        {"", {-42, 32}},
+        {"", {-42, 32 + 16}},
+        {"", {-42, 32 + 16 + 16}}};
+    conversation *active_conversation;
+    int index;
+    optional<sprite_ptr> portrait;
+    optional<sprite_ptr> pointer;
+    optional<regular_bg_ptr> box;
+    int size;
+    int ticker = 0;
+
+    dialogue_box();
+
+    ~dialogue_box()
+    {
+        portrait.reset();
+        pointer.reset();
+        box.reset();
+    }
+
+    void load(conversation *new_conversation);
+    void init(character_manager * ch_man);
+    void update();
+    bool is_ended();
+};
+
+#endif // GE_TEXT_H

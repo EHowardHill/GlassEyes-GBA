@@ -6,7 +6,9 @@
 // Body Sprites
 #include "bn_sprite_items_spr_vista_01.h"
 
+#include "ge_structs.h"
 #include "ge_sprites.h"
+#include "ge_maps.h"
 
 using namespace bn;
 
@@ -63,8 +65,9 @@ v_sprite_ptr::~v_sprite_ptr()
 
 void v_sprite_ptr::move(vector_2 direction)
 {
-    bounds.position.x = bounds.position.x - direction.x;
-    bounds.position.y = bounds.position.y - direction.y;
+    // Now we add the direction instead of subtracting
+    bounds.position.x = bounds.position.x + direction.x;
+    bounds.position.y = bounds.position.y + direction.y;
 }
 
 bound v_sprite_ptr::real_position() const
@@ -108,54 +111,81 @@ void v_sprite_ptr::update()
 
         if (item->sprite_ptr_raw.has_value())
         {
+            // Sprite exists - check if it should be removed or updated
             if (!within_bounds(bounds, screen))
             {
+                // Out of bounds - remove sprites
                 item->sprite_ptr_raw.reset();
                 item->sprite_ptr_bottom.reset();
             }
             else
             {
-                item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y);
+                item->sprite_ptr_raw.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
 
+                // In bounds - update position and tiles
                 if (item->tall)
                 {
+                    item->sprite_ptr_bottom.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
+
+                    // For tall sprites, update both sprites
+                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y - 32);
                     item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame * 2);
 
                     if (item->sprite_ptr_bottom.has_value())
                     {
-                        item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y - 32);
                         item->sprite_ptr_bottom.value().set_position(bounds.position.x, bounds.position.y);
                         item->sprite_ptr_bottom.value().set_tiles(item->sprite_item_ptr->tiles_item(), (item->frame * 2) + 1);
                     }
                 }
                 else
                 {
+                    // Regular sprite - update position and tiles
+                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y);
                     item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame);
                 }
             }
         }
         else if (within_bounds(bounds, screen))
         {
-            if (item->tall)
+            // Sprite doesn't exist but is in bounds - create it
+            if (item->sprite_item_ptr != nullptr) // Safety check
             {
-                // Create top sprite
-                item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y - 32, item->frame * 2);
-                // Create bottom sprite
-                item->sprite_ptr_bottom = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, (item->frame * 2) + 1);
-            }
-            else
-            {
-                item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, item->frame);
+                if (item->tall)
+                {
+                    // Create both sprites for tall characters
+                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y - 32, item->frame * 2);
+                    item->sprite_ptr_bottom = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, (item->frame * 2) + 1);
+                }
+                else
+                {
+                    // Create single sprite for regular characters
+                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, item->frame);
+                }
             }
         }
     }
 }
 
-character::character(int index_, vector_2 start_, bool npc_) : index(index_), start(start_), npc(npc_)
+character::character(int index_, vector_2 start_, bool npc_) : index(index_), npc(npc_)
 {
+    start.x = start_.x * 32;
+    start.y = start_.y * 32;
+
+    // Initialize v_sprite bounds position
+    // v_sprite_ptr::manager.push_back(&v_sprite);
+    v_sprite.bounds.position = start;
+    v_sprite.bounds.width = 32;
+    v_sprite.bounds.height = 32;
+
     update_sprite_item(index_);
     current_animation = &anim_stand;
-};
+
+    if (!npc_ || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
+    {
+        v_sprite_ptr::camera.x = start.x;
+        v_sprite_ptr::camera.y = start.y;
+    }
+}
 
 bool character::is_tall() const
 {
@@ -188,126 +218,233 @@ void character::update_sprite_item(int index_)
     }
     }
 
-    if (v_sprite.sprite_ptr_raw.has_value())
-    {
-        start.x = v_sprite.sprite_ptr_raw.value().x();
-        start.y = v_sprite.sprite_ptr_raw.value().y();
-    }
-
     // Reset sprites
     v_sprite.sprite_ptr_raw.reset();
     v_sprite.sprite_ptr_bottom.reset();
-
-    // Create new sprites based on whether character is tall
-    if (tall)
-    {
-        v_sprite.sprite_ptr_raw = v_sprite.sprite_item_ptr->create_sprite(start.x, start.y - 32, 0);
-        v_sprite.sprite_ptr_bottom = v_sprite.sprite_item_ptr->create_sprite(start.x, start.y, 1);
-    }
-    else
-    {
-        v_sprite.sprite_ptr_raw = v_sprite.sprite_item_ptr->create_sprite(start.x, start.y);
-    }
 }
 
-void character::update()
+void character::update(map_manager *current_map)
 {
-    // Move
+    vector_2 delta = {0, 0};
+
+    // First, let's fix the inverted delta system
+    // Make deltas positive in the direction of movement
     if (!npc)
     {
-        bool moving = false;
+        // Camera boundary code stays the same...
+        if (v_sprite_ptr::camera.x < (screen_width / 2))
+        {
+            v_sprite_ptr::camera.x = (screen_width / 2);
+        }
 
-        if (v_sprite.bounds.position.y > -32 - 16 && v_sprite.bounds.position.y < 32 + 16)
+        if (v_sprite_ptr::camera.y < (screen_height / 2))
+        {
+            v_sprite_ptr::camera.y = (screen_height / 2);
+        }
+
+        if (v_sprite.bounds.position.y > (screen_height / 2) &&
+            v_sprite.bounds.position.y < (current_map->current_map->size.y * 32) - (screen_height / 2))
         {
             v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
         }
 
-        if (v_sprite.bounds.position.x > 0 && v_sprite.bounds.position.x < 0)
+        if (v_sprite.bounds.position.x > (screen_width / 2) &&
+            v_sprite.bounds.position.x < (current_map->current_map->size.x * 32) - (screen_width / 2))
         {
             v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
         }
 
+        // Fixed delta directions - positive = right/down
         if (bn::keypad::up_held())
         {
-            v_sprite.move({0, 1});
-            moving = true;
-            face = DIR_UP;
+            delta.y = -1;
         }
 
         if (bn::keypad::down_held())
         {
-            v_sprite.move({0, -1});
-            moving = true;
-            face = DIR_DOWN;
+            delta.y = 1;
         }
 
         if (bn::keypad::left_held())
         {
-            v_sprite.move({1, 0});
-            moving = true;
-            face = DIR_LEFT;
+            delta.x = -1;
         }
 
         if (bn::keypad::right_held())
         {
-            v_sprite.move({-1, 0});
-            moving = true;
-            face = DIR_RIGHT;
-        }
-
-        // Set animation based on movement
-        if (moving && current_animation != &anim_walk)
-        {
-            current_animation = &anim_walk;
-        }
-        else if (!moving && current_animation != &anim_stand)
-        {
-            current_animation = &anim_stand;
+            delta.x = 1;
         }
     }
 
-    // Draw
-    if (v_sprite.sprite_ptr_raw.has_value() && v_sprite.sprite_ptr_bottom.has_value())
+    // Fixed move_to logic with proper directions
+    if (move_to.x != 0 && move_to.y != 0)
+    {
+        int current_tile_x = v_sprite.bounds.position.x.integer() / 32;
+        int current_tile_y = v_sprite.bounds.position.y.integer() / 32;
+
+        if (move_to.x > current_tile_x)
+        {
+            delta.x = 1;
+        }
+        else if (move_to.x < current_tile_x)
+        {
+            delta.x = -1;
+        }
+
+        if (move_to.y > current_tile_y)
+        {
+            delta.y = 1;
+        }
+        else if (move_to.y < current_tile_y)
+        {
+            delta.y = -1;
+        }
+    }
+
+    // Fixed facing direction
+    if (delta.y > 0)
+    {
+        face = DIR_DOWN;
+    }
+    else if (delta.y < 0)
+    {
+        face = DIR_UP;
+    }
+
+    if (delta.x > 0)
+    {
+        face = DIR_RIGHT;
+    }
+    else if (delta.x < 0)
+    {
+        face = DIR_LEFT;
+    }
+
+    // Pixel-perfect collision detection
+    // Check future position for each axis separately
+    bound future_bounds_x = v_sprite.bounds;
+    future_bounds_x.position.x = future_bounds_x.position.x + delta.x;
+
+    bound future_bounds_y = v_sprite.bounds;
+    future_bounds_y.position.y = future_bounds_y.position.y + delta.y;
+
+    // Check X movement
+    if (current_map->check_box_collision(future_bounds_x))
+    {
+        delta.x = 0;
+    }
+
+    // Check Y movement
+    if (current_map->check_box_collision(future_bounds_y))
+    {
+        delta.y = 0;
+    }
+
+    // For diagonal movement, also check the combined movement
+    if (delta.x != 0 && delta.y != 0)
+    {
+        bound future_bounds_both = v_sprite.bounds;
+        future_bounds_both.position.x = future_bounds_both.position.x + delta.x;
+        future_bounds_both.position.y = future_bounds_both.position.y + delta.y;
+
+        if (current_map->check_box_collision(future_bounds_both))
+        {
+            // Try to slide along walls
+            // If diagonal fails but individual axes might work, keep the working axis
+            if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x))
+            {
+                delta.y = 0; // Can move X but not Y
+            }
+            else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y))
+            {
+                delta.x = 0; // Can move Y but not X
+            }
+            else
+            {
+                // Can't move in either direction
+                delta.x = 0;
+                delta.y = 0;
+            }
+        }
+    }
+
+    // Apply movement with fixed direction
+    v_sprite.bounds.position.x = v_sprite.bounds.position.x + delta.x;
+    v_sprite.bounds.position.y = v_sprite.bounds.position.y + delta.y;
+
+    bool moving = (delta.x != 0 || delta.y != 0);
+
+    // Animation and sprite update code remains the same...
+    if (moving && current_animation != &anim_walk)
+    {
+        current_animation = &anim_walk;
+    }
+    else if (!moving && current_animation != &anim_stand)
+    {
+        current_animation = &anim_stand;
+    }
+
+    // Rest of the update code...
+    if (v_sprite.sprite_ptr_raw.has_value())
     {
         if (ticker % 6 == 0)
         {
             frame = (frame + 1) % 4;
         }
 
-        // Update frame from animation
         int new_frame = current_animation->frames[frame];
-        v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(false);
+
         v_sprite.sprite_ptr_raw.value().set_horizontal_flip(false);
+        if (v_sprite.sprite_ptr_bottom.has_value())
+        {
+            v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(false);
+        }
 
         switch (face)
         {
         case DIR_UP:
-        {
-            v_sprite.set_frame(new_frame);
+            v_sprite.set_frame(new_frame + 6);
             break;
-        }
         case DIR_DOWN:
-        {
             v_sprite.set_frame(new_frame);
             break;
-        }
         case DIR_LEFT:
-        {
             v_sprite.set_frame(new_frame + 3);
-            v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(true);
             v_sprite.sprite_ptr_raw.value().set_horizontal_flip(true);
+            if (v_sprite.sprite_ptr_bottom.has_value())
+            {
+                v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(true);
+            }
             break;
-        }
         case DIR_RIGHT:
-        {
             v_sprite.set_frame(new_frame + 3);
-        }
-        default:
-        {
             break;
-        }
         }
     }
 
     ticker++;
+}
+
+static character *find(list<character, 64> &characters, int index)
+{
+    for (character &ch : characters)
+    {
+        if (ch.index == index)
+        {
+            return &ch;
+        }
+    }
+
+    // Return first character if list isn't empty
+    if (!characters.empty())
+    {
+        return &(*characters.begin());
+    }
+
+    return nullptr; // List is empty
+}
+
+void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
+{
+    characters->emplace_back(character_id, location, npc);
 }

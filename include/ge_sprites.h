@@ -11,8 +11,10 @@
 #include "bn_optional.h"
 #include "bn_vector.h"
 #include "bn_keypad.h"
+#include "bn_list.h"
 
 #include "ge_structs.h"
+#include "ge_maps.h"
 
 using namespace bn;
 
@@ -81,9 +83,12 @@ struct character
 
     character(int index_, vector_2 start_, bool npc_);
 
-    void update();
+    void update(map_manager * current_map);
     void update_sprite_item(int index_);
     bool is_tall() const;  // Helper to determine if character is tall
+
+    static void add(list<character, 64> * characters, int character_id, vector_2 location, bool npc);
+    static character * find(list<character, 64>& characters, int index);
 };
 
 #endif // GE_SPRITES_H

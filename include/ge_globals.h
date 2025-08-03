@@ -5,10 +5,13 @@
 
 #include "bn_random.h"
 
+#include "ge_maps.h"
+
 class global_data
 {
 public:
 	bn::random bn_random;
+	map_manager *current_map_manager;
 
 	global_data()
 	{

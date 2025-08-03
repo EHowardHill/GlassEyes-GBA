@@ -5,6 +5,8 @@
 #include "bn_sound_items_info.h"
 #include "bn_random.h"
 
+#include "ge_sprites.h"
+#include "ge_character_manager.h"
 #include "ge_globals.h"
 #include "ge_text.h"
 
@@ -107,7 +109,7 @@ void text::update()
     char ch = reference[index];
 
     int current_size = SIZE_NORMAL;
-    int spacing = 8; // Default character spacing
+    int spacing = 8; // Default portrait spacing
 
     // Adjust spacing based on size
     if (current_size == SIZE_LARGE)
@@ -156,7 +158,7 @@ void text::set_position(int x, int y)
 
 dialogue_box::dialogue_box()
 {
-    character = sprite_items::db_ch_jeremy.create_sprite(0, 0);
+    portrait = sprite_items::db_ch_jeremy.create_sprite(0, 0);
     box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
     pointer = sprite_items::spr_font_01.create_sprite(-52, 32, 73);
     ticker = 0;
@@ -181,7 +183,7 @@ void dialogue_box::load(conversation *new_conversation)
     }
 }
 
-void dialogue_box::init()
+void dialogue_box::init(character_manager *ch_man)
 {
     if (!active_conversation || is_ended())
     {
@@ -190,13 +192,24 @@ void dialogue_box::init()
 
     const dialogue_line &line = (*active_conversation)[index];
 
-    if (line.character != nullptr)
+    // Check if portrait is nullptr before trying to create sprite
+    if (line.portrait != nullptr)
     {
-        character = line.character->create_sprite(-84, 56, line.emotion);
+        portrait = line.portrait->create_sprite(-84, 56, line.emotion);
     }
     else
     {
-        character.reset();
+        // Reset the portrait when nullptr is provided
+        portrait.reset();
+    }
+
+    if (line.navigate.x != 0 && line.navigate.y != 0)
+    {
+        auto ch = ch_man->find_by_index(line.index);
+        if (ch) // Add null check here too
+        {
+            ch->move_to = line.navigate;
+        }
     }
 
     for (int t = 0; t < 3; t++)
@@ -206,10 +219,21 @@ void dialogue_box::init()
     }
 }
 
+// In ge_text.cpp - Fixed dialogue_box::update
 void dialogue_box::update()
 {
+    if (!active_conversation || index >= size)
+    {
+        return;
+    }
+
     auto l = (*active_conversation)[index];
-    character.value().set_tiles(l.character->tiles_item(), (l.emotion * 2));
+
+    // Only update portrait if it exists and has a valid portrait pointer
+    if (portrait.has_value() && l.portrait != nullptr)
+    {
+        portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2));
+    }
 
     for (int t = 0; t < 3; t++)
     {
@@ -228,9 +252,10 @@ void dialogue_box::update()
 
     if (l.speed == SP_DEFAULT)
     {
-        if (ticker % 12 < 6)
+        // Only animate portrait if it exists
+        if (portrait.has_value() && l.portrait != nullptr && ticker % 12 < 6)
         {
-            character.value().set_tiles(l.character->tiles_item(), (l.emotion * 2) + 1);
+            portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2) + 1);
         }
 
         if (ticker % 3 == 0)
