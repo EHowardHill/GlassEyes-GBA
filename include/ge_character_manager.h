@@ -5,17 +5,18 @@
 
 #include "bn_list.h"
 #include "bn_unique_ptr.h"
+#include "bn_optional.h"
 #include "ge_sprites.h"
+#include "ge_text.h"
 
 using namespace bn;
 
-class character_manager
+struct character_manager
 {
-private:
     list<unique_ptr<character>, 64> characters;
     character *player_ptr;
+    optional<dialogue_box> db;
 
-public:
     character_manager();
 
     character *add_character(int index, vector_2 position, bool is_npc = true);

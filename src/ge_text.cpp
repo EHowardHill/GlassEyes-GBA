@@ -6,9 +6,9 @@
 #include "bn_random.h"
 
 #include "ge_sprites.h"
-#include "ge_character_manager.h"
 #include "ge_globals.h"
 #include "ge_text.h"
+#include "ge_character_manager.h"
 
 // Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
@@ -84,14 +84,25 @@ void letter::update(bool shake, int size)
     }
 }
 
-text::text(const string<20> &value, vector_2 start_) : start(start_)
+text::text(const char *value, vector_2 start_) : start(start_)
 {
-    init(value);
+    if (value)
+        init(value);
 }
 
-void text::init(const string<20> &value)
+void text::init(const char *value)
 {
-    reference = value;
+    if (!value)
+    {
+        reference.clear();
+        letters.clear();
+        current_x = 0;
+        index = 0;
+        return;
+    }
+
+    // Convert C-string to bn::string
+    reference = string<20>(value);
     letters.clear();
     current_x = 0;
     index = 0;
@@ -108,7 +119,7 @@ void text::update()
 
     char ch = reference[index];
 
-    int current_size = SIZE_NORMAL;
+    int current_size = SIZE_DEFAULT;
     int spacing = 8; // Default portrait spacing
 
     // Adjust spacing based on size
@@ -165,6 +176,10 @@ dialogue_box::dialogue_box()
     active_conversation = nullptr;
     index = 0;
     size = 0;
+
+    lines[0].start = {-40, 32};
+    lines[1].start = {-40, 48};
+    lines[2].start = {-40, 64};
 }
 
 void dialogue_box::load(conversation *new_conversation)
@@ -190,38 +205,48 @@ void dialogue_box::init(character_manager *ch_man)
         return;
     }
 
-    const dialogue_line &line = (*active_conversation)[index];
+    bool skip = false;
 
-    // Check if portrait is nullptr before trying to create sprite
-    if (line.portrait != nullptr)
+    do
     {
-        portrait = line.portrait->create_sprite(-84, 56, line.emotion);
-    }
-    else
-    {
-        // Reset the portrait when nullptr is provided
-        portrait.reset();
-    }
+        skip = false;
+        const dialogue_line &line = (*active_conversation)[index];
 
-    if (line.navigate.x != 0 && line.navigate.y != 0)
-    {
-        auto ch = ch_man->find_by_index(line.index);
-        if (ch) // Add null check here too
+        if (line.portrait != nullptr)
         {
-            ch->move_to = line.navigate;
+            portrait = line.portrait->create_sprite(-84, 56, line.emotion);
         }
-    }
+        else
+        {
+            portrait.reset();
+        }
 
-    for (int t = 0; t < 3; t++)
-    {
-        lines[t].init(line.raw_text[t]);
-        lines[t].size = line.size;
-    }
+        if (line.navigate.x != 0 && line.navigate.y != 0)
+        {
+            auto ch = ch_man->find_by_index(line.index);
+            if (ch)
+            {
+                ch->move_to = line.navigate;
+                ch->idle_animation = line.anim;
+            }
+        }
+
+        for (int t = 0; t < 3; t++)
+        {
+            lines[t].init(line.raw_text[t]);
+            lines[t].size = line.size;
+        }
+
+        if (line.emotion == EM_SKIP) {
+            skip = true;
+            index++;
+        }
+    } while (skip);
 }
 
-// In ge_text.cpp - Fixed dialogue_box::update
 void dialogue_box::update()
 {
+
     if (!active_conversation || index >= size)
     {
         return;
@@ -250,23 +275,21 @@ void dialogue_box::update()
 
     ticker++;
 
-    if (l.speed == SP_DEFAULT)
-    {
-        // Only animate portrait if it exists
-        if (portrait.has_value() && l.portrait != nullptr && ticker % 12 < 6)
-        {
-            portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2) + 1);
-        }
+    // Speed controls go around here:
 
-        if (ticker % 3 == 0)
+    if (portrait.has_value() && l.portrait != nullptr && ticker % 12 < 6)
+    {
+        portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2) + 1);
+    }
+
+    if (ticker % 3 == 0)
+    {
+        for (int t = 0; t < 3; t++)
         {
-            for (int t = 0; t < 3; t++)
+            if (!lines[t].is_ended())
             {
-                if (!lines[t].is_ended())
-                {
-                    lines[t].update();
-                    return;
-                }
+                lines[t].update();
+                return;
             }
         }
     }

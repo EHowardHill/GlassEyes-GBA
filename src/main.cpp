@@ -19,6 +19,7 @@
 #include "ge_text.h"
 #include "ge_maps.h"
 #include "ge_character_manager.h"
+#include "ge_actions.h"
 
 #include "ge_map_data.cpp"
 
@@ -31,16 +32,6 @@ int main()
 
     map_manager current_map(&bn::regular_bg_items::floor_wood01, &map_room01);
     character_manager char_mgr;
-
-    conversation test_convo = {
-        {nullptr, EM_DEFAULT, ACT_SPEAK, "Most days were the", "same for Vista,"},
-        dialogue_line::end_marker()};
-
-    optional<dialogue_box> db;
-    {
-        dialogue_box db_test;
-        db = db_test;
-    }
 
     for (int y = 0; y < current_map.current_map->size.y.integer(); y++)
     {
@@ -55,31 +46,18 @@ int main()
         }
     }
 
-    db.value().load(&test_convo);
-    db.value().init(&char_mgr);
-
     while (true)
     {
-        if (db.has_value())
-        {
-            db.value().update();
-
-            if (keypad::a_pressed())
-            {
-                db.value().index++;
-                db.value().init(&char_mgr);
-            }
-
-            if (db.value().is_ended())
-            {
-                db.reset();
-            }
-        }
-
         // Update all characters
+        action_listener(&current_map, &char_mgr);
         char_mgr.update(&current_map);
         current_map.update();
-        v_sprite_ptr::update();
+
+        bool is_ended = true;
+        if (char_mgr.db.has_value())
+            is_ended = char_mgr.db.value().is_ended();
+
+        v_sprite_ptr::update(is_ended);
         core::update();
     }
 }

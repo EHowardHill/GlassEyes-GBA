@@ -10,13 +10,15 @@
 
 #include "ge_structs.h"
 #include "ge_sprites.h"
-#include "ge_character_manager.h"
+
+// Forward declaration to avoid circular dependency
+struct character_manager;
 
 using namespace bn;
 
 enum actions
 {
-    ACT_SPEAK,
+    ACT_DEFAULT,
     ACT_EMOTE,
     ACT_TURN,
     ACT_WALK,
@@ -47,12 +49,13 @@ enum emotion
     EM_EMBARRASSED,
     EM_LAUGH,
     EM_ANNOYED,
-    EM_WAT
+    EM_WAT,
+    EM_SKIP,
 };
 
 enum size
 {
-    SIZE_NORMAL,
+    SIZE_DEFAULT,
     SIZE_SMALL,
     SIZE_LARGE
 };
@@ -76,13 +79,15 @@ struct text
     int index = 0;
     int current_x = 0;
     bool active = false;
-    string<20> reference; // Changed from const reference to owned string
-    int size = SIZE_NORMAL;
+    string<20> reference;
+    int size = SIZE_DEFAULT;
 
+    text(const char *value = nullptr, vector_2 start_ = {0, 0});
     text(const string<20> &value, vector_2 start_ = {0, 0});
 
+    void init(const char *value);
     void init(const string<20> &value);
-    void update(); // Added missing update declaration
+    void update();
     void set_position(int x, int y);
     bool is_ended();
 };
@@ -92,114 +97,62 @@ struct dialogue_line
     int id = 0;
     const sprite_item *portrait = nullptr;
     int emotion = EM_DEFAULT;
-    int action = ACT_SPEAK;
-    string<20> raw_text[3]; // Removed const to allow assignment
+    int action = ACT_DEFAULT;
+    const char *raw_text[3] = {nullptr, nullptr, nullptr};
 
-    int index;
-    const animation *spr_animation;
-    vector_2 navigate = {0, 0};
-
-    int speed = SP_DEFAULT;
     int branches[3] = {0, 0, 0};
     bool shake = false;
-    int size = SIZE_NORMAL;
+    int size = SIZE_DEFAULT;
+    int speed = SP_DEFAULT;
 
-    static dialogue_line end_marker()
-    {
-        dialogue_line line;
-        line.portrait = nullptr;
-        line.action = ACT_END;
-        return line;
-    }
+    int index = 0;
+    const animation *anim = nullptr;
+    vector_2 navigate = {0, 0};
 
-    // Default constructor
-    dialogue_line() = default;
-
-    // Constructor for simple dialogue
-    dialogue_line(
-        const sprite_item *char_,
+    constexpr dialogue_line(
+        int id_ = 0,
+        const sprite_item *char_ = nullptr,
         int emotion_ = EM_DEFAULT,
-        int action_ = ACT_SPEAK,
-        const string<20> &line1 = "",
-        const string<20> &line2 = "",
-        const string<20> &line3 = "",
+        int action_ = ACT_DEFAULT,
+        const char *line1 = nullptr,
+        const char *line2 = nullptr,
+        const char *line3 = nullptr,
         bool shake_ = false,
+        int size_ = SIZE_DEFAULT,
+        int speed_ = SP_DEFAULT,
         int index_ = 0,
-        vector_2 navigate_ = {0, 0},
-        int size_ = SIZE_NORMAL) : portrait(char_),
-                                   emotion(emotion_),
-                                   action(action_),
-                                   index(index_),
-                                   spr_animation(nullptr),
-                                   navigate(navigate_),
-                                   speed(SP_DEFAULT),
-                                   branches{0, 0, 0},
-                                   shake(shake_),
-                                   size(size_)
+        const animation *anim_ = nullptr,
+        vector_2 navigate_ = {0, 0}) : id(id_),
+                                       portrait(char_),
+                                       emotion(emotion_),
+                                       action(action_),
+                                       raw_text{line1, line2, line3},
+                                       shake(shake_),
+                                       size(size_),
+                                       speed(speed_),
+                                       index(index_),
+                                       anim(anim_),
+                                       navigate(navigate_)
     {
-        raw_text[0] = line1;
-        raw_text[1] = line2;
-        raw_text[2] = line3;
-    }
-
-    // Full constructor with all parameters
-    dialogue_line(
-        const sprite_item *char_,
-        int emotion_,
-        int action_,
-        const string<20> &line1,
-        const string<20> &line2,
-        const string<20> &line3,
-        int index_,
-        const animation *spr_animation_,
-        vector_2 navigate_,
-        int speed_,
-        int branch1,
-        int branch2,
-        int branch3,
-        int id_) : id(id_),
-                   portrait(char_),
-                   emotion(emotion_),
-                   action(action_),
-                   index(index_),
-                   spr_animation(spr_animation_),
-                   navigate(navigate_),
-                   speed(speed_),
-                   branches{branch1, branch2, branch3}
-    {
-        raw_text[0] = line1;
-        raw_text[1] = line2;
-        raw_text[2] = line3;
     }
 };
 
-typedef const dialogue_line conversation[64];
+typedef const dialogue_line conversation[128];
 
 struct dialogue_box
 {
-    text lines[3] = {
-        {"", {-42, 32}},
-        {"", {-42, 32 + 16}},
-        {"", {-42, 32 + 16 + 16}}};
+    optional<sprite_ptr> portrait;
+    optional<regular_bg_ptr> box;
+    optional<sprite_ptr> pointer;
+    int ticker;
     conversation *active_conversation;
     int index;
-    optional<sprite_ptr> portrait;
-    optional<sprite_ptr> pointer;
-    optional<regular_bg_ptr> box;
     int size;
-    int ticker = 0;
+    text lines[3];
 
     dialogue_box();
-
-    ~dialogue_box()
-    {
-        portrait.reset();
-        pointer.reset();
-        box.reset();
-    }
-
     void load(conversation *new_conversation);
-    void init(character_manager * ch_man);
+    void init(character_manager *ch_man);
     void update();
     bool is_ended();
 };

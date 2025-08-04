@@ -146,7 +146,6 @@ def create_tiled_bmp(png_path, output_path, grid_size, tile_indices, sprite_size
 
     # Save as BMP
     output_image.save(output_path, "BMP")
-    print(f"Tiled image saved to: {output_path}")
 
 
 map_dir = os.path.join("bgs", "maps")
@@ -202,7 +201,7 @@ for map in maps:
                 tile_basis = [0 for _ in list2]
             tile_basis = [b if b != 0 else a for a, b in zip(tile_basis, list2)]
 
-        elif layer_name == "characters":
+        elif layer_name in ["characters", "actions"]:
             map_data[map_name][layer_name] = ','.join([str(int(x) - lbl_blue if int(x) != 0 else 0) for x in data_element.replace("\n", "").split(",")])
 
     create_tiled_bmp(

@@ -7,11 +7,23 @@
 
 #include "ge_maps.h"
 
-class global_data
+enum action_list
 {
-public:
+	ACT_NONE,
+	CONVO_SCENE_1_INIT,
+	ACTIONS_SIZE
+};
+
+enum response_list
+{
+	NONE,
+	RESPONSES_SIZE
+};
+
+struct global_data
+{
 	bn::random bn_random;
-	map_manager *current_map_manager;
+	int action_iterations[ACTIONS_SIZE] = {0};
 
 	global_data()
 	{

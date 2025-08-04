@@ -24,15 +24,15 @@ struct map
   vector_2 size;
   vector_2 raw_size;
   array<int, 2048> collisions;
-  array<array<int, 2048>, 2048> actions; // 2D array properly declared
+  array<int, 2048> actions;
   array<int, 2048> characters;
-  const regular_bg_item *bg_item_ptr; // Should be const for constexpr
+  const regular_bg_item *bg_item_ptr;
 
   // Constexpr constructor for compile-time initialization
   constexpr map(vector_2 size_,
                 vector_2 raw_size_,
                 const array<int, 2048> &collisions_,
-                const array<array<int, 2048>, 2048> &actions_,
+                const array<int, 2048> &actions_,
                 const array<int, 2048> &characters_,
                 const regular_bg_item *bg_item_ptr_)
       : size(size_),
@@ -54,7 +54,7 @@ struct map_manager
   void update();
   int collision(vector_2 location);
   bool check_box_collision(bound box);
-  int action(vector_2 location);
+  int action(vector_2 location);  // Added this declaration
 };
 
 #endif

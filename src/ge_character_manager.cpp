@@ -1,8 +1,10 @@
-
+#include "bn_log.h"
 #include "bn_list.h"
 #include "bn_unique_ptr.h"
+#include "bn_optional.h"
 
 #include "ge_sprites.h"
+#include "ge_text.h"
 #include "ge_character_manager.h"
 #include "ge_maps.h"
 
@@ -93,11 +95,32 @@ character *character_manager::find_by_index(int index)
 
 void character_manager::update(map_manager *current_map)
 {
+    bool db_inactive = true;
+
+    // Handle dialogue box
+    if (db.has_value())
+    {
+        db_inactive = db.value().is_ended();
+        db.value().update();
+
+        if (keypad::a_pressed())
+        {
+            db.value().index++;
+            db.value().init(this);
+        }
+
+        if (db.value().is_ended())
+        {
+            db.reset();
+        }
+    }
+
+    // Handle characters
     for (auto &ch : characters)
     {
         if (ch)
         {
-            ch->update(current_map);
+            ch->update(current_map, db_inactive);
         }
     }
 }

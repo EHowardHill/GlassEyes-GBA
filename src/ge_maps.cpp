@@ -44,6 +44,23 @@ int map_manager::collision(vector_2 location)
     return current_map->collisions[tile_index];
 }
 
+int map_manager::action(vector_2 location)
+{
+    // Get the tile coordinates
+    int tile_x = location.x.integer() / 32;
+    int tile_y = location.y.integer() / 32;
+
+    // Clamp to map bounds
+    if (tile_x < 0 || tile_x >= current_map->size.x.integer() ||
+        tile_y < 0 || tile_y >= current_map->size.y.integer())
+    {
+        return 0; // Out of bounds has no action
+    }
+
+    int tile_index = tile_x + (tile_y * current_map->size.x.integer());
+    return current_map->actions[tile_index];
+}
+
 bool map_manager::check_box_collision(bound box)
 {
     // Check all four corners of the bounding box

@@ -23,10 +23,9 @@ bool within_bounds(bound me, bound you);
 struct animation
 {
     array<int, 64> frames = {0};
+    int size = 0;
     int speed = 1;
     bool loop = true;
-
-    animation(array<int, 64> frames_, int speed_, bool loop_);
 };
 
 struct v_sprite_ptr
@@ -36,10 +35,10 @@ struct v_sprite_ptr
 
     const sprite_item *sprite_item_ptr;
     optional<sprite_ptr> sprite_ptr_raw;
-    optional<sprite_ptr> sprite_ptr_bottom;  // For tall sprites
+    optional<sprite_ptr> sprite_ptr_bottom; // For tall sprites
     bound bounds;
     int frame;
-    bool tall;  // Whether this sprite is tall (two blocks)
+    bool tall; // Whether this sprite is tall (two blocks)
 
     v_sprite_ptr();
     v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position = {0, 0}, int width = 32, int height = 32, int frame_ = 0, bool tall_ = false);
@@ -48,7 +47,7 @@ struct v_sprite_ptr
     void move(vector_2 direction);
     bound real_position() const;
     void set_frame(int frame_);
-    static void update();
+    static void update(bool character_box_ended);
 };
 
 enum character_list
@@ -57,10 +56,13 @@ enum character_list
 };
 
 // Define actual animation objects instead of macros
-const animation anim_walk({{0, 1, 0, 2}}, 1, true);
-const animation anim_stand({{0}}, 0, false);
+const animation anim_walk = {{0, 1, 0, 2}, 4, 1, true};
+const animation anim_stand = {{0}, 1, 0, false};
 
-enum facing {
+const animation vista_reminisce = {{9}, 1, 0, true};
+
+enum facing
+{
     DIR_UP,
     DIR_DOWN,
     DIR_LEFT,
@@ -74,6 +76,7 @@ struct character
 
     v_sprite_ptr v_sprite;
     const animation *current_animation;
+    const animation *idle_animation;
     int ticker = 0;
     int frame = 0;
     int face = DIR_DOWN;
@@ -83,12 +86,12 @@ struct character
 
     character(int index_, vector_2 start_, bool npc_);
 
-    void update(map_manager * current_map);
+    void update(map_manager *current_map, bool character_box_ended);
     void update_sprite_item(int index_);
-    bool is_tall() const;  // Helper to determine if character is tall
+    bool is_tall() const; // Helper to determine if character is tall
 
-    static void add(list<character, 64> * characters, int character_id, vector_2 location, bool npc);
-    static character * find(list<character, 64>& characters, int index);
+    static void add(list<character, 64> *characters, int character_id, vector_2 location, bool npc);
+    static character *find(list<character, 64> &characters, int index);
 };
 
 #endif // GE_SPRITES_H

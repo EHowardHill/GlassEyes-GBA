@@ -28,10 +28,6 @@ bool within_bounds(bound me, bound you)
     return (me_x > you_x - width && me_x < you_x + width) && (me_y > you_y - height && me_y < you_y + height);
 }
 
-animation::animation(array<int, 64> frames_, int speed_, bool loop_) : frames(frames_), speed(speed_), loop(loop_) {
-
-                                                                       };
-
 v_sprite_ptr::v_sprite_ptr()
     : sprite_item_ptr(nullptr), frame(0), tall(false)
 {
@@ -103,16 +99,22 @@ void v_sprite_ptr::set_frame(int frame_)
     }
 }
 
-void v_sprite_ptr::update()
+void v_sprite_ptr::update(bool dialogue_box_ended)
 {
     for (auto *item : manager)
     {
         bound bounds = item->real_position();
+        bound acceptable = screen;
+
+        if (!dialogue_box_ended)
+        {
+            acceptable.position.y = 0 - (screen_height / 2) + 12;
+        }
 
         if (item->sprite_ptr_raw.has_value())
         {
             // Sprite exists - check if it should be removed or updated
-            if (!within_bounds(bounds, screen))
+            if (!within_bounds(bounds, acceptable))
             {
                 // Out of bounds - remove sprites
                 item->sprite_ptr_raw.reset();
@@ -145,7 +147,7 @@ void v_sprite_ptr::update()
                 }
             }
         }
-        else if (within_bounds(bounds, screen))
+        else if (within_bounds(bounds, acceptable))
         {
             // Sprite doesn't exist but is in bounds - create it
             if (item->sprite_item_ptr != nullptr) // Safety check
@@ -168,8 +170,8 @@ void v_sprite_ptr::update()
 
 character::character(int index_, vector_2 start_, bool npc_) : index(index_), npc(npc_)
 {
-    start.x = start_.x * 32;
-    start.y = start_.y * 32;
+    start.x = (start_.x * 32) + 16;
+    start.y = (start_.y * 32) + 16;
 
     // Initialize v_sprite bounds position
     // v_sprite_ptr::manager.push_back(&v_sprite);
@@ -223,79 +225,82 @@ void character::update_sprite_item(int index_)
     v_sprite.sprite_ptr_bottom.reset();
 }
 
-void character::update(map_manager *current_map)
+void character::update(map_manager *current_map, bool db_inactive)
 {
     vector_2 delta = {0, 0};
 
-    // First, let's fix the inverted delta system
-    // Make deltas positive in the direction of movement
     if (!npc)
     {
-        // Camera boundary code stays the same...
-        if (v_sprite_ptr::camera.x < (screen_width / 2))
+        vector_2 bound_1 = {
+            (screen_width / 2),
+            (screen_height / 2)};
+
+        vector_2 bound_2 = {
+            (current_map->current_map->size.x * 32) - bound_1.x,
+            (current_map->current_map->size.y * 32) - bound_1.y};
+
+        if (!db_inactive)
         {
-            v_sprite_ptr::camera.x = (screen_width / 2);
+            bound_2.y = bound_2.y + 96;
         }
 
-        if (v_sprite_ptr::camera.y < (screen_height / 2))
-        {
-            v_sprite_ptr::camera.y = (screen_height / 2);
-        }
+        v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
+        v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
 
-        if (v_sprite.bounds.position.y > (screen_height / 2) &&
-            v_sprite.bounds.position.y < (current_map->current_map->size.y * 32) - (screen_height / 2))
-        {
-            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
-        }
+        if (v_sprite_ptr::camera.x < bound_1.x)
+            v_sprite_ptr::camera.x = bound_1.x;
+        if (v_sprite_ptr::camera.y < bound_1.y)
+            v_sprite_ptr::camera.y = bound_1.y;
+        if (v_sprite_ptr::camera.x > bound_2.x)
+            v_sprite_ptr::camera.x = bound_2.x;
+        if (v_sprite_ptr::camera.y > bound_2.y)
+            v_sprite_ptr::camera.y = bound_2.y;
 
-        if (v_sprite.bounds.position.x > (screen_width / 2) &&
-            v_sprite.bounds.position.x < (current_map->current_map->size.x * 32) - (screen_width / 2))
+        if (db_inactive)
         {
-            v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
-        }
+            if (bn::keypad::up_held())
+            {
+                delta.y = -1;
+            }
 
-        // Fixed delta directions - positive = right/down
-        if (bn::keypad::up_held())
-        {
-            delta.y = -1;
-        }
+            if (bn::keypad::down_held())
+            {
+                delta.y = 1;
+            }
 
-        if (bn::keypad::down_held())
-        {
-            delta.y = 1;
-        }
+            if (bn::keypad::left_held())
+            {
+                delta.x = -1;
+            }
 
-        if (bn::keypad::left_held())
-        {
-            delta.x = -1;
-        }
-
-        if (bn::keypad::right_held())
-        {
-            delta.x = 1;
+            if (bn::keypad::right_held())
+            {
+                delta.x = 1;
+            }
         }
     }
 
     // Fixed move_to logic with proper directions
     if (move_to.x != 0 && move_to.y != 0)
     {
-        int current_tile_x = v_sprite.bounds.position.x.integer() / 32;
-        int current_tile_y = v_sprite.bounds.position.y.integer() / 32;
+        vector_2 move_to_exp = {
+            (move_to.x * 32) + 16,
+            (move_to.y * 32) + 16};
 
-        if (move_to.x > current_tile_x)
+        if (move_to_exp.x > v_sprite.bounds.position.x)
         {
             delta.x = 1;
         }
-        else if (move_to.x < current_tile_x)
+        else if (move_to_exp.x < v_sprite.bounds.position.x)
         {
             delta.x = -1;
         }
 
-        if (move_to.y > current_tile_y)
+        if (move_to_exp.y > v_sprite.bounds.position.y)
         {
             delta.y = 1;
         }
-        else if (move_to.y < current_tile_y)
+        else if (move_to_exp.y < v_sprite.bounds.position.y)
         {
             delta.y = -1;
         }
@@ -375,13 +380,23 @@ void character::update(map_manager *current_map)
     bool moving = (delta.x != 0 || delta.y != 0);
 
     // Animation and sprite update code remains the same...
-    if (moving && current_animation != &anim_walk)
+    bool custom_anim = false;
+    if (moving)
     {
         current_animation = &anim_walk;
     }
-    else if (!moving && current_animation != &anim_stand)
+    else if (idle_animation == nullptr)
     {
         current_animation = &anim_stand;
+    }
+    else
+    {
+        if (current_animation != idle_animation)
+        {
+            frame = 0;
+        }
+        current_animation = idle_animation;
+        custom_anim = true;
     }
 
     // Rest of the update code...
@@ -389,7 +404,7 @@ void character::update(map_manager *current_map)
     {
         if (ticker % 6 == 0)
         {
-            frame = (frame + 1) % 4;
+            frame = (frame + 1) % current_animation->size;
         }
 
         int new_frame = current_animation->frames[frame];
@@ -400,25 +415,32 @@ void character::update(map_manager *current_map)
             v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(false);
         }
 
-        switch (face)
+        if (!custom_anim)
         {
-        case DIR_UP:
-            v_sprite.set_frame(new_frame + 6);
-            break;
-        case DIR_DOWN:
-            v_sprite.set_frame(new_frame);
-            break;
-        case DIR_LEFT:
-            v_sprite.set_frame(new_frame + 3);
-            v_sprite.sprite_ptr_raw.value().set_horizontal_flip(true);
-            if (v_sprite.sprite_ptr_bottom.has_value())
+            switch (face)
             {
-                v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(true);
+            case DIR_UP:
+                v_sprite.set_frame(new_frame + 6);
+                break;
+            case DIR_DOWN:
+                v_sprite.set_frame(new_frame);
+                break;
+            case DIR_LEFT:
+                v_sprite.set_frame(new_frame + 3);
+                v_sprite.sprite_ptr_raw.value().set_horizontal_flip(true);
+                if (v_sprite.sprite_ptr_bottom.has_value())
+                {
+                    v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(true);
+                }
+                break;
+            case DIR_RIGHT:
+                v_sprite.set_frame(new_frame + 3);
+                break;
             }
-            break;
-        case DIR_RIGHT:
-            v_sprite.set_frame(new_frame + 3);
-            break;
+        }
+        else
+        {
+            v_sprite.set_frame(new_frame);
         }
     }
 
