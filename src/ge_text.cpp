@@ -15,6 +15,8 @@
 #include "bn_sprite_items_spr_font_01.h"
 #include "bn_regular_bg_items_bg_dialogue_box.h"
 
+#include "bn_sprite_items_db_ch_vista.h"
+
 using namespace bn;
 
 constexpr char alphabet[] = {
@@ -108,14 +110,21 @@ void text::init(const char *value)
     index = 0;
 }
 
-void text::update()
+void text::update(const bn::sprite_item *portrait = nullptr)
 {
     if (index >= reference.size() || is_ended())
     {
         return;
     }
 
-    sound_items::snd_dialogue_generic.play(0.5);
+    if (portrait == &sprite_items::db_ch_vista)
+    {
+        sound_items::snd_dialogue_vista.play(0.7);
+    }
+    else
+    {
+        sound_items::snd_dialogue_generic.play(0.5);
+    }
 
     char ch = reference[index];
 
@@ -309,7 +318,7 @@ void dialogue_box::update()
         {
             if (!lines[t].is_ended())
             {
-                lines[t].update();
+                lines[t].update(l.portrait);
                 return;
             }
         }

@@ -7,6 +7,8 @@
 
 #include "ge_maps.h"
 
+using namespace bn;
+
 enum action_list
 {
 	ACT_NONE,
@@ -22,12 +24,10 @@ enum response_list
 
 struct global_data
 {
-	bn::random bn_random;
+	random bn_random;
 	int action_iterations[ACTIONS_SIZE] = {0};
-
-	global_data()
-	{
-	}
+	const map *entry_map = nullptr;
+	vector_2 entry_position = {0, 0};
 };
 
 // Declaration only - use 'extern' keyword

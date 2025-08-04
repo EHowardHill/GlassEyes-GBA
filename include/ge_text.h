@@ -47,8 +47,8 @@ enum emotion
     EM_DISAPPOINTED,
     EM_SULLEN,
     EM_SIDE_EYE,
-    EM_EMBARRASSED,
     EM_LAUGH,
+    EM_EMBARRASSED,
     EM_ANNOYED,
     EM_WAT,
     EM_SKIP,
@@ -88,7 +88,7 @@ struct text
 
     void init(const char *value);
     void init(const string<20> &value);
-    void update();
+    void update(const sprite_item * portrait);
     void set_position(int x, int y);
     bool is_ended();
 };

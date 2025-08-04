@@ -7,8 +7,10 @@
 #include "bn_sprite_items_spr_vista_01.h"
 
 #include "ge_structs.h"
+#include "ge_text.h"
 #include "ge_sprites.h"
 #include "ge_maps.h"
+#include "ge_animations.h"
 
 using namespace bn;
 
@@ -231,9 +233,11 @@ void character::update(map_manager *current_map, bool db_inactive)
 
     if (!npc)
     {
-        if (db_inactive) {
+        if (db_inactive)
+        {
             move_to.x = 0;
             move_to.y = 0;
+            idle_animation = nullptr;
         }
 
         vector_2 bound_1 = {
@@ -407,9 +411,41 @@ void character::update(map_manager *current_map, bool db_inactive)
     // Rest of the update code...
     if (v_sprite.sprite_ptr_raw.has_value())
     {
-        if (ticker % 6 == 0)
+
+        int ticker_speed;
+
+        switch (current_animation->speed)
         {
-            frame = (frame + 1) % current_animation->size;
+        case SP_SLOW:
+        {
+            ticker_speed = 12;
+            break;
+        }
+        case SP_FAST:
+        {
+            ticker_speed = 3;
+            break;
+        }
+        default:
+        {
+            ticker_speed = 6;
+            break;
+        }
+        }
+
+        if (current_animation->loop)
+        {
+            if (ticker % ticker_speed == 0)
+            {
+                frame = (frame + 1) % current_animation->size;
+            }
+        }
+        else
+        {
+            if (ticker % ticker_speed == 0 && frame < current_animation->size - 1)
+            {
+                frame++;
+            }
         }
 
         int new_frame = current_animation->frames[frame];
@@ -441,6 +477,10 @@ void character::update(map_manager *current_map, bool db_inactive)
             case DIR_RIGHT:
                 v_sprite.set_frame(new_frame + 3);
                 break;
+            default:
+            {
+                break;
+            }
             }
         }
         else
@@ -450,25 +490,6 @@ void character::update(map_manager *current_map, bool db_inactive)
     }
 
     ticker++;
-}
-
-static character *find(list<character, 64> &characters, int index)
-{
-    for (character &ch : characters)
-    {
-        if (ch.index == index)
-        {
-            return &ch;
-        }
-    }
-
-    // Return first character if list isn't empty
-    if (!characters.empty())
-    {
-        return &(*characters.begin());
-    }
-
-    return nullptr; // List is empty
 }
 
 void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)

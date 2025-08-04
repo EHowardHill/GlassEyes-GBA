@@ -285,7 +285,7 @@ constexpr map map_room01 = {
 	42,0,0,0,0,0,0,0,0,0,0,7,
 	43,0,0,0,32,34,36,0,0,0,0,7,
 	8,0,0,0,0,0,0,0,0,0,0,7,
-	8,30,0,0,0,0,0,0,0,0,30,7,
+	8,44,0,0,0,0,0,0,0,0,30,7,
 	8,31,0,0,0,0,0,0,0,0,31,7,
 	11,5,5,5,5,5,5,5,5,5,5,12
     },
@@ -310,8 +310,10 @@ ge_sprites.cpp:
 #include "bn_sprite_items_spr_vista_01.h"
 
 #include "ge_structs.h"
+#include "ge_text.h"
 #include "ge_sprites.h"
 #include "ge_maps.h"
+#include "ge_animations.h"
 
 using namespace bn;
 
@@ -534,9 +536,11 @@ void character::update(map_manager *current_map, bool db_inactive)
 
     if (!npc)
     {
-        if (db_inactive) {
+        if (db_inactive)
+        {
             move_to.x = 0;
             move_to.y = 0;
+            idle_animation = nullptr;
         }
 
         vector_2 bound_1 = {
@@ -710,9 +714,41 @@ void character::update(map_manager *current_map, bool db_inactive)
     // Rest of the update code...
     if (v_sprite.sprite_ptr_raw.has_value())
     {
-        if (ticker % 6 == 0)
+
+        int ticker_speed;
+
+        switch (current_animation->speed)
         {
-            frame = (frame + 1) % current_animation->size;
+        case SP_SLOW:
+        {
+            ticker_speed = 12;
+            break;
+        }
+        case SP_FAST:
+        {
+            ticker_speed = 3;
+            break;
+        }
+        default:
+        {
+            ticker_speed = 6;
+            break;
+        }
+        }
+
+        if (current_animation->loop)
+        {
+            if (ticker % ticker_speed == 0)
+            {
+                frame = (frame + 1) % current_animation->size;
+            }
+        }
+        else
+        {
+            if (ticker % ticker_speed == 0 && frame < current_animation->size - 1)
+            {
+                frame++;
+            }
         }
 
         int new_frame = current_animation->frames[frame];
@@ -744,6 +780,10 @@ void character::update(map_manager *current_map, bool db_inactive)
             case DIR_RIGHT:
                 v_sprite.set_frame(new_frame + 3);
                 break;
+            default:
+            {
+                break;
+            }
             }
         }
         else
@@ -753,25 +793,6 @@ void character::update(map_manager *current_map, bool db_inactive)
     }
 
     ticker++;
-}
-
-static character *find(list<character, 64> &characters, int index)
-{
-    for (character &ch : characters)
-    {
-        if (ch.index == index)
-        {
-            return &ch;
-        }
-    }
-
-    // Return first character if list isn't empty
-    if (!characters.empty())
-    {
-        return &(*characters.begin());
-    }
-
-    return nullptr; // List is empty
 }
 
 void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
@@ -820,6 +841,8 @@ ge_text.cpp:
 #include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_spr_font_01.h"
 #include "bn_regular_bg_items_bg_dialogue_box.h"
+
+#include "bn_sprite_items_db_ch_vista.h"
 
 using namespace bn;
 
@@ -914,14 +937,21 @@ void text::init(const char *value)
     index = 0;
 }
 
-void text::update()
+void text::update(const bn::sprite_item *portrait = nullptr)
 {
     if (index >= reference.size() || is_ended())
     {
         return;
     }
 
-    sound_items::snd_dialogue_generic.play(0.5);
+    if (portrait == &sprite_items::db_ch_vista)
+    {
+        sound_items::snd_dialogue_vista.play(0.7);
+    }
+    else
+    {
+        sound_items::snd_dialogue_generic.play(0.5);
+    }
 
     char ch = reference[index];
 
@@ -1115,7 +1145,7 @@ void dialogue_box::update()
         {
             if (!lines[t].is_ended())
             {
-                lines[t].update();
+                lines[t].update(l.portrait);
                 return;
             }
         }
@@ -1203,23 +1233,38 @@ ge_actions.h:
 #include "ge_sprites.h"
 #include "ge_maps.h"
 #include "ge_character_manager.h"
+#include "ge_animations.h"
 
-#define BASE {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}
-#define EOL {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}
+using namespace bn;
+
+#include "bn_sprite_items_db_ch_vista.h"
 
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Most days were the", "same for Vista,", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her book", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "In her cabin,", "most days were", "just the same.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her books", "and watched over her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_SFX_KNOCK, "But today,", "there was a knock", "at the door.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
-
-constexpr conversation convo_01 = {
-    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {1, 1}},
-    {5, nullptr, EM_DEFAULT, ACT_DEFAULT, "*knock knock knock*", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_DEFAULT, "Yes?", "Who is it?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_pickup, {1, 3}},
+    {0, &sprite_items::db_ch_vista, EM_SULLEN, ACT_DEFAULT, "Hmm,", "What could this be?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_HAPPY, ACT_DEFAULT, "\"Dear Vista,", "I don't know if you", "remember me..\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_SIDE_EYE, ACT_DEFAULT, "Let me think..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);
+
+ge_animations.h: 
+#include "ge_text.h"
+#include "ge_sprites.h"
+
+// FRAMES   -   SIZE    -   SPEED   -   LOOPS
+
+// Default
+const animation anim_walk = {{0, 1, 0, 2}, 4, SP_DEFAULT, true};
+const animation anim_stand = {{0}, 1, SP_DEFAULT, false};
+
+// Vista
+const animation vista_reminisce = {{9}, 1, SP_DEFAULT, true};
+const animation vista_pickup = {{6, 10, 6, 11}, 4, SP_SLOW, false};
 
 ge_character_manager.h: 
 // ge_character_manager.h
@@ -1277,6 +1322,8 @@ ge_globals.h:
 
 #include "ge_maps.h"
 
+using namespace bn;
+
 enum action_list
 {
 	ACT_NONE,
@@ -1292,12 +1339,10 @@ enum response_list
 
 struct global_data
 {
-	bn::random bn_random;
+	random bn_random;
 	int action_iterations[ACTIONS_SIZE] = {0};
-
-	global_data()
-	{
-	}
+	const map *entry_map = nullptr;
+	vector_2 entry_position = {0, 0};
 };
 
 // Declaration only - use 'extern' keyword
@@ -1426,12 +1471,6 @@ enum character_list
     CHAR_VISTA
 };
 
-// Define actual animation objects instead of macros
-const animation anim_walk = {{0, 1, 0, 2}, 4, 1, true};
-const animation anim_stand = {{0}, 1, 0, false};
-
-const animation vista_reminisce = {{9}, 1, 0, true};
-
 enum facing
 {
     DIR_UP,
@@ -1552,8 +1591,8 @@ enum emotion
     EM_DISAPPOINTED,
     EM_SULLEN,
     EM_SIDE_EYE,
-    EM_EMBARRASSED,
     EM_LAUGH,
+    EM_EMBARRASSED,
     EM_ANNOYED,
     EM_WAT,
     EM_SKIP,
@@ -1593,7 +1632,7 @@ struct text
 
     void init(const char *value);
     void init(const string<20> &value);
-    void update();
+    void update(const sprite_item * portrait);
     void set_position(int x, int y);
     bool is_ended();
 };

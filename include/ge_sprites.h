@@ -56,12 +56,6 @@ enum character_list
     CHAR_VISTA
 };
 
-// Define actual animation objects instead of macros
-const animation anim_walk = {{0, 1, 0, 2}, 4, 1, true};
-const animation anim_stand = {{0}, 1, 0, false};
-
-const animation vista_reminisce = {{9}, 1, 0, true};
-
 enum facing
 {
     DIR_UP,
