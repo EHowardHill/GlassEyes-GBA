@@ -115,7 +115,7 @@ void text::update()
         return;
     }
 
-    sound_items::snd_dialogue_generic.play();
+    sound_items::snd_dialogue_generic.play(0.5);
 
     char ch = reference[index];
 
@@ -221,13 +221,20 @@ void dialogue_box::init(character_manager *ch_man)
             portrait.reset();
         }
 
-        if (line.navigate.x != 0 && line.navigate.y != 0)
+        auto ch = ch_man->find_by_index(line.index);
+        if (ch)
         {
-            auto ch = ch_man->find_by_index(line.index);
-            if (ch)
+            BN_LOG("Ch: ", ch->index);
+
+            if (line.navigate.x != 0 && line.navigate.y != 0)
             {
                 ch->move_to = line.navigate;
-                ch->idle_animation = line.anim;
+            }
+            ch->idle_animation = line.anim;
+
+            if (ch->idle_animation != nullptr)
+            {
+                BN_LOG(ch->idle_animation->size);
             }
         }
 
@@ -237,7 +244,21 @@ void dialogue_box::init(character_manager *ch_man)
             lines[t].size = line.size;
         }
 
-        if (line.emotion == EM_SKIP) {
+        switch (line.action)
+        {
+        case ACT_SFX_KNOCK:
+        {
+            sound_items::sfx_knock.play();
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+
+        if (line.emotion == EM_SKIP)
+        {
             skip = true;
             index++;
         }

@@ -17,15 +17,6 @@ def parse_navigate_coords(nav_str):
             return (0, 0)
     return (0, 0)
 
-def get_anim_pointer(anim_value):
-    """Convert animation reference to pointer"""
-    if anim_value == "CHAR_VISTA":
-        return "&vista_reminisce"
-    elif anim_value == "0" or not anim_value:
-        return "nullptr"
-    # Add more mappings here as needed
-    return "nullptr"
-
 def process_csv(filename):
     conversations = {}
     current_convo = None
@@ -56,29 +47,17 @@ def process_csv(filename):
             if current_convo:
                 # Parse fields with defaults
                 name_id = int(row[0]) if row[0].strip() else 0
-                portrait = "nullptr"  # Always nullptr in examples
+                portrait = row[1].strip() if row[1].strip() else "nullptr"
                 emotion = row[2].strip() if row[2].strip() else "EM_DEFAULT"
                 action = row[3].strip() if row[3].strip() else "ACT_DEFAULT"
-                
-                # Convert ACT_SPEAK to ACT_DEFAULT
-                if action == "ACT_SPEAK":
-                    action = "ACT_DEFAULT"
-                
                 line1 = row[4].strip() if len(row) > 4 else ""
                 line2 = row[5].strip() if len(row) > 5 else ""
                 line3 = row[6].strip() if len(row) > 6 else ""
                 shake = "true" if (len(row) > 7 and row[7].strip().lower() == "true") else "false"
                 size = row[8].strip() if (len(row) > 8 and row[8].strip()) else "SIZE_DEFAULT"
                 speed = row[9].strip() if (len(row) > 9 and row[9].strip()) else "SP_DEFAULT"
-                
-                # Index field - this appears to be a character constant like CHAR_VISTA
                 index = row[10].strip() if (len(row) > 10 and row[10].strip()) else "0"
-                
-                # Handle animation reference - column 11
-                anim = index  # The animation is derived from the index field
-                anim_ptr = get_anim_pointer(anim) if anim and anim != "0" else "nullptr"
-                
-                # Parse navigate coordinates - column 12
+                anim_ptr = row[11].strip() if (len(row) > 11 and row[11].strip()) else "nullptr"
                 nav_str = row[12].strip() if len(row) > 12 else ""
                 nav_coords = parse_navigate_coords(nav_str)
                 

@@ -25,7 +25,8 @@ enum actions
     ACT_TELEPORT,
     ACT_CUE_EVENT,
     ACT_MULTIPLE_CHOICE,
-    ACT_END
+    ACT_END,
+    ACT_SFX_KNOCK
 };
 
 enum speed

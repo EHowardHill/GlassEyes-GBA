@@ -52,6 +52,7 @@ struct v_sprite_ptr
 
 enum character_list
 {
+    CHAR_DEFAULT,
     CHAR_VISTA
 };
 

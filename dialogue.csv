@@ -1,9 +1,7 @@
 Name / ID,Portrait,Emotion,Action,Line1,Line2,Line3,Shake,Size,Speed,Index,Anim,Navigate,Size
 ,,,,,,,,,,,,,
 test_convo,,,,,,,,,,,,,
-,,EM_SKIP,,,,,,,,CHAR_VISTA,,"{2, 6}",
-,,,ACT_SPEAK,Most days were the,"same for Vista,",,,,,,,,
-,,,,,,,,,,,,,
-convo_01,,,,,,,,,,,,,
-,,EM_SKIP,,,,,,,,CHAR_VISTA,,"{1, 1}",
-5,,,ACT_SPEAK,*knock knock knock*,,,,,,,,,
+,,EM_SKIP,,,,,,,,CHAR_VISTA,&vista_reminisce,"{2, 6}",
+,,,,Most days were the,"same for Vista,",,,,,CHAR_VISTA,&vista_reminisce,,
+,,,,She read her book,and cared for her,sawdust doll.,,,,CHAR_VISTA,&vista_reminisce,,
+,,,ACT_SFX_KNOCK,"But today,",there was a knock,at the door.,,,,CHAR_VISTA,,,

@@ -293,7 +293,7 @@ constexpr map map_room01 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_room01};
 
@@ -534,6 +534,11 @@ void character::update(map_manager *current_map, bool db_inactive)
 
     if (!npc)
     {
+        if (db_inactive) {
+            move_to.x = 0;
+            move_to.y = 0;
+        }
+
         vector_2 bound_1 = {
             (screen_width / 2),
             (screen_height / 2)};
@@ -916,7 +921,7 @@ void text::update()
         return;
     }
 
-    sound_items::snd_dialogue_generic.play();
+    sound_items::snd_dialogue_generic.play(0.5);
 
     char ch = reference[index];
 
@@ -1022,13 +1027,20 @@ void dialogue_box::init(character_manager *ch_man)
             portrait.reset();
         }
 
-        if (line.navigate.x != 0 && line.navigate.y != 0)
+        auto ch = ch_man->find_by_index(line.index);
+        if (ch)
         {
-            auto ch = ch_man->find_by_index(line.index);
-            if (ch)
+            BN_LOG("Ch: ", ch->index);
+
+            if (line.navigate.x != 0 && line.navigate.y != 0)
             {
                 ch->move_to = line.navigate;
-                ch->idle_animation = line.anim;
+            }
+            ch->idle_animation = line.anim;
+
+            if (ch->idle_animation != nullptr)
+            {
+                BN_LOG(ch->idle_animation->size);
             }
         }
 
@@ -1038,7 +1050,21 @@ void dialogue_box::init(character_manager *ch_man)
             lines[t].size = line.size;
         }
 
-        if (line.emotion == EM_SKIP) {
+        switch (line.action)
+        {
+        case ACT_SFX_KNOCK:
+        {
+            sound_items::sfx_knock.play();
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+
+        if (line.emotion == EM_SKIP)
+        {
             skip = true;
             index++;
         }
@@ -1183,11 +1209,13 @@ ge_actions.h:
 
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Most days were the", "same for Vista,", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Most days were the", "same for Vista,", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her book", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_SFX_KNOCK, "But today,", "there was a knock", "at the door.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation convo_01 = {
-    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {1, 1}},
+    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {1, 1}},
     {5, nullptr, EM_DEFAULT, ACT_DEFAULT, "*knock knock knock*", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
@@ -1394,6 +1422,7 @@ struct v_sprite_ptr
 
 enum character_list
 {
+    CHAR_DEFAULT,
     CHAR_VISTA
 };
 
@@ -1501,7 +1530,8 @@ enum actions
     ACT_TELEPORT,
     ACT_CUE_EVENT,
     ACT_MULTIPLE_CHOICE,
-    ACT_END
+    ACT_END,
+    ACT_SFX_KNOCK
 };
 
 enum speed

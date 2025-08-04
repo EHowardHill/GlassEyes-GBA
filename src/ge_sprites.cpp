@@ -231,6 +231,11 @@ void character::update(map_manager *current_map, bool db_inactive)
 
     if (!npc)
     {
+        if (db_inactive) {
+            move_to.x = 0;
+            move_to.y = 0;
+        }
+
         vector_2 bound_1 = {
             (screen_width / 2),
             (screen_height / 2)};

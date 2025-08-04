@@ -14,10 +14,10 @@
         },
         "maps/room01.tmx": {
             "scale": 2,
-            "selectedLayer": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 76.75,
-                "y": 85
+                "x": 218,
+                "y": 128.75
             }
         },
         "tilesets/blue-labels.tsx": {
