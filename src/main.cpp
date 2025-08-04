@@ -25,12 +25,8 @@
 
 using namespace bn;
 
-int main()
-{
-    core::init();
-    global_data_ptr = new global_data();
-
-    map_manager current_map(&bn::regular_bg_items::floor_wood01, &map_room01);
+int navigate_map() {
+    map_manager current_map(&bn::regular_bg_items::floor_wood01, global_data_ptr->entry_map);
     character_manager char_mgr;
 
     for (int y = 0; y < current_map.current_map->size.y.integer(); y++)
@@ -60,4 +56,13 @@ int main()
         v_sprite_ptr::update(is_ended);
         core::update();
     }
+}
+
+int main()
+{
+    core::init();
+    global_data_ptr = new global_data();
+    global_data_ptr->entry_map = &map_room01;
+    global_data_ptr->entry_position = {9, 2};
+    navigate_map();
 }
