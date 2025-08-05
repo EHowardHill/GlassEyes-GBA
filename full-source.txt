@@ -187,7 +187,8 @@ ge_maps.cpp:
 map_manager::map_manager(const regular_bg_item *item_, const map *current_map_)
     : current_map(current_map_)
 {
-    floor_ptr = item_->create_bg(0, 0);
+    if (item_ != nullptr)
+        floor_ptr = item_->create_bg(0, 0);
     collider_ptr = current_map_->bg_item_ptr->create_bg(0, 0);
 }
 
@@ -199,7 +200,8 @@ void map_manager::update()
         current_map->raw_size.x / 2,
         current_map->raw_size.y / 2};
 
-    floor_ptr.value().set_position(-cam->x, -cam->y);
+    if (floor_ptr.has_value())
+        floor_ptr.value().set_position(-cam->x, -cam->y);
     collider_ptr.value().set_position(-cam->x + offset.x, -cam->y + offset.y);
 }
 
@@ -245,28 +247,36 @@ bool map_manager::check_box_collision(bound box)
     int right = (box.position.x.integer() + box.width.integer() / 2 - 1);
     int top = (box.position.y.integer() - box.height.integer() / 2);
     int bottom = (box.position.y.integer() + box.height.integer() / 2 - 1);
-    
+
     // Check corners
-    if (collision({left, top}) > 0) return true;
-    if (collision({right, top}) > 0) return true;
-    if (collision({left, bottom}) > 0) return true;
-    if (collision({right, bottom}) > 0) return true;
-    
+    if (collision({left, top}) > 0)
+        return true;
+    if (collision({right, top}) > 0)
+        return true;
+    if (collision({left, bottom}) > 0)
+        return true;
+    if (collision({right, bottom}) > 0)
+        return true;
+
     // For wider sprites, also check middle points
     if (box.width.integer() > 32)
     {
         int mid_x = box.position.x.integer();
-        if (collision({mid_x, top}) > 0) return true;
-        if (collision({mid_x, bottom}) > 0) return true;
+        if (collision({mid_x, top}) > 0)
+            return true;
+        if (collision({mid_x, bottom}) > 0)
+            return true;
     }
-    
+
     if (box.height.integer() > 32)
     {
         int mid_y = box.position.y.integer();
-        if (collision({left, mid_y}) > 0) return true;
-        if (collision({right, mid_y}) > 0) return true;
+        if (collision({left, mid_y}) > 0)
+            return true;
+        if (collision({right, mid_y}) > 0)
+            return true;
     }
-    
+
     return false;
 }
 
@@ -274,7 +284,35 @@ ge_map_data.cpp:
 // Auto-Generated Map Template
 
 #include "ge_maps.h"
+#include "bn_regular_bg_items_map_garbage_01.h"
 #include "bn_regular_bg_items_map_room01.h"
+
+constexpr map map_garbage_01 = {
+    {24, 12},
+    {768, 768},
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,24,3,3,3,3,3,3,14,16,3,3,3,3,3,3,3,3,3,3,3,3,3,25,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,4,0,0,10,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,5,0,0,27,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,
+	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,
+	0,23,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,22,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_garbage_01};
+
+
 
 constexpr map map_room01 = {
     {12, 8},
@@ -308,6 +346,7 @@ ge_sprites.cpp:
 
 // Body Sprites
 #include "bn_sprite_items_spr_vista_01.h"
+#include "bn_sprite_items_spr_jeremy_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -494,29 +533,26 @@ character::character(int index_, vector_2 start_, bool npc_) : index(index_), np
     }
 }
 
-bool character::is_tall() const
-{
-    switch (index)
-    {
-    case CHAR_VISTA:
-        return true; // Vista is a tall character
-    default:
-        return false;
-    }
-}
-
 void character::update_sprite_item(int index_)
 {
     index = index_;
-    bool tall = is_tall();
 
+    v_sprite.tall = true;
     switch (index)
     {
     case CHAR_VISTA:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_vista_01;
-        v_sprite.tall = tall;
         break;
+    }
+    case CHAR_JEREMY:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_jeremy_01;
+        break;
+    }
+    case CHAR_VISKER:
+    {
+        v_sprite.tall = false;
     }
 
     default:
@@ -1189,12 +1225,18 @@ main.cpp:
 
 using namespace bn;
 
-int main()
+int navigate_map()
 {
-    core::init();
-    global_data_ptr = new global_data();
+    const regular_bg_item *floor_texture;
 
-    map_manager current_map(&bn::regular_bg_items::floor_wood01, &map_room01);
+    // Set floor
+    /*
+    if (global_data_ptr->entry_map == &map_room01) {
+        floor_texture = &bn::regular_bg_items::floor_wood01;
+    }
+    */
+
+    map_manager current_map(floor_texture, global_data_ptr->entry_map);
     character_manager char_mgr;
 
     for (int y = 0; y < current_map.current_map->size.y.integer(); y++)
@@ -1224,6 +1266,15 @@ int main()
         v_sprite_ptr::update(is_ended);
         core::update();
     }
+}
+
+int main()
+{
+    core::init();
+    global_data_ptr = new global_data();
+    global_data_ptr->entry_map = &map_garbage_01;
+    global_data_ptr->entry_position = {9, 2};
+    navigate_map();
 }
 
 ge_actions.h: 
@@ -1468,7 +1519,9 @@ struct v_sprite_ptr
 enum character_list
 {
     CHAR_DEFAULT,
-    CHAR_VISTA
+    CHAR_VISTA,
+    CHAR_JEREMY,
+    CHAR_VISKER
 };
 
 enum facing

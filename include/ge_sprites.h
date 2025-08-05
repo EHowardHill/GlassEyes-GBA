@@ -53,7 +53,9 @@ struct v_sprite_ptr
 enum character_list
 {
     CHAR_DEFAULT,
-    CHAR_VISTA
+    CHAR_VISTA,
+    CHAR_JEREMY,
+    CHAR_VISKER
 };
 
 enum facing

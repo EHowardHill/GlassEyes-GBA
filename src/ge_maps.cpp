@@ -10,7 +10,8 @@
 map_manager::map_manager(const regular_bg_item *item_, const map *current_map_)
     : current_map(current_map_)
 {
-    floor_ptr = item_->create_bg(0, 0);
+    if (item_ != nullptr)
+        floor_ptr = item_->create_bg(0, 0);
     collider_ptr = current_map_->bg_item_ptr->create_bg(0, 0);
 }
 
@@ -22,7 +23,8 @@ void map_manager::update()
         current_map->raw_size.x / 2,
         current_map->raw_size.y / 2};
 
-    floor_ptr.value().set_position(-cam->x, -cam->y);
+    if (floor_ptr.has_value())
+        floor_ptr.value().set_position(-cam->x, -cam->y);
     collider_ptr.value().set_position(-cam->x + offset.x, -cam->y + offset.y);
 }
 
@@ -68,27 +70,35 @@ bool map_manager::check_box_collision(bound box)
     int right = (box.position.x.integer() + box.width.integer() / 2 - 1);
     int top = (box.position.y.integer() - box.height.integer() / 2);
     int bottom = (box.position.y.integer() + box.height.integer() / 2 - 1);
-    
+
     // Check corners
-    if (collision({left, top}) > 0) return true;
-    if (collision({right, top}) > 0) return true;
-    if (collision({left, bottom}) > 0) return true;
-    if (collision({right, bottom}) > 0) return true;
-    
+    if (collision({left, top}) > 0)
+        return true;
+    if (collision({right, top}) > 0)
+        return true;
+    if (collision({left, bottom}) > 0)
+        return true;
+    if (collision({right, bottom}) > 0)
+        return true;
+
     // For wider sprites, also check middle points
     if (box.width.integer() > 32)
     {
         int mid_x = box.position.x.integer();
-        if (collision({mid_x, top}) > 0) return true;
-        if (collision({mid_x, bottom}) > 0) return true;
+        if (collision({mid_x, top}) > 0)
+            return true;
+        if (collision({mid_x, bottom}) > 0)
+            return true;
     }
-    
+
     if (box.height.integer() > 32)
     {
         int mid_y = box.position.y.integer();
-        if (collision({left, mid_y}) > 0) return true;
-        if (collision({right, mid_y}) > 0) return true;
+        if (collision({left, mid_y}) > 0)
+            return true;
+        if (collision({right, mid_y}) > 0)
+            return true;
     }
-    
+
     return false;
 }

@@ -5,6 +5,7 @@
 
 // Body Sprites
 #include "bn_sprite_items_spr_vista_01.h"
+#include "bn_sprite_items_spr_jeremy_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -191,29 +192,26 @@ character::character(int index_, vector_2 start_, bool npc_) : index(index_), np
     }
 }
 
-bool character::is_tall() const
-{
-    switch (index)
-    {
-    case CHAR_VISTA:
-        return true; // Vista is a tall character
-    default:
-        return false;
-    }
-}
-
 void character::update_sprite_item(int index_)
 {
     index = index_;
-    bool tall = is_tall();
 
+    v_sprite.tall = true;
     switch (index)
     {
     case CHAR_VISTA:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_vista_01;
-        v_sprite.tall = tall;
         break;
+    }
+    case CHAR_JEREMY:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_jeremy_01;
+        break;
+    }
+    case CHAR_VISKER:
+    {
+        v_sprite.tall = false;
     }
 
     default:
