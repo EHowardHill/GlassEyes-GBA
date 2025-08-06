@@ -16,16 +16,16 @@
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 282.66666666666663,
-                "y": 260.3333333333333
+                "x": 459.3333333333333,
+                "y": 148.33333333333334
             }
         },
         "maps/room01.tmx": {
             "scale": 2.1634765625,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 262.07818001263877,
-                "y": 135.66128012999906
+                "x": 205.68746050374648,
+                "y": 128.03466642592758
             }
         },
         "tilesets/blue-labels.tsx": {
@@ -43,12 +43,18 @@
             "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "tilesets/spr_visker_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
-    "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
-    "map.height": 12,
+    "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts",
+    "map.height": 64,
     "map.lastUsedFormat": "tmx",
-    "map.width": 24,
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "map.width": 1,
     "openFiles": [
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
@@ -58,6 +64,7 @@
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
+        "tilesets/spr_visker_01.tsx",
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
         "maps/room01.tmx",
@@ -65,6 +72,10 @@
         "maps/garbage_01.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    },
     "tileset.transparentColor": "#000000",
     "tileset.useTransparentColor": true
 }

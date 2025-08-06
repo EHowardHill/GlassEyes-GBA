@@ -6,6 +6,7 @@
 // Body Sprites
 #include "bn_sprite_items_spr_vista_01.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_spr_visker_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -211,7 +212,8 @@ void character::update_sprite_item(int index_)
     }
     case CHAR_VISKER:
     {
-        v_sprite.tall = false;
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_visker_01;
+        break;
     }
 
     default:
@@ -492,5 +494,11 @@ void character::update(map_manager *current_map, bool db_inactive)
 
 void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
 {
+    if (character_id == CHAR_JEREMY) {
+        npc = false;
+    } else {
+        npc = true;
+    }
+
     characters->emplace_back(character_id, location, npc);
 }

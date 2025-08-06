@@ -10,3 +10,9 @@ const animation anim_stand = {{0}, 1, SP_DEFAULT, false};
 // Vista
 const animation vista_reminisce = {{9}, 1, SP_DEFAULT, true};
 const animation vista_pickup = {{6, 10, 6, 11}, 4, SP_SLOW, false};
+
+// Visker
+const animation visker_poke = {{9, 10}, 2, SP_DEFAULT, true};
+
+// Jeremy
+const animation jeremy_lay_down = {{9}, 1, SP_DEFAULT, true};

@@ -10,6 +10,10 @@
 #include "ge_text.h"
 #include "ge_character_manager.h"
 
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_music_items_info.h"
+
 // Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_spr_font_01.h"
@@ -233,8 +237,6 @@ void dialogue_box::init(character_manager *ch_man)
         auto ch = ch_man->find_by_index(line.index);
         if (ch)
         {
-            BN_LOG("Ch: ", ch->index);
-
             if (line.navigate.x != 0 && line.navigate.y != 0)
             {
                 ch->move_to = line.navigate;
@@ -258,6 +260,15 @@ void dialogue_box::init(character_manager *ch_man)
         case ACT_SFX_KNOCK:
         {
             sound_items::sfx_knock.play();
+            break;
+        }
+        case ACT_MUSIC_VISKER: {
+            music::stop();
+            music_items::theme_visker.play(0.75);
+            break;
+        }
+        case ACT_MUSIC_RESET: {
+            music::stop();
             break;
         }
         default:

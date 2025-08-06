@@ -11,23 +11,31 @@ test_convo
 	db_ch_vista	EM_EMBARRASSED		Let me think..									
 													
 garbage_01													
-	db_ch_visker	EM_SULLEN		"Hmm, he feels warm."		Ewww.							
-	db_ch_jeremy	EM_JEREMY		"Ow, my head.."									
-	db_ch_visker	EM_ANGRY		DAGNABBIT	First human down the	"chute in ages,"							
+		EM_SKIP	ACT_MUSIC_VISKER										
+		EM_SKIP								CHAR_JEREMY	&jeremy_lay_down		
+	db_ch_visker	EM_SULLEN		"Hmm, he feels warm."		Ewww.				CHAR_VISKER	&visker_poke		
+	db_ch_jeremy	EM_PAIN		"Ow, my head.."									
+	db_ch_visker	EM_ANGRY		DAGNABBIT	First human down the	"chute in ages,"				CHAR_VISKER			
 	db_ch_visker	EM_ANGRY		And he's ALIVE?	"Hey, could you do me"	a huge favor pal?							
-	db_ch_jeremy	EM_CONFUSED		..W-What?									
-	db_ch_visker	EM_NORMAL		"Hurry up and die,"	I'm real real hungry	for human right now.							
+	db_ch_jeremy	EM_CONFUSED		..W-What?						CHAR_JEREMY			
+	db_ch_visker	EM_DEFAULT		"Hurry up and die,"	I'm real real hungry	for human right now.							
 	db_ch_jeremy	EM_ANNOYED		"Well, excuse ME."									
 	db_ch_visker	EM_SULLEN		*sigh*	It's okay.	I forgive you.							
 	db_ch_jeremy	EM_SAD		I need to get out	of here.	Where's the exit?							
-	db_ch_visker	EM_CONFUSED		Why would I tell you	I want you to die	so I can eat you(??)							
-	db_ch_visker	EM_NORMAL		I tell you what.	I'll give you a key	on one condition.							
-	db_ch_visker	EM_NORMAL		Go to Avalon village	and send back a	turkey.							
-	db_ch_visker	EM_NORMAL		"That's for ""VISKER"	"AT THE TRASH CHUTE""."	Okay?							
+	db_ch_visker	EM_CONFUSED		Why would I tell you	I want you to die	so I can eat you..?							
+	db_ch_visker	EM_DEFAULT		I tell you what.	I'll give you a key	on one condition.							
+	db_ch_visker	EM_DEFAULT		Go to Avalon village	and send back a	turkey.							
+	db_ch_visker	EM_DEFAULT		"That's for ""VISKER"	"AT THE TRASH CHUTE""."	Okay?							
 	db_ch_jeremy	EM_CONFUSED		Uh.. Sure.									
-	db_ch_visker	EM_NORMAL		Write it down cos	it's super hard.	"""1234""."							
+	db_ch_visker	EM_DEFAULT		Write it down cos	it's super hard.	"""1234""."							
 	db_ch_jeremy	EM_CONFUSED		..Got it.									
 	db_ch_visker	EM_ANGRY		Now if you'll excuse	"me, I'll be waiting"	for a DEAD human.				CHAR_VISKER		"{-1, 1}"	
+		EM_SKIP	ACT_MUSIC_RESET										
+													
+garbage_02													
+	db_ch_jeremy	EM_CONFUSED		"Hey, you, uh.."	Everything okay?								
+	db_ch_visker	EM_HAPPY		..									
+	db_ch_jeremy	EM_CONFUSED		Cool.									
 													
 garbage_sign													
 				VISKER'S HOUSE	NO HUMANS ALLOWED!!	UNLESS YOU'RE DEAD							
@@ -39,7 +47,8 @@ visker_h_02
 				A pile of tabloids.	Also Infinite Jest.	All are dog-eared.							
 													
 visker_h_03													
-				A stack of old CDs.	Every one is Hootie &	the Blowfish.							
+				His nest is made of	discarded t-shirts.								
+				Half of them are	from the exact same	family reunion.							
 													
 visker_h_04													
 				The air is very..	"""thick""."								

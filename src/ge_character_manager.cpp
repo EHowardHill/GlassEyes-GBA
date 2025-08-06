@@ -18,6 +18,11 @@ character *character_manager::add_character(int index, vector_2 position, bool i
     if (characters.size() >= 64)
         return nullptr;
 
+    is_npc = true;
+    if (index == CHAR_JEREMY) {
+        is_npc = false;
+    }
+
     // Create new character
     characters.push_back(make_unique<character>(index, position, is_npc));
     character *new_char = characters.back().get();

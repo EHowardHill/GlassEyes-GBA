@@ -26,7 +26,9 @@ enum actions
     ACT_CUE_EVENT,
     ACT_MULTIPLE_CHOICE,
     ACT_END,
-    ACT_SFX_KNOCK
+    ACT_SFX_KNOCK,
+    ACT_MUSIC_VISKER,
+    ACT_MUSIC_RESET
 };
 
 enum speed
@@ -51,6 +53,8 @@ enum emotion
     EM_EMBARRASSED,
     EM_ANNOYED,
     EM_WAT,
+    EM_CONFUSED,
+    EM_PAIN,
     EM_SKIP,
 };
 

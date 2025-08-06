@@ -7,31 +7,59 @@ ge_actions.cpp:
 #include "ge_character_manager.h"
 #include "ge_actions.h"
 
+void cue_dialogue(character_manager *ch_man, const dialogue_line *dl)
+{
+    ch_man->db.emplace();
+    ch_man->db->load(&test_convo);
+    ch_man->db->init(ch_man);
+};
+
 int action_listener(map_manager *man, character_manager *ch_man)
 {
     if (!ch_man->db.has_value())
     {
-        for (auto &chara_ptr : ch_man->characters)
-        {
-            if (chara_ptr) // Check if the unique_ptr is valid
-            {
-                int action = man->action(chara_ptr->v_sprite.bounds.position);
+        auto chara_ptr = ch_man->player_ptr;
 
-                switch (action)
-                {
-                case CONVO_SCENE_1_INIT:
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&test_convo);
-                    ch_man->db->init(ch_man);
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
-                }
+        int action = man->action(chara_ptr->v_sprite.bounds.position);
+
+        switch (action)
+        {
+        case CONVO_SCENE_1_INIT:
+        {
+            ch_man->db.emplace();
+            ch_man->db->load(&test_convo);
+            ch_man->db->init(ch_man);
+            break;
+        }
+        case CONVO_GARBAGE_1_INIT:
+        {
+            if (global_data_ptr->action_iterations[CONVO_GARBAGE_1_INIT] == 0)
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_01);
+                ch_man->db->init(ch_man);
             }
+            break;
+        }
+        case CONVO_GARBAGE_2_INIT:
+        {
+            if (global_data_ptr->action_iterations[CONVO_GARBAGE_2_INIT] == 0)
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_02);
+                ch_man->db->init(ch_man);
+            }
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+
+        if (action != 0)
+        {
+            global_data_ptr->action_iterations[action]++;
         }
     }
 
@@ -58,6 +86,11 @@ character *character_manager::add_character(int index, vector_2 position, bool i
 {
     if (characters.size() >= 64)
         return nullptr;
+
+    is_npc = true;
+    if (index == CHAR_JEREMY) {
+        is_npc = false;
+    }
 
     // Create new character
     characters.push_back(make_unique<character>(index, position, is_npc));
@@ -305,10 +338,10 @@ constexpr map map_garbage_01 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_garbage_01};
 
@@ -347,6 +380,7 @@ ge_sprites.cpp:
 // Body Sprites
 #include "bn_sprite_items_spr_vista_01.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_spr_visker_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -552,7 +586,8 @@ void character::update_sprite_item(int index_)
     }
     case CHAR_VISKER:
     {
-        v_sprite.tall = false;
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_visker_01;
+        break;
     }
 
     default:
@@ -833,6 +868,12 @@ void character::update(map_manager *current_map, bool db_inactive)
 
 void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
 {
+    if (character_id == CHAR_JEREMY) {
+        npc = false;
+    } else {
+        npc = true;
+    }
+
     characters->emplace_back(character_id, location, npc);
 }
 
@@ -872,6 +913,10 @@ ge_text.cpp:
 #include "ge_globals.h"
 #include "ge_text.h"
 #include "ge_character_manager.h"
+
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_music_items_info.h"
 
 // Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
@@ -1096,8 +1141,6 @@ void dialogue_box::init(character_manager *ch_man)
         auto ch = ch_man->find_by_index(line.index);
         if (ch)
         {
-            BN_LOG("Ch: ", ch->index);
-
             if (line.navigate.x != 0 && line.navigate.y != 0)
             {
                 ch->move_to = line.navigate;
@@ -1121,6 +1164,15 @@ void dialogue_box::init(character_manager *ch_man)
         case ACT_SFX_KNOCK:
         {
             sound_items::sfx_knock.play();
+            break;
+        }
+        case ACT_MUSIC_VISKER: {
+            music::stop();
+            music_items::theme_visker.play(0.75);
+            break;
+        }
+        case ACT_MUSIC_RESET: {
+            music::stop();
             break;
         }
         default:
@@ -1289,16 +1341,71 @@ ge_actions.h:
 using namespace bn;
 
 #include "bn_sprite_items_db_ch_vista.h"
+#include "bn_sprite_items_db_ch_visker.h"
+#include "bn_sprite_items_db_ch_jeremy.h"
 
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "In her cabin,", "most days were", "just the same.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her books", "and watched over her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her book", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_SFX_KNOCK, "But today,", "there was a knock", "at the door.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_DEFAULT, "Yes?", "Who is it?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_pickup, {1, 3}},
     {0, &sprite_items::db_ch_vista, EM_SULLEN, ACT_DEFAULT, "Hmm,", "What could this be?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_HAPPY, ACT_DEFAULT, "\"Dear Vista,", "I don't know if you", "remember me..\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_vista, EM_SIDE_EYE, ACT_DEFAULT, "Let me think..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_EMBARRASSED, ACT_DEFAULT, "Let me think..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_01 = {
+    {0, nullptr, EM_SKIP, ACT_MUSIC_VISKER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_JEREMY, &jeremy_lay_down, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Hmm, he feels warm.", "", "Ewww.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, &visker_poke, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_PAIN, ACT_DEFAULT, "Ow, my head..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "DAGNABBIT", "First human down the", "chute in ages,", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "And he's ALIVE?", "Hey, could you do me", "a huge favor pal?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "..W-What?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_JEREMY, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Hurry up and die,", "I'm real real hungry", "for human right now.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_ANNOYED, ACT_DEFAULT, "Well, excuse ME.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "*sigh*", "It's okay.", "I forgive you.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_SAD, ACT_DEFAULT, "I need to get out", "of here.", "Where's the exit?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_CONFUSED, ACT_DEFAULT, "Why would I tell you", "I want you to die", "so I can eat you..?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "I tell you what.", "I'll give you a key", "on one condition.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Go to Avalon village", "and send back a", "turkey.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "That's for \"VISKER", "AT THE TRASH CHUTE\".", "Okay?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Uh.. Sure.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Write it down cos", "it's super hard.", "\"1234\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "..Got it.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "Now if you'll excuse", "me, I'll be waiting", "for a DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {-1, 1}},
+    {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_02 = {
+    {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Hey, you, uh..", "Everything okay?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Cool.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_sign = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "VISKER'S HOUSE", "NO HUMANS ALLOWED!!", "UNLESS YOU'RE DEAD", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation visker_h_01 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "This pile is mostly", "take-away food.", "(He took it away)", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation visker_h_02 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "A pile of tabloids.", "Also Infinite Jest.", "All are dog-eared.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation visker_h_03 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "His nest is made of", "discarded t-shirts.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Half of them are", "from the exact same", "family reunion.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation visker_h_04 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "The air is very..", "\"thick\".", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "He seems to have used", "a liberal helping of", "air freshener.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "It's humbling to", "stand where no other", "human has stood.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Alive, at least.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);
@@ -1316,6 +1423,12 @@ const animation anim_stand = {{0}, 1, SP_DEFAULT, false};
 // Vista
 const animation vista_reminisce = {{9}, 1, SP_DEFAULT, true};
 const animation vista_pickup = {{6, 10, 6, 11}, 4, SP_SLOW, false};
+
+// Visker
+const animation visker_poke = {{9, 10}, 2, SP_DEFAULT, true};
+
+// Jeremy
+const animation jeremy_lay_down = {{9}, 1, SP_DEFAULT, true};
 
 ge_character_manager.h: 
 // ge_character_manager.h
@@ -1379,6 +1492,8 @@ enum action_list
 {
 	ACT_NONE,
 	CONVO_SCENE_1_INIT,
+	CONVO_GARBAGE_1_INIT,
+	CONVO_GARBAGE_2_INIT,
 	ACTIONS_SIZE
 };
 
@@ -1623,7 +1738,9 @@ enum actions
     ACT_CUE_EVENT,
     ACT_MULTIPLE_CHOICE,
     ACT_END,
-    ACT_SFX_KNOCK
+    ACT_SFX_KNOCK,
+    ACT_MUSIC_VISKER,
+    ACT_MUSIC_RESET
 };
 
 enum speed
@@ -1648,6 +1765,8 @@ enum emotion
     EM_EMBARRASSED,
     EM_ANNOYED,
     EM_WAT,
+    EM_CONFUSED,
+    EM_PAIN,
     EM_SKIP,
 };
 
