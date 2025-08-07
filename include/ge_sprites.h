@@ -48,6 +48,18 @@ struct v_sprite_ptr
     bound real_position() const;
     void set_frame(int frame_);
     static void update(bool character_box_ended);
+
+    static void clear_all()
+    {
+        for (auto *item : manager)
+        {
+            if (item->sprite_ptr_raw.has_value())
+                item->sprite_ptr_raw.reset();
+            if (item->sprite_ptr_bottom.has_value())
+                item->sprite_ptr_bottom.reset();
+        }
+        manager.clear();
+    }
 };
 
 enum character_list

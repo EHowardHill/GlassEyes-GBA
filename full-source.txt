@@ -7,6 +7,11 @@ ge_actions.cpp:
 #include "ge_character_manager.h"
 #include "ge_actions.h"
 
+#include "ge_map_data.cpp"
+
+static vector_2 previous_tile = {-1, -1};
+static bool action_triggered = false; // Add this flag
+
 void cue_dialogue(character_manager *ch_man, const dialogue_line *dl)
 {
     ch_man->db.emplace();
@@ -19,47 +24,110 @@ int action_listener(map_manager *man, character_manager *ch_man)
     if (!ch_man->db.has_value())
     {
         auto chara_ptr = ch_man->player_ptr;
+        vector_2 current_position = chara_ptr->v_sprite.bounds.position;
 
-        int action = man->action(chara_ptr->v_sprite.bounds.position);
+        // Calculate current tile coordinates
+        vector_2 current_tile = {
+            current_position.x / 32,
+            current_position.y / 32};
 
-        switch (action)
+        // Check if we've moved to a new tile
+        bool new_tile = (previous_tile.x != current_tile.x ||
+                         previous_tile.y != current_tile.y);
+
+        // Get the action for current position
+        int action = man->action(current_position);
+
+        // Reset action_triggered flag when entering a new tile
+        if (new_tile)
         {
-        case CONVO_SCENE_1_INIT:
-        {
-            ch_man->db.emplace();
-            ch_man->db->load(&test_convo);
-            ch_man->db->init(ch_man);
-            break;
+            action_triggered = false;
+            previous_tile = current_tile;
+
+            // Increment counter when entering a new action tile
+            if (action != 0)
+            {
+                global_data_ptr->action_iterations[action]++;
+            }
         }
-        case CONVO_GARBAGE_1_INIT:
+
+        // Only process action if we haven't triggered it yet for this tile
+        if (action != 0 && !action_triggered)
         {
-            if (global_data_ptr->action_iterations[CONVO_GARBAGE_1_INIT] == 0)
+            action_triggered = true; // Mark as triggered
+
+            switch (action)
+            {
+            case CONVO_SCENE_1:
             {
                 ch_man->db.emplace();
-                ch_man->db->load(&garbage_01);
+                ch_man->db->load(&test_convo);
                 ch_man->db->init(ch_man);
+                break;
             }
-            break;
-        }
-        case CONVO_GARBAGE_2_INIT:
-        {
-            if (global_data_ptr->action_iterations[CONVO_GARBAGE_2_INIT] == 0)
+            case CONVO_GARBAGE_1:
             {
-                ch_man->db.emplace();
-                ch_man->db->load(&garbage_02);
-                ch_man->db->init(ch_man);
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_1] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
             }
-            break;
-        }
-        default:
-        {
-            break;
-        }
-        }
-
-        if (action != 0)
-        {
-            global_data_ptr->action_iterations[action]++;
+            case CONVO_GARBAGE_2:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_2] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_02);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[CONVO_GARBAGE_2] > 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_02b);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_GARBAGE_3:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_3] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_03);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case TO_GARBAGE_02:
+            {
+                global_data_ptr->entry_map = &map_garbage_02;
+                global_data_ptr->entry_position = {2, 6};
+                return 1;
+            }
+            case CONVO_GARBAGE_SIGN01:
+            {
+                    if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 1)
+                    {
+                        ch_man->db.emplace();
+                        ch_man->db->load(&garbage_sign01);
+                        ch_man->db->init(ch_man);
+                    }
+                    else if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 2)
+                    {
+                        ch_man->db.emplace();
+                        ch_man->db->load(&garbage_sign01b);
+                        ch_man->db->init(ch_man);
+                    }
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
         }
     }
 
@@ -318,6 +386,7 @@ ge_map_data.cpp:
 
 #include "ge_maps.h"
 #include "bn_regular_bg_items_map_garbage_01.h"
+#include "bn_regular_bg_items_map_garbage_02.h"
 #include "bn_regular_bg_items_map_room01.h"
 
 constexpr map map_garbage_01 = {
@@ -338,12 +407,39 @@ constexpr map map_garbage_01 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_garbage_01};
+
+
+
+constexpr map map_garbage_02 = {
+    {26, 12},
+    {1024, 1024},
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,6,3,3,3,3,3,3,3,15,17,3,4,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,7,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,8,2,2,2,2,2,2,2,2,2,14,16,12,0,0,0,0,0,0,0,0,0,0,6,0,
+	0,12,3,3,3,3,3,3,3,3,3,15,17,5,0,0,0,8,2,2,2,2,2,2,5,0,
+	0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,
+	0,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,
+	0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,
+	0,7,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,5,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_garbage_02};
 
 
 
@@ -426,6 +522,10 @@ v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 positio
 
 v_sprite_ptr::~v_sprite_ptr()
 {
+    // Clear sprites before removing from manager
+    sprite_ptr_raw.reset();
+    sprite_ptr_bottom.reset();
+    
     // Remove this instance from the manager
     for (auto it = manager.begin(); it != manager.end(); ++it)
     {
@@ -1155,6 +1255,7 @@ void dialogue_box::init(character_manager *ch_man)
 
         for (int t = 0; t < 3; t++)
         {
+            BN_LOG(line.raw_text[t]);
             lines[t].init(line.raw_text[t]);
             lines[t].size = line.size;
         }
@@ -1304,29 +1405,38 @@ int navigate_map()
         }
     }
 
-    while (true)
+    char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, true);
+
+    int loop_value = 0;
+    while (loop_value == 0)
     {
-        // Update all characters
-        action_listener(&current_map, &char_mgr);
         char_mgr.update(&current_map);
+        loop_value = action_listener(&current_map, &char_mgr);
         current_map.update();
-
-        bool is_ended = true;
-        if (char_mgr.db.has_value())
-            is_ended = char_mgr.db.value().is_ended();
-
-        v_sprite_ptr::update(is_ended);
+        bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
+        v_sprite_ptr::update(!dialogue_is_active);
         core::update();
     }
+    v_sprite_ptr::clear_all();
+    return loop_value;
 }
 
 int main()
 {
     core::init();
+
+    // Initial map
     global_data_ptr = new global_data();
     global_data_ptr->entry_map = &map_garbage_01;
-    global_data_ptr->entry_position = {9, 2};
-    navigate_map();
+    global_data_ptr->entry_position = {9, 5};
+
+    while (true)
+    {
+        BN_LOG("NEW MAP: ");
+        BN_LOG(global_data_ptr->entry_position.x, " - ", global_data_ptr->entry_position.y);
+        navigate_map();
+        core::update();
+    }
 }
 
 ge_actions.h: 
@@ -1374,7 +1484,7 @@ constexpr conversation garbage_01 = {
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Uh.. Sure.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Write it down cos", "it's super hard.", "\"1234\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "..Got it.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "Now if you'll excuse", "me, I'll be waiting", "for a DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {-1, 1}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "Now if you'll excuse", "me, I'll be waiting", "for a DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
     {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
@@ -1384,7 +1494,35 @@ constexpr conversation garbage_02 = {
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Cool.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
-constexpr conversation garbage_sign = {
+constexpr conversation garbage_02b = {
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Aaaaany moment now..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_03 = {
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "HEY HEY HEY", "Where do you think", "YOU'RE going?", false, SIZE_DEFAULT, SP_FAST, CHAR_VISKER, nullptr, {21, 7}},
+    {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Home?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "You do understand", "how dangerous it is", "for a human, right?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..Yes?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_WAT, ACT_DEFAULT, "Muetos hate humans.", "They'll all want", "you dead!", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..like you?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "I..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_DEFAULT, "Well played.", "", "Proceed.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_sign01 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "MT. GARBAGE", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "(No Littering)", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_sign01b = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Look, man,", "I'm a sign.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "I only say", "exactly one thing.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Not exactly a", "conversationalist.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_sign02 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "VISKER'S HOUSE", "NO HUMANS ALLOWED!!", "UNLESS YOU'RE DEAD", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
@@ -1491,9 +1629,12 @@ using namespace bn;
 enum action_list
 {
 	ACT_NONE,
-	CONVO_SCENE_1_INIT,
-	CONVO_GARBAGE_1_INIT,
-	CONVO_GARBAGE_2_INIT,
+	CONVO_SCENE_1,
+	CONVO_GARBAGE_1,
+	CONVO_GARBAGE_2,
+	CONVO_GARBAGE_3,
+	TO_GARBAGE_02,
+	CONVO_GARBAGE_SIGN01,
 	ACTIONS_SIZE
 };
 
@@ -1578,6 +1719,22 @@ struct map_manager
 
 #endif
 
+ge_map_data.h: 
+// Auto-Generated Map Header
+// This file contains extern declarations for all generated maps
+
+#ifndef GE_MAP_DATA_H
+#define GE_MAP_DATA_H
+
+#include "ge_maps.h"
+
+inline constexpr map map_garbage_01;
+inline constexpr map map_garbage_02;
+inline constexpr map map_room01;
+
+#endif // GE_MAP_DATA_H
+
+
 ge_sprites.h: 
 // ge_sprites.h
 
@@ -1629,6 +1786,18 @@ struct v_sprite_ptr
     bound real_position() const;
     void set_frame(int frame_);
     static void update(bool character_box_ended);
+
+    static void clear_all()
+    {
+        for (auto *item : manager)
+        {
+            if (item->sprite_ptr_raw.has_value())
+                item->sprite_ptr_raw.reset();
+            if (item->sprite_ptr_bottom.has_value())
+                item->sprite_ptr_bottom.reset();
+        }
+        manager.clear();
+    }
 };
 
 enum character_list

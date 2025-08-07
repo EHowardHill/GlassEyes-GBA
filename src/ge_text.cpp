@@ -251,6 +251,7 @@ void dialogue_box::init(character_manager *ch_man)
 
         for (int t = 0; t < 3; t++)
         {
+            BN_LOG(line.raw_text[t]);
             lines[t].init(line.raw_text[t]);
             lines[t].size = line.size;
         }

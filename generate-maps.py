@@ -153,12 +153,26 @@ maps = os.listdir(map_dir)
 
 map_data = {}
 full_headers = []
+map_names = []  # Track all map names for header generation
 
 file_template = """// Auto-Generated Map Template
 
 #include "ge_maps.h"
 $headers
 $data
+"""
+
+header_template = """// Auto-Generated Map Header
+// This file contains extern declarations for all generated maps
+
+#ifndef GE_MAP_DATA_H
+#define GE_MAP_DATA_H
+
+#include "ge_maps.h"
+
+$extern_declarations
+
+#endif // GE_MAP_DATA_H
 """
 
 for map in maps:
@@ -169,6 +183,7 @@ for map in maps:
 
     map_name = map.replace(".tmx", "")
     map_data[map_name] = {"name": map_name}
+    map_names.append(map_name)  # Store map name for header generation
 
     tileset = root.findall(".//tileset")[0].attrib["source"].replace("..", "bgs")
     with open(tileset, "r") as f:
@@ -248,9 +263,24 @@ for key in map_data.keys():
     full_data.append(new_entry)
     full_headers.append('#include "bn_regular_bg_items_map_' + key + '.h"')
 
+# Generate the .cpp file
 with open(os.path.join("src", "ge_map_data.cpp"), "w") as f:
     f.write(
         file_template.replace("$data", "\n".join(full_data)).replace(
             "$headers", "\n".join(full_headers)
+        )
+    )
+
+# Generate the .h header file
+extern_declarations = []
+for map_name in map_names:
+    extern_declarations.append(f"inline constexpr map map_{map_name};")
+
+includes_dir = "include"
+
+with open(os.path.join(includes_dir, "ge_map_data.h"), "w") as f:
+    f.write(
+        header_template.replace(
+            "$extern_declarations", "\n".join(extern_declarations)
         )
     )

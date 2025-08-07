@@ -52,27 +52,36 @@ int navigate_map()
         }
     }
 
-    while (true)
+    char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, true);
+
+    int loop_value = 0;
+    while (loop_value == 0)
     {
-        // Update all characters
-        action_listener(&current_map, &char_mgr);
         char_mgr.update(&current_map);
+        loop_value = action_listener(&current_map, &char_mgr);
         current_map.update();
-
-        bool is_ended = true;
-        if (char_mgr.db.has_value())
-            is_ended = char_mgr.db.value().is_ended();
-
-        v_sprite_ptr::update(is_ended);
+        bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
+        v_sprite_ptr::update(!dialogue_is_active);
         core::update();
     }
+    v_sprite_ptr::clear_all();
+    return loop_value;
 }
 
 int main()
 {
     core::init();
+
+    // Initial map
     global_data_ptr = new global_data();
     global_data_ptr->entry_map = &map_garbage_01;
-    global_data_ptr->entry_position = {9, 2};
-    navigate_map();
+    global_data_ptr->entry_position = {9, 5};
+
+    while (true)
+    {
+        BN_LOG("NEW MAP: ");
+        BN_LOG(global_data_ptr->entry_position.x, " - ", global_data_ptr->entry_position.y);
+        navigate_map();
+        core::update();
+    }
 }

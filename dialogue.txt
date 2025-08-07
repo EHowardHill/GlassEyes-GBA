@@ -29,7 +29,7 @@ garbage_01
 	db_ch_jeremy	EM_CONFUSED		Uh.. Sure.									
 	db_ch_visker	EM_DEFAULT		Write it down cos	it's super hard.	"""1234""."							
 	db_ch_jeremy	EM_CONFUSED		..Got it.									
-	db_ch_visker	EM_ANGRY		Now if you'll excuse	"me, I'll be waiting"	for a DEAD human.				CHAR_VISKER		"{-1, 1}"	
+	db_ch_visker	EM_ANGRY		Now if you'll excuse	"me, I'll be waiting"	for a DEAD human.				CHAR_VISKER		"{2, 2}"	
 		EM_SKIP	ACT_MUSIC_RESET										
 													
 garbage_02													
@@ -37,7 +37,30 @@ garbage_02
 	db_ch_visker	EM_HAPPY		..									
 	db_ch_jeremy	EM_CONFUSED		Cool.									
 													
-garbage_sign													
+garbage_02b													
+	db_ch_visker			Aaaaany moment now..									
+													
+garbage_03													
+	db_ch_visker	EM_ANGRY		HEY HEY HEY	Where do you think	YOU'RE going?			SP_FAST	CHAR_VISKER		"{21, 7}"	
+	db_ch_jeremy	EM_CONFUSED		Home?									
+	db_ch_visker	EM_SIDE_EYE		You do understand	how dangerous it is	"for a human, right?"							
+	db_ch_jeremy	EM_DEFAULT		..Yes?									
+	db_ch_visker	EM_WAT		Muetos hate humans.	They'll all want	you dead!							
+	db_ch_jeremy	EM_DEFAULT		..like you?									
+	db_ch_visker	EM_DEFAULT		I..									
+	db_ch_visker	EM_SIDE_EYE		..									
+	db_ch_visker	EM_ANNOYED		Well played.		Proceed.							
+		EM_SKIP								CHAR_VISKER		"{2, 2}"	
+													
+garbage_sign01													
+				MT. GARBAGE									
+				(No Littering)									
+													
+garbage_sign01b													
+				"Look, man,"	I'm a sign.								
+				I only say	exactly one thing.								
+				Not exactly a	conversationalist.								
+garbage_sign02													
 				VISKER'S HOUSE	NO HUMANS ALLOWED!!	UNLESS YOU'RE DEAD							
 													
 visker_h_01													

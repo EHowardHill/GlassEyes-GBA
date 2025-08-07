@@ -52,6 +52,10 @@ v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 positio
 
 v_sprite_ptr::~v_sprite_ptr()
 {
+    // Clear sprites before removing from manager
+    sprite_ptr_raw.reset();
+    sprite_ptr_bottom.reset();
+    
     // Remove this instance from the manager
     for (auto it = manager.begin(); it != manager.end(); ++it)
     {
