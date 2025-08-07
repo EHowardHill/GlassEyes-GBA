@@ -55,6 +55,7 @@ int navigate_map()
     char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, true);
 
     int loop_value = 0;
+    bool handle_frame = true;
     while (loop_value == 0)
     {
         char_mgr.update(&current_map);
@@ -62,7 +63,11 @@ int navigate_map()
         current_map.update();
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
         v_sprite_ptr::update(!dialogue_is_active);
-        core::update();
+        if (handle_frame) {
+            handle_frame = false;
+        } else {
+            core::update();
+        }
     }
     v_sprite_ptr::clear_all();
     return loop_value;
