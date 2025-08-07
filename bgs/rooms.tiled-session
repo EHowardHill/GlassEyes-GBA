@@ -18,10 +18,10 @@
         },
         "maps/garbage_01.tmx": {
             "scale": 4,
-            "selectedLayer": 3,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 285.25,
-                "y": 164.125
+                "x": 757.25,
+                "y": 249.625
             }
         },
         "maps/garbage_02.tmx": {

@@ -52,44 +52,39 @@ JEREMY
 (Terrified)
 
 VISKER
-No, no, no.. Relax, I'm not going to eat you *now*.
-I'll let you die first.
+Why couldn't you be dead? I wanted to eat you!
 
 JEREMY
-H-How do I get out of here?
+Well, EXCUSE me.
+
+VISKER
+*sigh* Fine. I forgive you.
+
+JEREMY
+How do I get out of here?
 
 VISKER
 Why would I tell you that? I like you where you are.
 
-Option A:
-    JEREMY
-    Leave me alone!
+JEREMY
+I can help.
+If you get me out of here, I'll, uh..
+I'll make sure to repay you!
 
-    VISKER
-    Fine! Good grief... What's his problem?
+VISKER
+...fine, but I'm a hungry man.
+You'll want to take a left, then a right, then another left.
+Once you get to the woods, don't stop until Avalon.
 
-    The mouse leaves.
+JEREMY
+Thank you..
 
-Option B:
-    JEREMY
-    I can help.
-    If you get me out of here, I'll, uh..
-    I'll make sure to repay you!
+VISKER
+When you get to the village,
+Send someone back here with a turkey or something, alright?
+I love it when they send turkey down the chute.
 
-    VISKER
-    ...fine, but I'm a hungry man.
-    You'll want to take a left, then a right, then another left.
-    Once you get to the woods, don't stop until Avalon.
-
-    JEREMY
-    Thank you..
-
-    VISKER
-    When you get to the village,
-    Send someone back here with a turkey or something, alright?
-    I love it when they send turkey down the chute.
-
-    The mouse leaves.
+The mouse leaves.
 
 Jeremy is a chemist. He's very good at mixing things.
 There are lots of small items to pick up.
@@ -108,10 +103,25 @@ INT.OUTPOST.DAY
 Jeremy wakes up in what seems to be some kind of outpost office.
 It's really worn down and probably not fit to live in.
 
-He walks around until he finds a Marelon in the corner, eating lime out of a jar.
+JEREMY
+Why do I smell like... limes?
+
+He walks around until he finds a Marelon in the corner, eating from a giant bowl of limes.
 
 GINGER
 Oh - you're awake? You're not.. super hurt, are you?
+
+JEREMY
+...Why do I smell like limes?
+
+GINGER
+Oh, I figured, since limes are antiseptic-
+
+JEREMY
+They aren't antiseptic.
+
+GINGER
+Oh. Oh no.
 
 JEREMY
 My leg is broken.
@@ -124,12 +134,11 @@ Do you want a lime?
 
 JEREMY
 ...
-Yes.
-Thank you.
-Has anyone ever told you that you look *just* like Vista S-
+Where did you even get those?
 
 GINGER
-Y-Yeah, I get that a lot, haha.
+Oh, the scientists who used to run this place had a huge jar of dehydrated limes.
+I, uh.. accidentally hydrated them all.
 I'm Ginger by the way.
 
 JEREMY

@@ -57,7 +57,7 @@ constexpr conversation garbage_02b = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_03 = {
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "HEY HEY HEY", "Where do you think", "YOU'RE going?", false, SIZE_DEFAULT, SP_FAST, CHAR_VISKER, nullptr, {21, 7}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "HEY HEY HEY", "Where do you think", "YOU'RE going?", false, SIZE_DEFAULT, SP_FAST, CHAR_VISKER, nullptr, {19, 6}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Home?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "You do understand", "how dangerous it is", "for a human, right?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..Yes?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -77,7 +77,7 @@ constexpr conversation garbage_sign01 = {
 constexpr conversation garbage_sign01b = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Look, man,", "I'm a sign.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "I only say", "exactly one thing.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Not exactly a", "conversationalist.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Not what you might", "call a", "conversationalist.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_sign02 = {

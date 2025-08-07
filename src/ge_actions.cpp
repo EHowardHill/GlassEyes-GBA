@@ -9,7 +9,8 @@
 #include "ge_map_data.cpp"
 
 static vector_2 previous_tile = {-1, -1};
-static bool action_triggered = false; // Add this flag
+static bool action_triggered = false;
+static bool buffer_active = false;
 
 void cue_dialogue(character_manager *ch_man, const dialogue_line *dl)
 {
@@ -36,6 +37,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
 
         // Get the action for current position
         int action = man->action(current_position);
+        bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -43,15 +45,42 @@ int action_listener(map_manager *man, character_manager *ch_man)
             action_triggered = false;
             previous_tile = current_tile;
 
-            // Increment counter when entering a new action tile
-            if (action != 0)
+            if (action != 0 && !is_interactive_action)
             {
                 global_data_ptr->action_iterations[action]++;
             }
         }
 
-        // Only process action if we haven't triggered it yet for this tile
-        if (action != 0 && !action_triggered)
+        if (is_interactive_action && keypad::a_pressed() && !buffer_active)
+        {
+            global_data_ptr->action_iterations[action]++;
+            buffer_active = true;
+
+            switch (action)
+            {
+            case CONVO_GARBAGE_SIGN01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_sign01);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 2)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_sign01b);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+        }
+        else if (action != 0 && !is_interactive_action && !action_triggered)
         {
             action_triggered = true; // Mark as triggered
 
@@ -106,27 +135,13 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_position = {2, 6};
                 return 1;
             }
-            case CONVO_GARBAGE_SIGN01:
-            {
-                    if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 1)
-                    {
-                        ch_man->db.emplace();
-                        ch_man->db->load(&garbage_sign01);
-                        ch_man->db->init(ch_man);
-                    }
-                    else if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 2)
-                    {
-                        ch_man->db.emplace();
-                        ch_man->db->load(&garbage_sign01b);
-                        ch_man->db->init(ch_man);
-                    }
-                break;
-            }
             default:
             {
                 break;
             }
             }
+        } else {
+            buffer_active = false;
         }
     }
 

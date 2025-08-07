@@ -10,7 +10,8 @@ ge_actions.cpp:
 #include "ge_map_data.cpp"
 
 static vector_2 previous_tile = {-1, -1};
-static bool action_triggered = false; // Add this flag
+static bool action_triggered = false;
+static bool buffer_active = false;
 
 void cue_dialogue(character_manager *ch_man, const dialogue_line *dl)
 {
@@ -37,6 +38,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
 
         // Get the action for current position
         int action = man->action(current_position);
+        bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -44,15 +46,42 @@ int action_listener(map_manager *man, character_manager *ch_man)
             action_triggered = false;
             previous_tile = current_tile;
 
-            // Increment counter when entering a new action tile
-            if (action != 0)
+            if (action != 0 && !is_interactive_action)
             {
                 global_data_ptr->action_iterations[action]++;
             }
         }
 
-        // Only process action if we haven't triggered it yet for this tile
-        if (action != 0 && !action_triggered)
+        if (is_interactive_action && keypad::a_pressed() && !buffer_active)
+        {
+            global_data_ptr->action_iterations[action]++;
+            buffer_active = true;
+
+            switch (action)
+            {
+            case CONVO_GARBAGE_SIGN01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_sign01);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 2)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_sign01b);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+        }
+        else if (action != 0 && !is_interactive_action && !action_triggered)
         {
             action_triggered = true; // Mark as triggered
 
@@ -107,27 +136,13 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_position = {2, 6};
                 return 1;
             }
-            case CONVO_GARBAGE_SIGN01:
-            {
-                    if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 1)
-                    {
-                        ch_man->db.emplace();
-                        ch_man->db->load(&garbage_sign01);
-                        ch_man->db->init(ch_man);
-                    }
-                    else if (global_data_ptr->action_iterations[CONVO_GARBAGE_SIGN01] == 2)
-                    {
-                        ch_man->db.emplace();
-                        ch_man->db->load(&garbage_sign01b);
-                        ch_man->db->init(ch_man);
-                    }
-                break;
-            }
             default:
             {
                 break;
             }
             }
+        } else {
+            buffer_active = false;
         }
     }
 
@@ -525,7 +540,7 @@ v_sprite_ptr::~v_sprite_ptr()
     // Clear sprites before removing from manager
     sprite_ptr_raw.reset();
     sprite_ptr_bottom.reset();
-    
+
     // Remove this instance from the manager
     for (auto it = manager.begin(); it != manager.end(); ++it)
     {
@@ -582,7 +597,7 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
     for (auto *item : manager)
     {
         bound bounds = item->real_position();
-        bound acceptable = screen;
+        bound acceptable = {screen.position, screen.width + 32, screen.height + 32};
 
         if (!dialogue_box_ended)
         {
@@ -808,6 +823,9 @@ void character::update(map_manager *current_map, bool db_inactive)
         face = DIR_LEFT;
     }
 
+    delta.x = delta.x * 2;
+    delta.y = delta.y * 2;
+
     // Pixel-perfect collision detection
     // Check future position for each axis separately
     bound future_bounds_x = v_sprite.bounds;
@@ -968,9 +986,12 @@ void character::update(map_manager *current_map, bool db_inactive)
 
 void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
 {
-    if (character_id == CHAR_JEREMY) {
+    if (character_id == CHAR_JEREMY)
+    {
         npc = false;
-    } else {
+    }
+    else
+    {
         npc = true;
     }
 
@@ -1519,7 +1540,7 @@ constexpr conversation garbage_sign01 = {
 constexpr conversation garbage_sign01b = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Look, man,", "I'm a sign.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "I only say", "exactly one thing.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Not exactly a", "conversationalist.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Not what you might", "call a", "conversationalist.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_sign02 = {

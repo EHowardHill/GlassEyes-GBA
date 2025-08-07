@@ -41,7 +41,7 @@ garbage_02b
 	db_ch_visker			Aaaaany moment now..									
 													
 garbage_03													
-	db_ch_visker	EM_ANGRY		HEY HEY HEY	Where do you think	YOU'RE going?			SP_FAST	CHAR_VISKER		"{21, 7}"	
+	db_ch_visker	EM_ANGRY		HEY HEY HEY	Where do you think	YOU'RE going?			SP_FAST	CHAR_VISKER		"{19, 6}"	
 	db_ch_jeremy	EM_CONFUSED		Home?									
 	db_ch_visker	EM_SIDE_EYE		You do understand	how dangerous it is	"for a human, right?"							
 	db_ch_jeremy	EM_DEFAULT		..Yes?									
@@ -59,7 +59,7 @@ garbage_sign01
 garbage_sign01b													
 				"Look, man,"	I'm a sign.								
 				I only say	exactly one thing.								
-				Not exactly a	conversationalist.								
+				Not what you might	call a	conversationalist.							
 garbage_sign02													
 				VISKER'S HOUSE	NO HUMANS ALLOWED!!	UNLESS YOU'RE DEAD							
 													

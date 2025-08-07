@@ -55,7 +55,7 @@ v_sprite_ptr::~v_sprite_ptr()
     // Clear sprites before removing from manager
     sprite_ptr_raw.reset();
     sprite_ptr_bottom.reset();
-    
+
     // Remove this instance from the manager
     for (auto it = manager.begin(); it != manager.end(); ++it)
     {
@@ -112,7 +112,7 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
     for (auto *item : manager)
     {
         bound bounds = item->real_position();
-        bound acceptable = screen;
+        bound acceptable = {screen.position, screen.width + 32, screen.height + 32};
 
         if (!dialogue_box_ended)
         {
@@ -338,6 +338,9 @@ void character::update(map_manager *current_map, bool db_inactive)
         face = DIR_LEFT;
     }
 
+    delta.x = delta.x * 2;
+    delta.y = delta.y * 2;
+
     // Pixel-perfect collision detection
     // Check future position for each axis separately
     bound future_bounds_x = v_sprite.bounds;
@@ -498,9 +501,12 @@ void character::update(map_manager *current_map, bool db_inactive)
 
 void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
 {
-    if (character_id == CHAR_JEREMY) {
+    if (character_id == CHAR_JEREMY)
+    {
         npc = false;
-    } else {
+    }
+    else
+    {
         npc = true;
     }
 
