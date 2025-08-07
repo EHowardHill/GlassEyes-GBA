@@ -201,7 +201,7 @@ void dialogue_box::load(conversation *new_conversation)
     index = 0;
     size = 0;
 
-    for (int i = 0; i < 64; i++) // Changed from 128 to 64 to match typedef
+    for (int i = 0; i < 64; i++)
     {
         if ((*active_conversation)[i].action == ACT_END)
         {
@@ -263,13 +263,16 @@ void dialogue_box::init(character_manager *ch_man)
             sound_items::sfx_knock.play();
             break;
         }
-        case ACT_MUSIC_VISKER: {
+        case ACT_MUSIC_VISKER:
+        {
             music::stop();
             music_items::theme_visker.play(0.75);
             break;
         }
-        case ACT_MUSIC_RESET: {
+        case ACT_MUSIC_RESET:
+        {
             music::stop();
+            global_data_ptr->bg_track->play(0.5);
             break;
         }
         default:

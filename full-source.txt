@@ -38,7 +38,8 @@ int action_listener(map_manager *man, character_manager *ch_man)
 
         // Get the action for current position
         int action = man->action(current_position);
-        bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01);
+        bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01 ||
+                                      action == CONVO_VISKER_SIGN);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -73,6 +74,13 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     ch_man->db->load(&garbage_sign01b);
                     ch_man->db->init(ch_man);
                 }
+                break;
+            }
+            case CONVO_VISKER_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign02);
+                ch_man->db->init(ch_man);
                 break;
             }
             default:
@@ -136,12 +144,50 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_position = {2, 6};
                 return 1;
             }
+            case TO_VISKERS_HOUSE:
+            {
+                global_data_ptr->entry_map = &map_viskers_house;
+                global_data_ptr->entry_position = {3, 5};
+                return 1;
+            }
+            case CONVO_VISKER_BED:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_BED] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&visker_h_03);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_VISKER_FOOD:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_FOOD] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&visker_h_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_VISKER_NIGHTSTAND:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_NIGHTSTAND] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&visker_h_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
             default:
             {
                 break;
             }
             }
-        } else {
+        }
+        else
+        {
             buffer_active = false;
         }
     }
@@ -403,6 +449,7 @@ ge_map_data.cpp:
 #include "bn_regular_bg_items_map_garbage_01.h"
 #include "bn_regular_bg_items_map_garbage_02.h"
 #include "bn_regular_bg_items_map_room01.h"
+#include "bn_regular_bg_items_map_viskers_house.h"
 
 constexpr map map_garbage_01 = {
     {24, 12},
@@ -436,8 +483,8 @@ constexpr map map_garbage_02 = {
     {1024, 1024},
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,6,3,3,3,3,3,3,3,15,17,3,4,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,7,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,8,2,2,2,2,2,2,2,2,2,14,16,12,0,0,0,0,0,0,0,0,0,0,6,0,
 	0,12,3,3,3,3,3,3,3,3,3,15,17,5,0,0,0,8,2,2,2,2,2,2,5,0,
 	0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,
@@ -478,6 +525,29 @@ constexpr map map_room01 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_room01};
+
+
+
+constexpr map map_viskers_house = {
+    {8, 8},
+    {256, 256},
+    {
+	0,0,0,0,0,0,0,0,
+	0,6,2,15,17,2,4,0,
+	0,12,54,0,0,0,13,0,
+	0,12,55,0,0,0,13,0,
+	0,12,0,0,0,0,13,0,
+	0,12,0,0,0,0,13,0,
+	0,10,3,0,0,3,11,0,
+	0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,13,0,0,0,0,10,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_viskers_house};
 
 
 
@@ -1223,7 +1293,7 @@ void dialogue_box::load(conversation *new_conversation)
     index = 0;
     size = 0;
 
-    for (int i = 0; i < 64; i++) // Changed from 128 to 64 to match typedef
+    for (int i = 0; i < 64; i++)
     {
         if ((*active_conversation)[i].action == ACT_END)
         {
@@ -1285,13 +1355,16 @@ void dialogue_box::init(character_manager *ch_man)
             sound_items::sfx_knock.play();
             break;
         }
-        case ACT_MUSIC_VISKER: {
+        case ACT_MUSIC_VISKER:
+        {
             music::stop();
             music_items::theme_visker.play(0.75);
             break;
         }
-        case ACT_MUSIC_RESET: {
+        case ACT_MUSIC_RESET:
+        {
             music::stop();
+            global_data_ptr->bg_track->play(0.5);
             break;
         }
         default:
@@ -1376,6 +1449,9 @@ main.cpp:
 #include "bn_string.h"
 #include "bn_keypad.h"
 #include "bn_list.h"
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_music_items_info.h"
 
 // Face Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
@@ -1434,9 +1510,12 @@ int navigate_map()
         current_map.update();
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
         v_sprite_ptr::update(!dialogue_is_active);
-        if (handle_frame) {
+        if (handle_frame)
+        {
             handle_frame = false;
-        } else {
+        }
+        else
+        {
             core::update();
         }
     }
@@ -1452,6 +1531,7 @@ int main()
     global_data_ptr = new global_data();
     global_data_ptr->entry_map = &map_garbage_01;
     global_data_ptr->entry_position = {9, 5};
+    global_data_ptr->bg_track = &music_items::bg_garbage;
 
     while (true)
     {
@@ -1555,18 +1635,13 @@ constexpr conversation visker_h_01 = {
 
 constexpr conversation visker_h_02 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "A pile of tabloids.", "Also Infinite Jest.", "All are dog-eared.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Under the desk..", "Oh dear..", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "You've never seen", "so many", "Reader's Digests.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation visker_h_03 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "His nest is made of", "discarded t-shirts.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Half of them are", "from the exact same", "family reunion.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
-
-constexpr conversation visker_h_04 = {
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "The air is very..", "\"thick\".", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "He seems to have used", "a liberal helping of", "air freshener.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "It's humbling to", "stand where no other", "human has stood.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Alive, at least.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);
@@ -1643,8 +1718,8 @@ ge_globals.h:
 #ifndef GE_GLOBALS_H
 #define GE_GLOBALS_H
 
+#include "bn_music_item.h"
 #include "bn_random.h"
-
 #include "ge_maps.h"
 
 using namespace bn;
@@ -1658,6 +1733,13 @@ enum action_list
 	CONVO_GARBAGE_3,
 	TO_GARBAGE_02,
 	CONVO_GARBAGE_SIGN01,
+	TO_VISKERS_HOUSE,
+	TO_GARBAGE_03,
+	TO_GARBAGE_02b,
+	CONVO_VISKER_SIGN,
+	CONVO_VISKER_BED,
+	CONVO_VISKER_NIGHTSTAND,
+	CONVO_VISKER_FOOD,
 	ACTIONS_SIZE
 };
 
@@ -1673,6 +1755,7 @@ struct global_data
 	int action_iterations[ACTIONS_SIZE] = {0};
 	const map *entry_map = nullptr;
 	vector_2 entry_position = {0, 0};
+	const music_item *bg_track;
 };
 
 // Declaration only - use 'extern' keyword
@@ -1754,6 +1837,7 @@ ge_map_data.h:
 inline constexpr map map_garbage_01;
 inline constexpr map map_garbage_02;
 inline constexpr map map_room01;
+inline constexpr map map_viskers_house;
 
 #endif // GE_MAP_DATA_H
 

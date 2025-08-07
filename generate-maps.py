@@ -21,7 +21,7 @@ def process_bmp(input_path, output_path):
     new_size = math.ceil(max_dim / 256) * 256
 
     # Create new square canvas with white background
-    new_img = Image.new("RGB", (new_size, new_size), (255, 255, 255))
+    new_img = Image.new("RGB", (new_size, new_size), (0, 0, 0))
 
     # Paste original image in top-left corner
     new_img.paste(img, (0, 0))
@@ -193,7 +193,14 @@ for map in maps:
         "bgs/tilesets/" + tileset_root.findall(".//image")[0].attrib["source"]
     )
 
-    lbl_blue = int(root.find(".//tileset[@source='../tilesets/blue-labels.tsx']").attrib["firstgid"]) - 1
+    lbl_blue = (
+        int(
+            root.find(".//tileset[@source='../tilesets/blue-labels.tsx']").attrib[
+                "firstgid"
+            ]
+        )
+        - 1
+    )
 
     # Find all layer elements
     layers = root.findall(".//layer")
@@ -217,7 +224,12 @@ for map in maps:
             tile_basis = [b if b != 0 else a for a, b in zip(tile_basis, list2)]
 
         elif layer_name in ["characters", "actions"]:
-            map_data[map_name][layer_name] = ','.join([str(int(x) - lbl_blue if int(x) != 0 else 0) for x in data_element.replace("\n", "").split(",")])
+            map_data[map_name][layer_name] = ",".join(
+                [
+                    str(int(x) - lbl_blue if int(x) != 0 else 0)
+                    for x in data_element.replace("\n", "").split(",")
+                ]
+            )
 
     create_tiled_bmp(
         tileset_path,
@@ -280,7 +292,5 @@ includes_dir = "include"
 
 with open(os.path.join(includes_dir, "ge_map_data.h"), "w") as f:
     f.write(
-        header_template.replace(
-            "$extern_declarations", "\n".join(extern_declarations)
-        )
+        header_template.replace("$extern_declarations", "\n".join(extern_declarations))
     )

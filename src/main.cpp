@@ -5,6 +5,9 @@
 #include "bn_string.h"
 #include "bn_keypad.h"
 #include "bn_list.h"
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_music_items_info.h"
 
 // Face Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
@@ -63,9 +66,12 @@ int navigate_map()
         current_map.update();
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
         v_sprite_ptr::update(!dialogue_is_active);
-        if (handle_frame) {
+        if (handle_frame)
+        {
             handle_frame = false;
-        } else {
+        }
+        else
+        {
             core::update();
         }
     }
@@ -81,6 +87,7 @@ int main()
     global_data_ptr = new global_data();
     global_data_ptr->entry_map = &map_garbage_01;
     global_data_ptr->entry_position = {9, 5};
+    global_data_ptr->bg_track = &music_items::bg_garbage;
 
     while (true)
     {

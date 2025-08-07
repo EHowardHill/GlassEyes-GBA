@@ -37,7 +37,8 @@ int action_listener(map_manager *man, character_manager *ch_man)
 
         // Get the action for current position
         int action = man->action(current_position);
-        bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01);
+        bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01 ||
+                                      action == CONVO_VISKER_SIGN);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -72,6 +73,13 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     ch_man->db->load(&garbage_sign01b);
                     ch_man->db->init(ch_man);
                 }
+                break;
+            }
+            case CONVO_VISKER_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign02);
+                ch_man->db->init(ch_man);
                 break;
             }
             default:
@@ -135,12 +143,54 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_position = {2, 6};
                 return 1;
             }
+            case TO_GARBAGE_02b {
+                global_data_ptr->entry_map = &map_garbage_02;
+                global_data_ptr->entry_position = {13, 2};
+                return 1;
+            } case TO_VISKERS_HOUSE:
+            {
+                global_data_ptr->entry_map = &map_viskers_house;
+                global_data_ptr->entry_position = {3, 5};
+                return 1;
+            }
+            case CONVO_VISKER_BED:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_BED] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&visker_h_03);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_VISKER_FOOD:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_FOOD] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&visker_h_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_VISKER_NIGHTSTAND:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_NIGHTSTAND] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&visker_h_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
             default:
             {
                 break;
             }
             }
-        } else {
+        }
+        else
+        {
             buffer_active = false;
         }
     }
