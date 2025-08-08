@@ -2,11 +2,18 @@
 #include "bn_list.h"
 #include "bn_unique_ptr.h"
 #include "bn_optional.h"
+#include "bn_music.h"
+#include "bn_sound_items.h"
 
 #include "ge_sprites.h"
 #include "ge_text.h"
 #include "ge_character_manager.h"
 #include "ge_maps.h"
+#include "ge_globals.h"
+
+#include "bn_sprite_items_hearts.h"
+
+using namespace bn;
 
 // Implementation in ge_character_manager.cpp
 character_manager::character_manager() : player_ptr(nullptr)
@@ -19,7 +26,8 @@ character *character_manager::add_character(int index, vector_2 position, bool i
         return nullptr;
 
     is_npc = true;
-    if (index == CHAR_JEREMY) {
+    if (index == CHAR_JEREMY)
+    {
         is_npc = false;
     }
 
@@ -98,9 +106,32 @@ character *character_manager::find_by_index(int index)
     return nullptr;
 }
 
+void character_manager::alert()
+{
+    vector_2 player_pos = player_ptr->v_sprite.real_position().position;
+
+    sprite_ptr alert_box = sprite_items::hearts.create_sprite(player_pos.x, player_pos.y - 48, 0);
+    music::stop();
+    sound_items::snd_alert.play();
+
+    for (int t = 0; t < 64; t++)
+    {
+        core::update();
+    }
+
+    global_data_ptr->entry_position_raw = player_pos;
+    global_data_ptr->entry_direction = player_ptr->face;
+    status = BATTLE;
+}
+
 void character_manager::update(map_manager *current_map)
 {
     bool db_inactive = true;
+
+    if (keypad::b_pressed())
+    {
+        alert();
+    }
 
     // Handle dialogue box
     if (db.has_value())

@@ -143,12 +143,19 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_garbage_02;
                 global_data_ptr->entry_position = {2, 6};
                 return 1;
+                break;
             }
-            case TO_VISKERS_HOUSE:
+            case TO_GARBAGE_02b: {
+                global_data_ptr->entry_map = &map_garbage_02;
+                global_data_ptr->entry_position = {13, 2};
+                return 1;
+                break;
+            } case TO_VISKERS_HOUSE:
             {
                 global_data_ptr->entry_map = &map_viskers_house;
                 global_data_ptr->entry_position = {3, 5};
                 return 1;
+                break;
             }
             case CONVO_VISKER_BED:
             {
@@ -200,11 +207,18 @@ ge_character_manager.cpp:
 #include "bn_list.h"
 #include "bn_unique_ptr.h"
 #include "bn_optional.h"
+#include "bn_music.h"
+#include "bn_sound_items.h"
 
 #include "ge_sprites.h"
 #include "ge_text.h"
 #include "ge_character_manager.h"
 #include "ge_maps.h"
+#include "ge_globals.h"
+
+#include "bn_sprite_items_hearts.h"
+
+using namespace bn;
 
 // Implementation in ge_character_manager.cpp
 character_manager::character_manager() : player_ptr(nullptr)
@@ -217,7 +231,8 @@ character *character_manager::add_character(int index, vector_2 position, bool i
         return nullptr;
 
     is_npc = true;
-    if (index == CHAR_JEREMY) {
+    if (index == CHAR_JEREMY)
+    {
         is_npc = false;
     }
 
@@ -296,9 +311,32 @@ character *character_manager::find_by_index(int index)
     return nullptr;
 }
 
+void character_manager::alert()
+{
+    vector_2 player_pos = player_ptr->v_sprite.real_position().position;
+
+    sprite_ptr alert_box = sprite_items::hearts.create_sprite(player_pos.x, player_pos.y - 48, 0);
+    music::stop();
+    sound_items::snd_alert.play();
+
+    for (int t = 0; t < 64; t++)
+    {
+        core::update();
+    }
+
+    global_data_ptr->entry_position_raw = player_pos;
+    global_data_ptr->entry_direction = player_ptr->face;
+    status = BATTLE;
+}
+
 void character_manager::update(map_manager *current_map)
 {
     bool db_inactive = true;
+
+    if (keypad::b_pressed())
+    {
+        alert();
+    }
 
     // Handle dialogue box
     if (db.has_value())
@@ -448,6 +486,7 @@ ge_map_data.cpp:
 #include "ge_maps.h"
 #include "bn_regular_bg_items_map_garbage_01.h"
 #include "bn_regular_bg_items_map_garbage_02.h"
+#include "bn_regular_bg_items_map_garbage_03.h"
 #include "bn_regular_bg_items_map_room01.h"
 #include "bn_regular_bg_items_map_viskers_house.h"
 
@@ -502,6 +541,33 @@ constexpr map map_garbage_02 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_garbage_02};
+
+
+
+constexpr map map_garbage_03 = {
+    {12, 12},
+    {512, 512},
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,
+	6,2,2,2,2,2,2,2,14,2,4,0,
+	0,0,0,0,0,0,0,0,0,0,13,0,
+	0,0,0,0,0,0,0,0,0,0,13,0,
+	7,3,3,3,3,3,27,4,0,0,13,0,
+	0,0,0,0,0,66,27,29,0,0,13,0,
+	0,0,0,0,0,67,28,30,0,0,13,0,
+	0,6,2,2,2,2,16,5,0,0,13,0,
+	0,0,0,0,0,0,0,0,0,0,13,0,
+	0,0,0,0,0,0,0,0,0,0,13,0,
+	0,7,3,3,3,3,3,3,3,3,5,0,
+	0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_garbage_03};
 
 
 
@@ -1326,12 +1392,24 @@ void dialogue_box::init(character_manager *ch_man)
             portrait.reset();
         }
 
+        if (line.action == ACT_SPAWN)
+        {
+            ch_man->add_character(line.index, line.navigate, true);
+        }
+
         auto ch = ch_man->find_by_index(line.index);
         if (ch)
         {
             if (line.navigate.x != 0 && line.navigate.y != 0)
             {
-                ch->move_to = line.navigate;
+                if (line.action == ACT_TELEPORT)
+                {
+                    ch->v_sprite.bounds.position = line.navigate;
+                }
+                else if (line.action == ACT_WALK)
+                {
+                    ch->move_to = line.navigate;
+                }
             }
             ch->idle_animation = line.anim;
 
@@ -1452,6 +1530,8 @@ main.cpp:
 #include "bn_music.h"
 #include "bn_music_items.h"
 #include "bn_music_items_info.h"
+#include "bn_sound_items.h"
+#include "bn_math.h"
 
 // Face Sprites
 #include "bn_sprite_items_db_ch_jeremy.h"
@@ -1461,6 +1541,7 @@ main.cpp:
 
 #include "bn_regular_bg_items_floor_wood01.h"
 
+#include "main.h"
 #include "ge_globals.h"
 #include "ge_sprites.h"
 #include "ge_text.h"
@@ -1470,7 +1551,35 @@ main.cpp:
 
 #include "ge_map_data.cpp"
 
+#include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_hearts.h"
+
 using namespace bn;
+
+vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
+{
+    fixed_t<4> dx = towards.x - from.x;
+    fixed_t<4> dy = towards.y - from.y;
+
+    fixed_t<4> distance = sqrt(dx * dx + dy * dy);
+
+    fixed_t<4> moveX = (dx / distance) * speed;
+    fixed_t<4> moveY = (dy / distance) * speed;
+
+    if (distance <= speed)
+    {
+        from.x = towards.x;
+        from.y = towards.y;
+    }
+    else
+    {
+        // Update position
+        from.x += moveX;
+        from.y += moveY;
+    }
+
+    return from;
+}
 
 int navigate_map()
 {
@@ -1503,7 +1612,7 @@ int navigate_map()
 
     int loop_value = 0;
     bool handle_frame = true;
-    while (loop_value == 0)
+    while (loop_value == CONTINUE && char_mgr.status == CONTINUE)
     {
         char_mgr.update(&current_map);
         loop_value = action_listener(&current_map, &char_mgr);
@@ -1519,8 +1628,68 @@ int navigate_map()
             core::update();
         }
     }
+
     v_sprite_ptr::clear_all();
-    return loop_value;
+    return loop_value + char_mgr.status;
+}
+
+enum BATTLE_STAGE
+{
+    stage_heart_moving,
+    stage_main
+};
+
+int battle_map()
+{
+    int stage = stage_heart_moving;
+    sound_items::snd_fight_start.play();
+    sprite_ptr heart = sprite_items::hearts.create_sprite(
+        global_data_ptr->entry_position_raw.x,
+        global_data_ptr->entry_position_raw.y - 32,
+        1);
+    heart.set_z_order(-1);
+
+    {
+        sprite_ptr character[2] = {
+            sprite_items::spr_jeremy_01.create_sprite(
+                global_data_ptr->entry_position_raw.x,
+                global_data_ptr->entry_position_raw.y - 32,
+                global_data_ptr->entry_direction * 2),
+            sprite_items::spr_jeremy_01.create_sprite(
+                global_data_ptr->entry_position_raw.x,
+                global_data_ptr->entry_position_raw.y,
+                (global_data_ptr->entry_direction * 2) + 1)};
+
+        for (int t = 0; t < 12; t++)
+        {
+            heart.set_visible(t % 4 >= 2);
+            core::update();
+        }
+    }
+
+    while (true)
+    {
+        if (stage == stage_heart_moving)
+        {
+            // Check if the heart is close enough to the center
+            if (bn::abs(heart.x()) <= 1 && bn::abs(heart.y()) <= 1)
+            {
+                // Snap to the final position and change the stage
+                heart.set_position(0, 0);
+                stage = stage_main; // Use '=' for assignment
+            }
+            else
+            {
+                // Use the moveTowards function you already have for smooth, diagonal movement!
+                vector_2 pos = {heart.position().x().integer(), heart.position().y().integer()};
+                vector_2 to_pos = {0, 0};
+                vector_2 new_pos = moveTowards(pos, to_pos, 2);
+                heart.set_position(new_pos.x, new_pos.y);
+            }
+        }
+
+        core::update();
+    }
 }
 
 int main()
@@ -1535,10 +1704,14 @@ int main()
 
     while (true)
     {
-        BN_LOG("NEW MAP: ");
-        BN_LOG(global_data_ptr->entry_position.x, " - ", global_data_ptr->entry_position.y);
-        navigate_map();
+        int value = navigate_map();
         core::update();
+
+        if (value == BATTLE)
+        {
+            value = battle_map();
+            core::update();
+        }
     }
 }
 
@@ -1558,11 +1731,11 @@ using namespace bn;
 #include "bn_sprite_items_db_ch_jeremy.h"
 
 constexpr conversation test_convo = {
-    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
+    {0, nullptr, EM_SKIP, ACT_WALK, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "In her cabin,", "most days were", "just the same.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her book", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_SFX_KNOCK, "But today,", "there was a knock", "at the door.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_DEFAULT, "Yes?", "Who is it?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_pickup, {1, 3}},
+    {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_WALK, "Yes?", "Who is it?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_pickup, {1, 3}},
     {0, &sprite_items::db_ch_vista, EM_SULLEN, ACT_DEFAULT, "Hmm,", "What could this be?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_HAPPY, ACT_DEFAULT, "\"Dear Vista,", "I don't know if you", "remember me..\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_EMBARRASSED, ACT_DEFAULT, "Let me think..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -1587,7 +1760,7 @@ constexpr conversation garbage_01 = {
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Uh.. Sure.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Write it down cos", "it's super hard.", "\"1234\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "..Got it.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "Now if you'll excuse", "me, I'll be waiting", "for a DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "Now if you'll excuse", "me, I'll be waiting", "for a DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
     {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
@@ -1602,7 +1775,8 @@ constexpr conversation garbage_02b = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_03 = {
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "HEY HEY HEY", "Where do you think", "YOU'RE going?", false, SIZE_DEFAULT, SP_FAST, CHAR_VISKER, nullptr, {19, 6}},
+    {0, &sprite_items::db_ch_visker, EM_SKIP, ACT_TELEPORT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {14, 5}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "HEY HEY HEY", "Where do you think", "YOU'RE going?", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {19, 6}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Home?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "You do understand", "how dangerous it is", "for a human, right?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..Yes?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -1677,14 +1851,14 @@ ge_character_manager.h:
 #include "bn_optional.h"
 #include "ge_sprites.h"
 #include "ge_text.h"
-
-using namespace bn;
+#include "main.h"
 
 struct character_manager
 {
     list<unique_ptr<character>, 64> characters;
     character *player_ptr;
     optional<dialogue_box> db;
+    int status = CONTINUE;
 
     character_manager();
 
@@ -1695,6 +1869,7 @@ struct character_manager
     character *find_at_position(vector_2 pos, int tolerance = 32);
     character *find_by_index(int index);
     void update(map_manager *current_map);
+    void alert();
     int size() const { return characters.size(); }
 
     template <typename Func>
@@ -1721,6 +1896,7 @@ ge_globals.h:
 #include "bn_music_item.h"
 #include "bn_random.h"
 #include "ge_maps.h"
+#include "ge_sprites.h"
 
 using namespace bn;
 
@@ -1755,6 +1931,9 @@ struct global_data
 	int action_iterations[ACTIONS_SIZE] = {0};
 	const map *entry_map = nullptr;
 	vector_2 entry_position = {0, 0};
+	vector_2 entry_position_raw = {0, 0};
+	int entry_direction = DIR_RIGHT;
+
 	const music_item *bg_track;
 };
 
@@ -1836,6 +2015,7 @@ ge_map_data.h:
 
 inline constexpr map map_garbage_01;
 inline constexpr map map_garbage_02;
+inline constexpr map map_garbage_03;
 inline constexpr map map_room01;
 inline constexpr map map_viskers_house;
 
@@ -2011,7 +2191,7 @@ enum actions
     ACT_TURN,
     ACT_WALK,
     ACT_TELEPORT,
-    ACT_CUE_EVENT,
+    ACT_SPAWN,
     ACT_MULTIPLE_CHOICE,
     ACT_END,
     ACT_SFX_KNOCK,
@@ -2151,3 +2331,17 @@ struct dialogue_box
 };
 
 #endif // GE_TEXT_H
+
+main.h: 
+// main.h
+
+#ifndef MAIN_H
+#define MAIN_H
+
+enum RETURN_TYPE {
+    CONTINUE,
+    NEW_MAP,
+    BATTLE
+};
+
+#endif

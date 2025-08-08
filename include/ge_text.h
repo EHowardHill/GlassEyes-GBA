@@ -23,7 +23,7 @@ enum actions
     ACT_TURN,
     ACT_WALK,
     ACT_TELEPORT,
-    ACT_CUE_EVENT,
+    ACT_SPAWN,
     ACT_MULTIPLE_CHOICE,
     ACT_END,
     ACT_SFX_KNOCK,

@@ -8,14 +8,14 @@
 #include "bn_optional.h"
 #include "ge_sprites.h"
 #include "ge_text.h"
-
-using namespace bn;
+#include "main.h"
 
 struct character_manager
 {
     list<unique_ptr<character>, 64> characters;
     character *player_ptr;
     optional<dialogue_box> db;
+    int status = CONTINUE;
 
     character_manager();
 
@@ -26,6 +26,7 @@ struct character_manager
     character *find_at_position(vector_2 pos, int tolerance = 32);
     character *find_by_index(int index);
     void update(map_manager *current_map);
+    void alert();
     int size() const { return characters.size(); }
 
     template <typename Func>

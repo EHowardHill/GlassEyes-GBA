@@ -142,16 +142,19 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_garbage_02;
                 global_data_ptr->entry_position = {2, 6};
                 return 1;
+                break;
             }
-            case TO_GARBAGE_02b {
+            case TO_GARBAGE_02b: {
                 global_data_ptr->entry_map = &map_garbage_02;
                 global_data_ptr->entry_position = {13, 2};
                 return 1;
+                break;
             } case TO_VISKERS_HOUSE:
             {
                 global_data_ptr->entry_map = &map_viskers_house;
                 global_data_ptr->entry_position = {3, 5};
                 return 1;
+                break;
             }
             case CONVO_VISKER_BED:
             {

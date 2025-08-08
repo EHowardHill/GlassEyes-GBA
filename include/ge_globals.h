@@ -6,6 +6,7 @@
 #include "bn_music_item.h"
 #include "bn_random.h"
 #include "ge_maps.h"
+#include "ge_sprites.h"
 
 using namespace bn;
 
@@ -40,6 +41,9 @@ struct global_data
 	int action_iterations[ACTIONS_SIZE] = {0};
 	const map *entry_map = nullptr;
 	vector_2 entry_position = {0, 0};
+	vector_2 entry_position_raw = {0, 0};
+	int entry_direction = DIR_RIGHT;
+
 	const music_item *bg_track;
 };
 

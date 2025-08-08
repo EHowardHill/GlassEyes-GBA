@@ -234,12 +234,24 @@ void dialogue_box::init(character_manager *ch_man)
             portrait.reset();
         }
 
+        if (line.action == ACT_SPAWN)
+        {
+            ch_man->add_character(line.index, line.navigate, true);
+        }
+
         auto ch = ch_man->find_by_index(line.index);
         if (ch)
         {
             if (line.navigate.x != 0 && line.navigate.y != 0)
             {
-                ch->move_to = line.navigate;
+                if (line.action == ACT_TELEPORT)
+                {
+                    ch->v_sprite.bounds.position = line.navigate;
+                }
+                else if (line.action == ACT_WALK)
+                {
+                    ch->move_to = line.navigate;
+                }
             }
             ch->idle_animation = line.anim;
 

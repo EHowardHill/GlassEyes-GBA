@@ -17,35 +17,43 @@
             "scaleInEditor": 1
         },
         "maps/garbage_01.tmx": {
-            "scale": 4,
-            "selectedLayer": 2,
+            "scale": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 789.25,
-                "y": 249.875
+                "x": 505.5,
+                "y": 218
             }
         },
         "maps/garbage_02.tmx": {
-            "scale": 3,
+            "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 484.66666666666663,
-                "y": 103.16666666666666
+                "x": 596.3333333333333,
+                "y": 166.66666666666666
+            }
+        },
+        "maps/garbage_03.tmx": {
+            "scale": 1.6055989583333334,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 164.1132106074122,
+                "y": 191.828724353256
             }
         },
         "maps/room01.tmx": {
             "scale": 2.1634765625,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 205.68746050374648,
-                "y": 128.03466642592758
+                "x": 211.00297914597814,
+                "y": 183.96316692245193
             }
         },
         "maps/viskers_house.tmx": {
             "scale": 1.8356770833333333,
-            "selectedLayer": 0,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 101.32501063980706,
-                "y": 177.86352674138178
+                "x": 107.58972903958008,
+                "y": 183.038728897716
             }
         },
         "tilesets/blue-labels.tsx": {
@@ -70,11 +78,11 @@
         }
     },
     "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts",
-    "map.height": 6,
+    "map.height": 12,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,
     "map.tileWidth": 32,
-    "map.width": 6,
+    "map.width": 12,
     "openFiles": [
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
