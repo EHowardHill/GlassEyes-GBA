@@ -53,6 +53,17 @@ enum STATUS_BAR_BUTTONS
     STATUS_BAR_SIZE
 };
 
+enum BATTLE_RESULT
+{
+    RESULT_FIRST,
+    RESULT_UP,
+    RESULT_DOWN,
+    RESULT_SPARE,
+    RESULT_LAST_WIN,
+    RESULT_LAST_LOSE,
+    RESULT_SIZE
+};
+
 struct attack_unit_dissolve
 {
     optional<sprite_ptr> spr;

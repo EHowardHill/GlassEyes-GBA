@@ -311,15 +311,16 @@ void recv::update()
 int battle_map()
 {
     int stage = stage_talking;
+    int result = RESULT_FIRST;
     character_manager char_mgr;
 
-    vector<conversation *, 64> convos;
+    vector<conversation *, 64> convos[RESULT_SIZE];
 
     switch (global_data_ptr->battle_foe)
     {
     case FOE_VISKERS_01:
     {
-        convos.push_back(&garbage_fight_01);
+        convos[RESULT_FIRST].push_back(&garbage_fight_01);
         break;
     }
     default:
@@ -426,6 +427,15 @@ int battle_map()
         {
         case stage_talking:
         {
+            if (global_data_ptr->enemy_hp[0] <= 0)
+            {
+                result = RESULT_LAST_WIN;
+            }
+            else if (global_data_ptr->hp[0] <= 0)
+            {
+                result = RESULT_LAST_LOSE;
+            }
+
             if (conversation_in_progress)
             {
                 if (!char_mgr.db.has_value())
@@ -441,12 +451,17 @@ int battle_map()
             }
             else if (!char_mgr.db.has_value())
             {
-                if (convos.size() > 0)
+                auto convo = &convos[result];
+
+                if (convo->size() > 0)
                 {
                     char_mgr.db.emplace();
-                    char_mgr.db->load(convos.at(0));
+                    char_mgr.db->load(convo->at(0));
                     char_mgr.db->init(&char_mgr);
-                    convos.erase(convos.begin());
+                    if (convo->size() > 1)
+                    {
+                        convo->erase(convo->begin());
+                    }
                     conversation_in_progress = true;
                 }
                 else
