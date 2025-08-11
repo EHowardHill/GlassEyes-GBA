@@ -26,38 +26,11 @@
 #include "ge_maps.h"
 #include "ge_character_manager.h"
 #include "ge_actions.h"
+#include "ge_battle.h"
 
 #include "ge_map_data.cpp"
 
-#include "bn_sprite_items_spr_jeremy_01.h"
-#include "bn_sprite_items_hearts.h"
-
 using namespace bn;
-
-vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
-{
-    fixed_t<4> dx = towards.x - from.x;
-    fixed_t<4> dy = towards.y - from.y;
-
-    fixed_t<4> distance = sqrt(dx * dx + dy * dy);
-
-    fixed_t<4> moveX = (dx / distance) * speed;
-    fixed_t<4> moveY = (dy / distance) * speed;
-
-    if (distance <= speed)
-    {
-        from.x = towards.x;
-        from.y = towards.y;
-    }
-    else
-    {
-        // Update position
-        from.x += moveX;
-        from.y += moveY;
-    }
-
-    return from;
-}
 
 int navigate_map()
 {
@@ -109,60 +82,6 @@ int navigate_map()
 
     v_sprite_ptr::clear_all();
     return loop_value + char_mgr.status;
-}
-
-enum BATTLE_STAGE
-{
-    stage_heart_moving,
-    stage_main
-};
-
-int battle_map()
-{
-    int stage = stage_heart_moving;
-    sound_items::snd_fight_start.play();
-    sprite_ptr heart = sprite_items::hearts.create_sprite(
-        global_data_ptr->entry_position_raw.x,
-        global_data_ptr->entry_position_raw.y - 32,
-        1);
-    heart.set_z_order(-1);
-
-    {
-        sprite_ptr character[2] = {
-            sprite_items::spr_jeremy_01.create_sprite(
-                global_data_ptr->entry_position_raw.x,
-                global_data_ptr->entry_position_raw.y - 32,
-                global_data_ptr->entry_direction * 2),
-            sprite_items::spr_jeremy_01.create_sprite(
-                global_data_ptr->entry_position_raw.x,
-                global_data_ptr->entry_position_raw.y,
-                (global_data_ptr->entry_direction * 2) + 1)};
-
-        for (int t = 0; t < 12; t++)
-        {
-            heart.set_visible(t % 4 >= 2);
-            core::update();
-        }
-    }
-
-    while (true)
-    {
-        if (stage == stage_heart_moving)
-        {
-            if (bn::abs(heart.x()) <= 1 && bn::abs(heart.y()) <= 1)
-            {
-                heart.set_position(0, 0);
-                stage = stage_main;
-            }
-            else
-            {
-                vector_2 new_pos = moveTowards({heart.position().x().integer(), heart.position().y().integer()}, {0, 0}, 2);
-                heart.set_position(new_pos.x, new_pos.y);
-            }
-        }
-
-        core::update();
-    }
 }
 
 int main()

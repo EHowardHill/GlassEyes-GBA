@@ -20,8 +20,8 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 505.5,
-                "y": 218
+                "x": 499,
+                "y": 305.5
             }
         },
         "maps/garbage_02.tmx": {
@@ -44,8 +44,8 @@
             "scale": 2.1634765625,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 211.00297914597814,
-                "y": 183.96316692245193
+                "x": 205.68746050374648,
+                "y": 128.03466642592758
             }
         },
         "maps/viskers_house.tmx": {

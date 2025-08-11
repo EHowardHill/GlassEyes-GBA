@@ -35,6 +35,11 @@ enum response_list
 	RESPONSES_SIZE
 };
 
+enum foes
+{
+	FOE_VISKERS_01
+};
+
 struct global_data
 {
 	random bn_random;
@@ -43,6 +48,11 @@ struct global_data
 	vector_2 entry_position = {0, 0};
 	vector_2 entry_position_raw = {0, 0};
 	int entry_direction = DIR_RIGHT;
+	int battle_foe = FOE_VISKERS_01;
+	int hp[4] = {20, 20, 20, 20};
+	int max_hp[4] = {20, 20, 20, 20};
+	int enemy_hp[4] = {20, 20, 20, 20};
+	int enemy_max_hp[4] = {20, 20, 20, 20};
 
 	const music_item *bg_track;
 };

@@ -124,7 +124,7 @@ void character_manager::alert()
     status = BATTLE;
 }
 
-void character_manager::update(map_manager *current_map)
+void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
 

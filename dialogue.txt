@@ -75,3 +75,19 @@ visker_h_02
 visker_h_03													
 				His nest is made of	discarded t-shirts.								
 				Half of them are	from the exact same	family reunion.							
+													
+garbage_04													
+	db_ch_visker	EM_SAD	ACT_WALK	So you're pretty	"close to the exit,"	"and I just, uh.."				CHAR_VISKER		"{7, 8}"	
+	db_ch_visker	EM_DEFAULT		I figured you didn't	"look like a FIGHTER,"	you know?							
+		EM_SULLEN		Since you'll be	doing a lot of it	"anyways,"							
+		EM_HAPPY		How 'bout we fight.									
+		EM_SIDE_EYE		"If you win, you'll"	be good enough for	the forest.							
+		EM_EXCITED		"If *I* win, then"	I get to eat you.								
+		EM_DEFAULT		Win-win scenario.									
+	db_ch_jeremy	EM_DEFAULT		I'm not really-									
+	db_ch_visker	EM_EXCITED		Great.	It's settled then.								
+													
+garbage_fight_01													
+	db_ch_visker	EM_DEFAULT		You see that?	That's your	"""THIRD EYE""."							
+	db_ch_visker	EM_DEFAULT		It's a direct	window to your soul.								
+	db_ch_visker	EM_EXCITED		I'll go first 'cos	I'm hungry as	all get-out.							

@@ -13,13 +13,6 @@ static vector_2 previous_tile = {-1, -1};
 static bool action_triggered = false;
 static bool buffer_active = false;
 
-void cue_dialogue(character_manager *ch_man, const dialogue_line *dl)
-{
-    ch_man->db.emplace();
-    ch_man->db->load(&test_convo);
-    ch_man->db->init(ch_man);
-};
-
 int action_listener(map_manager *man, character_manager *ch_man)
 {
     if (!ch_man->db.has_value())
@@ -145,12 +138,14 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return 1;
                 break;
             }
-            case TO_GARBAGE_02b: {
+            case TO_GARBAGE_02b:
+            {
                 global_data_ptr->entry_map = &map_garbage_02;
                 global_data_ptr->entry_position = {13, 2};
                 return 1;
                 break;
-            } case TO_VISKERS_HOUSE:
+            }
+            case TO_VISKERS_HOUSE:
             {
                 global_data_ptr->entry_map = &map_viskers_house;
                 global_data_ptr->entry_position = {3, 5};
@@ -201,6 +196,534 @@ int action_listener(map_manager *man, character_manager *ch_man)
 
     return NONE;
 }
+
+ge_battle.cpp: 
+#include "bn_core.h"
+#include "bn_log.h"
+#include "bn_regular_bg_item.h"
+#include "bn_string.h"
+#include "bn_keypad.h"
+#include "bn_list.h"
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_music_items_info.h"
+#include "bn_sound_items.h"
+#include "bn_math.h"
+
+#include "bn_camera_ptr.h"
+#include "bn_regular_bg_items_bg_battle_grid.h"
+#include "bn_regular_bg_items_bg_battle_box.h"
+#include "bn_regular_bg_items_bg_battle_action.h"
+#include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_spr_visker_01.h"
+#include "bn_sprite_items_hearts.h"
+#include "bn_sprite_items_battle_icons.h"
+#include "bn_sprite_items_battle_chars.h"
+#include "bn_sprite_items_battle_squares.h"
+
+#include "ge_character_manager.h"
+#include "ge_actions.h"
+#include "ge_globals.h"
+#include "ge_battle.h"
+
+using namespace bn;
+
+attack_bar::attack_bar(int y, int index)
+{
+    header = sprite_items::battle_chars.create_sprite(-42, y, index);
+    recv_bar = sprite_items::battle_squares.create_sprite(-10, y, index);
+    unit = sprite_items::battle_squares.create_sprite(64, y, 2);
+};
+
+void attack_bar::update()
+{
+    if (unit.has_value())
+    {
+        unit.value().set_x(unit.value().x() - 0.5);
+
+        if (keypad::a_pressed())
+        {
+
+            int distance = abs(unit.value().x().integer() - recv_bar.value().x().integer());
+            if (distance < 5)
+            {
+                global_data_ptr->enemy_hp[0] -= 5 - distance;
+            }
+
+            BN_LOG(global_data_ptr->enemy_hp[0]);
+
+            sound_items::snd_alert.play();
+            is_ended = true;
+        }
+
+        if (unit.value().x() <= -42)
+        {
+            unit.reset();
+            is_ended = true;
+        }
+    }
+};
+
+attack::attack()
+{
+    attack_bars.emplace_back(0, 0);
+}
+
+void attack::update()
+{
+    is_ended = true;
+    for (auto &bar : attack_bars)
+    {
+        bar.update();
+        if (!bar.is_ended)
+            is_ended = false;
+    }
+    if (is_ended)
+    {
+        // status_bar::selected_menu = STATUS_BAR_NONE;
+    }
+}
+
+int status_bar::selected_menu = STATUS_BAR_NONE;
+
+status_bar_items::status_bar_items()
+{
+    icon_label = {"* No Items", {-22, -12 + (18 * 0)}};
+    icon_label.value().render();
+}
+
+void status_bar_items::update()
+{
+    if (keypad::b_pressed())
+    {
+        sound_items::snd_alert.play();
+        status_bar::selected_menu = STATUS_BAR_NONE;
+    }
+}
+
+status_bar_menu::status_bar_menu()
+{
+    icon_label = {"ATTACK", {0, -12 + (18 * 0)}};
+    icon_label.value().render();
+
+    battle_icons[0] = sprite_items::battle_icons.create_sprite(-22, -12, 0);
+    battle_icons[1] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * 1), 1);
+    battle_icons[2] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * 2), 2);
+    battle_icons[3] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * 3), 3);
+    battle_icons[4] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * 4), 4);
+}
+
+void status_bar_menu::update_label()
+{
+    sound_items::snd_dialogue_generic.play();
+    icon_label.reset();
+    const char *label;
+    switch (index + 1)
+    {
+    case STATUS_BAR_ATTACK:
+    {
+        label = "ATTACK";
+        break;
+    }
+    case STATUS_BAR_ACT:
+    {
+        label = "ACT";
+        break;
+    }
+    case STATUS_BAR_ITEM:
+    {
+        label = "ITEM";
+        break;
+    }
+    case STATUS_BAR_SPARE:
+    {
+        label = "SPARE";
+        break;
+    }
+    case STATUS_BAR_DEFEND:
+    {
+        label = "DEFEND";
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+    icon_label = {label, {0, -12 + (18 * index)}};
+    icon_label.value().render();
+};
+
+void status_bar_menu::update()
+{
+    if (keypad::up_pressed())
+    {
+        index--;
+        if (index < 0) // Check against 0, not STATUS_BAR_ATTACK
+            index = 4; // Wrap to last item (DEFEND)
+        update_label();
+    }
+    else if (keypad::down_pressed())
+    {
+        index++;
+        if (index > 4)
+            index = 0;
+        update_label();
+    }
+    else if (keypad::a_pressed())
+    {
+        sound_items::snd_alert.play();
+        status_bar::selected_menu = index + 1;
+    }
+}
+
+status_bar::status_bar()
+{
+    char_img = sprite_items::battle_chars.create_sprite(-42, -42, 0);
+
+    string<20> hp_counter = "HP:";
+    hp_counter.push_back((char)((global_data_ptr->hp[0] / 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->hp[0] % 10) + 48));
+    hp_counter.push_back('/');
+    hp_counter.push_back((char)((global_data_ptr->max_hp[0] / 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->max_hp[0] % 10) + 48));
+
+    name = {"JEREMY", {0, -52}};
+    hp = {hp_counter, {0, -36}};
+
+    name.value().render();
+    hp.value().render();
+
+    sb_menu.emplace();
+};
+
+void status_bar::update()
+{
+    if (sb_menu.has_value())
+    {
+        sb_menu.value().update();
+
+        if (selected_menu != STATUS_BAR_NONE)
+        {
+            if (selected_menu == STATUS_BAR_ITEM)
+            {
+                sb_menu.reset();
+                sb_items.emplace();
+            }
+        }
+    }
+    else if (sb_items.has_value())
+    {
+        sb_items.value().update();
+
+        if (selected_menu == STATUS_BAR_NONE)
+        {
+            sb_items.reset();
+            sb_menu.emplace();
+        }
+    }
+};
+
+vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
+{
+    fixed_t<4> dx = towards.x - from.x;
+    fixed_t<4> dy = towards.y - from.y;
+
+    fixed_t<4> distance = sqrt(dx * dx + dy * dy);
+
+    fixed_t<4> moveX = (dx / distance) * speed;
+    fixed_t<4> moveY = (dy / distance) * speed;
+
+    if (distance <= speed)
+    {
+        from.x = towards.x;
+        from.y = towards.y;
+    }
+    else
+    {
+        from.x += moveX;
+        from.y += moveY;
+    }
+
+    return from;
+}
+
+recv::recv()
+{
+    for (int t = 0; t < 32; t++)
+    {
+        auto bullet = sprite_items::hearts.create_sprite((random_value % 100) - 50, -64 - (t * 14));
+        random_value = ((random_value + 17) * (random_value * 31));
+        bullets.push_back(bullet);
+    }
+}
+
+void recv::update()
+{
+    heart.set_position(eye_pos.x, eye_pos.y);
+
+    int delete_at = -1;
+    for (int t = 0; t < bullets.size(); t++)
+    {
+        auto bullet = &bullets.at(t);
+
+        switch (bullet_style)
+        {
+        case bullet_fall:
+        {
+            bullet->set_y(bullet->y() + 1);
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+
+        if (abs(eye_pos.x - bullet->x().integer()) + abs(eye_pos.y - bullet->y().integer()) < 12)
+        {
+            sound_items::sfx_damage.play();
+            global_data_ptr->hp[0] -= 2;
+            delete_at = t;
+        }
+    }
+    if (delete_at != -1)
+    {
+        bullets.erase(bullets.begin() + delete_at);
+    }
+
+    eye_pos.x += keypad::right_held();
+    eye_pos.x -= keypad::left_held();
+    eye_pos.y += keypad::down_held();
+    eye_pos.y -= keypad::up_held();
+    if (eye_pos.x < -48)
+        eye_pos.x = -48;
+    if (eye_pos.x > 48)
+        eye_pos.x = 48;
+    if (eye_pos.y < -48)
+        eye_pos.y = -48;
+    if (eye_pos.y > 48)
+        eye_pos.y = 48;
+
+    ticker++;
+}
+
+int battle_map()
+{
+    int stage = stage_talking;
+    character_manager char_mgr;
+
+    vector<conversation *, 64> convos;
+
+    switch (global_data_ptr->battle_foe)
+    {
+    case FOE_VISKERS_01:
+    {
+        convos.push_back(&garbage_fight_01);
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+
+    sound_items::snd_fight_start.play();
+    {
+        sprite_ptr heart = sprite_items::hearts.create_sprite(
+            global_data_ptr->entry_position_raw.x,
+            global_data_ptr->entry_position_raw.y - 32,
+            1);
+        heart.set_z_order(-1);
+
+        {
+            sprite_ptr character[2] = {
+                sprite_items::spr_jeremy_01.create_sprite(
+                    global_data_ptr->entry_position_raw.x,
+                    global_data_ptr->entry_position_raw.y - 32,
+                    global_data_ptr->entry_direction * 2),
+                sprite_items::spr_jeremy_01.create_sprite(
+                    global_data_ptr->entry_position_raw.x,
+                    global_data_ptr->entry_position_raw.y,
+                    (global_data_ptr->entry_direction * 2) + 1)};
+
+            for (int t = 0; t < 12; t++)
+            {
+                heart.set_visible(t % 4 >= 2);
+                core::update();
+            }
+        }
+
+        while (abs(heart.x()) <= 1 && abs(heart.y()) <= 1)
+        {
+            vector_2 new_pos = moveTowards({heart.x().integer(), heart.y().integer()}, {0, 0}, 2);
+            heart.set_position(new_pos.x, new_pos.y);
+            core::update();
+        }
+    }
+
+    auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
+
+    vector_2 player_pos = {-96, 16};
+    vector_2 enemy_pos = {96, 16};
+
+    sprite_ptr player01[2] = {
+        sprite_items::spr_jeremy_01.create_sprite(
+            player_pos.x,
+            player_pos.y - 32,
+            6),
+        sprite_items::spr_jeremy_01.create_sprite(
+            player_pos.x,
+            player_pos.y,
+            7)};
+
+    sprite_ptr enemy01[2] = {
+        sprite_items::spr_visker_01.create_sprite(
+            enemy_pos.x,
+            enemy_pos.y - 32,
+            0),
+        sprite_items::spr_visker_01.create_sprite(
+            enemy_pos.x,
+            enemy_pos.y,
+            1)};
+
+    enemy01[0].set_horizontal_flip(true);
+    enemy01[1].set_horizontal_flip(true);
+
+    int y_delta = 0;
+    bool conversation_in_progress = false;
+    bool should_transition_to_recv = false;
+
+    optional<recv> obj_recv;
+    optional<status_bar> obj_status_bar;
+    optional<attack> obj_attack;
+
+    while (true)
+    {
+        bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
+
+        player01[0].set_y(player_pos.y + y_delta - 32);
+        player01[1].set_y(player_pos.y + y_delta);
+        enemy01[0].set_y(player_pos.y + y_delta - 32);
+        enemy01[1].set_y(player_pos.y + y_delta);
+
+        if (char_mgr.db.has_value())
+        {
+            if (y_delta > -32)
+            {
+                y_delta -= 4;
+            }
+        }
+        else
+        {
+            if (y_delta < 0)
+            {
+                y_delta += 4;
+            }
+        }
+
+        switch (stage)
+        {
+        case stage_talking:
+        {
+            if (conversation_in_progress)
+            {
+                if (!char_mgr.db.has_value())
+                {
+                    conversation_in_progress = false;
+                    should_transition_to_recv = true;
+                }
+            }
+            else if (should_transition_to_recv)
+            {
+                stage = stage_recv;
+                should_transition_to_recv = false;
+            }
+            else if (!char_mgr.db.has_value())
+            {
+                if (convos.size() > 0)
+                {
+                    char_mgr.db.emplace();
+                    char_mgr.db->load(convos.at(0));
+                    char_mgr.db->init(&char_mgr);
+                    convos.erase(convos.begin());
+                    conversation_in_progress = true;
+                }
+                else
+                {
+                    should_transition_to_recv = true;
+                }
+            }
+            break;
+        }
+        case stage_recv:
+        {
+            if (global_data_ptr->enemy_hp[0] <= 0)
+            {
+                return CONTINUE;
+            }
+
+            if (!obj_recv.has_value())
+            {
+                obj_recv.emplace();
+            }
+            obj_recv.value().update();
+
+            if (obj_recv.value().ticker > 500)
+            {
+                obj_recv.reset();
+                stage = stage_status;
+            }
+            break;
+        }
+        case stage_status:
+        {
+            if (!obj_status_bar.has_value())
+            {
+                obj_status_bar.emplace();
+            }
+            else
+            {
+                obj_status_bar.value().update();
+
+                if (status_bar::selected_menu == STATUS_BAR_ATTACK)
+                {
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+                    stage = stage_attack;
+                }
+            }
+
+            break;
+        }
+        case stage_attack:
+        {
+            if (!obj_attack.has_value())
+            {
+                obj_attack.emplace();
+            }
+            else
+            {
+                obj_attack.value().update();
+                if (obj_attack.value().is_ended)
+                {
+                    obj_attack.reset();
+                    stage = stage_talking;
+                }
+            }
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+
+        char_mgr.update(nullptr);
+        core::update();
+    }
+}
+
 
 ge_character_manager.cpp: 
 #include "bn_log.h"
@@ -329,7 +852,7 @@ void character_manager::alert()
     status = BATTLE;
 }
 
-void character_manager::update(map_manager *current_map)
+void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
 
@@ -562,7 +1085,7 @@ constexpr map map_garbage_03 = {
 	0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-54,0,0,0,0,0,0,0,0,0,0,0,-51,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -1254,6 +1777,14 @@ text::text(const char *value, vector_2 start_) : start(start_)
         init(value);
 }
 
+text::text(const string<20> &value, vector_2 start_) : start(start_)
+{
+    reference = value;
+    letters.clear();
+    current_x = 0;
+    index = 0;
+}
+
 void text::init(const char *value)
 {
     if (!value)
@@ -1319,6 +1850,48 @@ void text::update(const bn::sprite_item *portrait = nullptr)
         current_x += spacing; // Use size-adjusted spacing instead of hardcoded 8
         index++;
     }
+}
+
+void text::render()
+{
+    do
+    {
+        int current_size = SIZE_DEFAULT;
+        int spacing = 8; // Default portrait spacing
+
+        // Adjust spacing based on size
+        if (current_size == SIZE_LARGE)
+        {
+            spacing = 16; // Larger spacing for large text
+        }
+        else if (current_size == SIZE_SMALL)
+        {
+            spacing = 6;
+        }
+
+        char ch = reference[index];
+
+        if (ch == ' ')
+        {
+            current_x += spacing;
+            index++;
+        }
+        else
+        {
+            // Create letter at current position
+            letter new_letter = {ch, {start.x + current_x, start.y}};
+
+            if (new_letter.char_index > -1)
+            {
+                letters.push_back(new_letter);
+                current_x += spacing;
+                index++;
+            }
+
+            BN_LOG(reference.size());
+        }
+
+    } while (index < reference.size());
 }
 
 bool text::is_ended()
@@ -1548,38 +2121,11 @@ main.cpp:
 #include "ge_maps.h"
 #include "ge_character_manager.h"
 #include "ge_actions.h"
+#include "ge_battle.h"
 
 #include "ge_map_data.cpp"
 
-#include "bn_sprite_items_spr_jeremy_01.h"
-#include "bn_sprite_items_hearts.h"
-
 using namespace bn;
-
-vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
-{
-    fixed_t<4> dx = towards.x - from.x;
-    fixed_t<4> dy = towards.y - from.y;
-
-    fixed_t<4> distance = sqrt(dx * dx + dy * dy);
-
-    fixed_t<4> moveX = (dx / distance) * speed;
-    fixed_t<4> moveY = (dy / distance) * speed;
-
-    if (distance <= speed)
-    {
-        from.x = towards.x;
-        from.y = towards.y;
-    }
-    else
-    {
-        // Update position
-        from.x += moveX;
-        from.y += moveY;
-    }
-
-    return from;
-}
 
 int navigate_map()
 {
@@ -1631,65 +2177,6 @@ int navigate_map()
 
     v_sprite_ptr::clear_all();
     return loop_value + char_mgr.status;
-}
-
-enum BATTLE_STAGE
-{
-    stage_heart_moving,
-    stage_main
-};
-
-int battle_map()
-{
-    int stage = stage_heart_moving;
-    sound_items::snd_fight_start.play();
-    sprite_ptr heart = sprite_items::hearts.create_sprite(
-        global_data_ptr->entry_position_raw.x,
-        global_data_ptr->entry_position_raw.y - 32,
-        1);
-    heart.set_z_order(-1);
-
-    {
-        sprite_ptr character[2] = {
-            sprite_items::spr_jeremy_01.create_sprite(
-                global_data_ptr->entry_position_raw.x,
-                global_data_ptr->entry_position_raw.y - 32,
-                global_data_ptr->entry_direction * 2),
-            sprite_items::spr_jeremy_01.create_sprite(
-                global_data_ptr->entry_position_raw.x,
-                global_data_ptr->entry_position_raw.y,
-                (global_data_ptr->entry_direction * 2) + 1)};
-
-        for (int t = 0; t < 12; t++)
-        {
-            heart.set_visible(t % 4 >= 2);
-            core::update();
-        }
-    }
-
-    while (true)
-    {
-        if (stage == stage_heart_moving)
-        {
-            // Check if the heart is close enough to the center
-            if (bn::abs(heart.x()) <= 1 && bn::abs(heart.y()) <= 1)
-            {
-                // Snap to the final position and change the stage
-                heart.set_position(0, 0);
-                stage = stage_main; // Use '=' for assignment
-            }
-            else
-            {
-                // Use the moveTowards function you already have for smooth, diagonal movement!
-                vector_2 pos = {heart.position().x().integer(), heart.position().y().integer()};
-                vector_2 to_pos = {0, 0};
-                vector_2 new_pos = moveTowards(pos, to_pos, 2);
-                heart.set_position(new_pos.x, new_pos.y);
-            }
-        }
-
-        core::update();
-    }
 }
 
 int main()
@@ -1818,6 +2305,24 @@ constexpr conversation visker_h_03 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Half of them are", "from the exact same", "family reunion.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
+constexpr conversation garbage_04 = {
+    {0, &sprite_items::db_ch_visker, EM_SAD, ACT_WALK, "So you're pretty", "close to the exit,", "and I just, uh..", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {7, 8}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "I figured you didn't", "look like a FIGHTER,", "you know?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_SULLEN, ACT_DEFAULT, "Since you'll be", "doing a lot of it", "anyways,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_HAPPY, ACT_DEFAULT, "How 'bout we fight.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_SIDE_EYE, ACT_DEFAULT, "If you win, you'll", "be good enough for", "the forest.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_EXCITED, ACT_DEFAULT, "If *I* win, then", "I get to eat you.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Win-win scenario.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I'm not really-", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "Great.", "It's settled then.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_fight_01 = {
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "You see that?", "That's your", "\"THIRD EYE\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "It's a direct", "window to your soul.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "I'll go first 'cos", "I'm hungry as", "all get-out.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
 int action_listener(map_manager *man, character_manager *ch_man);
 
 ge_animations.h: 
@@ -1839,6 +2344,149 @@ const animation visker_poke = {{9, 10}, 2, SP_DEFAULT, true};
 
 // Jeremy
 const animation jeremy_lay_down = {{9}, 1, SP_DEFAULT, true};
+
+ge_battle.h: 
+#ifndef GE_BATTLE_H
+#define GE_BATTLE_H
+
+#include "bn_core.h"
+#include "bn_log.h"
+#include "bn_regular_bg_item.h"
+#include "bn_string.h"
+#include "bn_keypad.h"
+#include "bn_list.h"
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_music_items_info.h"
+#include "bn_sound_items.h"
+#include "bn_math.h"
+
+#include "bn_camera_ptr.h"
+#include "bn_regular_bg_items_bg_battle_grid.h"
+#include "bn_regular_bg_items_bg_battle_box.h"
+#include "bn_regular_bg_items_bg_battle_action.h"
+#include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_spr_visker_01.h"
+#include "bn_sprite_items_hearts.h"
+#include "bn_sprite_items_battle_icons.h"
+#include "bn_sprite_items_battle_chars.h"
+
+#include "ge_text.h"
+
+using namespace bn;
+
+enum BATTLE_STAGE
+{
+    stage_heart_moving,
+    stage_main,
+    stage_talking,
+    stage_recv,
+    stage_status,
+    stage_attack
+};
+
+enum BULLET_STYLE
+{
+    bullet_fall
+};
+
+enum STATUS_BAR_BUTTONS
+{
+    STATUS_BAR_NONE,
+    STATUS_BAR_ATTACK,
+    STATUS_BAR_ACT,
+    STATUS_BAR_ITEM,
+    STATUS_BAR_SPARE,
+    STATUS_BAR_DEFEND,
+    STATUS_BAR_SIZE
+};
+
+struct attack_unit_dissolve
+{
+    optional<sprite_ptr> spr;
+};
+
+struct attack_bar
+{
+    optional<sprite_ptr> header;
+    optional<sprite_ptr> recv_bar;
+    optional<sprite_ptr> unit;
+    vector<attack_unit_dissolve, 5> dissolves;
+    bool is_ended = false;
+
+    attack_bar(int y_delta, int index);
+    void update();
+};
+
+struct attack
+{
+    vector<attack_bar, 3> attack_bars;
+    bool is_ended = false;
+
+    attack();
+    void update();
+};
+
+struct status_bar_items
+{
+    optional<text> icon_label;
+    int index = 0;
+
+    status_bar_items();
+
+    void update_label();
+    void update();
+};
+
+struct status_bar_menu
+{
+    optional<sprite_ptr> battle_icons[5];
+    optional<text> icon_label;
+    int index = 0;
+
+    status_bar_menu();
+
+    void update_label();
+    void update();
+};
+
+struct status_bar
+{
+    optional<sprite_ptr> char_img;
+    optional<text> name;
+    optional<text> hp;
+    regular_bg_ptr action_bg = regular_bg_items::bg_battle_action.create_bg(0, 0);
+
+    static int selected_menu;
+    optional<status_bar_menu> sb_menu;
+    optional<status_bar_items> sb_items;
+
+    status_bar();
+    void update();
+};
+
+struct recv
+{
+    int ticker = 0;
+    vector<sprite_ptr, 64> bullets;
+    int bullet_style = bullet_fall;
+    regular_bg_ptr bg_action = regular_bg_items::bg_battle_box.create_bg(0, 0);
+    vector_2 eye_pos = {0, 0};
+    unsigned int random_value = 32;
+    sprite_ptr heart = sprite_items::hearts.create_sprite(
+        0,
+        0,
+        1);
+
+    recv();
+    void update();
+    void spawn_bullets();
+};
+
+vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed);
+int battle_map();
+
+#endif
 
 ge_character_manager.h: 
 // ge_character_manager.h
@@ -1925,6 +2573,11 @@ enum response_list
 	RESPONSES_SIZE
 };
 
+enum foes
+{
+	FOE_VISKERS_01
+};
+
 struct global_data
 {
 	random bn_random;
@@ -1933,6 +2586,11 @@ struct global_data
 	vector_2 entry_position = {0, 0};
 	vector_2 entry_position_raw = {0, 0};
 	int entry_direction = DIR_RIGHT;
+	int battle_foe = FOE_VISKERS_01;
+	int hp[4] = {20, 20, 20, 20};
+	int max_hp[4] = {20, 20, 20, 20};
+	int enemy_hp[4] = {20, 20, 20, 20};
+	int enemy_max_hp[4] = {20, 20, 20, 20};
 
 	const music_item *bg_track;
 };
@@ -2261,6 +2919,7 @@ struct text
     void init(const char *value);
     void init(const string<20> &value);
     void update(const sprite_item * portrait);
+    void render();
     void set_position(int x, int y);
     bool is_ended();
 };

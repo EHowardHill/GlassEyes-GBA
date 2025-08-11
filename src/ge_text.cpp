@@ -96,6 +96,14 @@ text::text(const char *value, vector_2 start_) : start(start_)
         init(value);
 }
 
+text::text(const string<20> &value, vector_2 start_) : start(start_)
+{
+    reference = value;
+    letters.clear();
+    current_x = 0;
+    index = 0;
+}
+
 void text::init(const char *value)
 {
     if (!value)
@@ -161,6 +169,48 @@ void text::update(const bn::sprite_item *portrait = nullptr)
         current_x += spacing; // Use size-adjusted spacing instead of hardcoded 8
         index++;
     }
+}
+
+void text::render()
+{
+    do
+    {
+        int current_size = SIZE_DEFAULT;
+        int spacing = 8; // Default portrait spacing
+
+        // Adjust spacing based on size
+        if (current_size == SIZE_LARGE)
+        {
+            spacing = 16; // Larger spacing for large text
+        }
+        else if (current_size == SIZE_SMALL)
+        {
+            spacing = 6;
+        }
+
+        char ch = reference[index];
+
+        if (ch == ' ')
+        {
+            current_x += spacing;
+            index++;
+        }
+        else
+        {
+            // Create letter at current position
+            letter new_letter = {ch, {start.x + current_x, start.y}};
+
+            if (new_letter.char_index > -1)
+            {
+                letters.push_back(new_letter);
+                current_x += spacing;
+                index++;
+            }
+
+            BN_LOG(reference.size());
+        }
+
+    } while (index < reference.size());
 }
 
 bool text::is_ended()

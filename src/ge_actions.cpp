@@ -12,13 +12,6 @@ static vector_2 previous_tile = {-1, -1};
 static bool action_triggered = false;
 static bool buffer_active = false;
 
-void cue_dialogue(character_manager *ch_man, const dialogue_line *dl)
-{
-    ch_man->db.emplace();
-    ch_man->db->load(&test_convo);
-    ch_man->db->init(ch_man);
-};
-
 int action_listener(map_manager *man, character_manager *ch_man)
 {
     if (!ch_man->db.has_value())
@@ -144,12 +137,14 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return 1;
                 break;
             }
-            case TO_GARBAGE_02b: {
+            case TO_GARBAGE_02b:
+            {
                 global_data_ptr->entry_map = &map_garbage_02;
                 global_data_ptr->entry_position = {13, 2};
                 return 1;
                 break;
-            } case TO_VISKERS_HOUSE:
+            }
+            case TO_VISKERS_HOUSE:
             {
                 global_data_ptr->entry_map = &map_viskers_house;
                 global_data_ptr->entry_position = {3, 5};

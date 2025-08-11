@@ -12,6 +12,7 @@
         "iterator": "cpp",
         "string_view": "cpp",
         "initializer_list": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "atomic": "cpp"
     }
 }
