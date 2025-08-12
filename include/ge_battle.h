@@ -18,6 +18,7 @@
 #include "bn_regular_bg_items_bg_battle_box.h"
 #include "bn_regular_bg_items_bg_battle_action.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_jeremy_battle_intro.h"
 #include "bn_sprite_items_spr_visker_01.h"
 #include "bn_sprite_items_hearts.h"
 #include "bn_sprite_items_battle_icons.h"

@@ -91,3 +91,15 @@ garbage_fight_01
 	db_ch_visker	EM_DEFAULT		You see that?	That's your	"""THIRD EYE""."							
 	db_ch_visker	EM_DEFAULT		It's a direct	window to your soul.								
 	db_ch_visker	EM_EXCITED		I'll go first 'cos	I'm hungry as	all get-out.							
+													
+garbage_fight_02													
+	db_ch_visker	EM_DISAPPOINTED		You seem pretty	"good at this, huh?"								
+	db_ch_visker	EM_SULLEN		Let's try THIS then!									
+													
+garbage_fight_03													
+	db_ch_visker	EM_ANNOYED		Ow									
+													
+garbage_fight_04													
+	db_ch_visker	EM_DISAPPOINTED		"Okay, fair's fair."	You may proceed.								
+	db_ch_visker	EM_DEFAULT		But if you die	out there..	"Remember,"							
+	db_ch_visker	EM_HAPPY		All trash makes its	way back to Visker.	Eventually.							

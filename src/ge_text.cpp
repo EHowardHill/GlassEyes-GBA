@@ -33,6 +33,8 @@ constexpr char alphabet[] = {
     '[', ']', '\\', '{', '}', '|', ';', '\'', ':', '"', ',', '.', '/',
     '<', '>', '?'};
 
+vector<toast, 16> text::toasts;
+
 letter::letter(char ch, vector_2 ideal_position_) : ideal_position(ideal_position_)
 {
     char_index = -1;
@@ -409,4 +411,111 @@ bool dialogue_box::is_ended()
         return true;
     }
     return (*active_conversation)[index].action == ACT_END;
+}
+
+char digit_conv(int digit)
+{
+    return (char)((digit % 10) + 48);
+}
+
+void text::add_toast(string<20> value, vector_2 pos)
+{
+    toast new_toast;
+
+    if (text::at_location(pos))
+    {
+        pos.y -= 16;
+    }
+
+    new_toast.value = text(value, pos);
+    new_toast.ticker = 0;
+    text::toasts.push_back(new_toast);
+
+    // Render the new toast
+    text::toasts.back().value.render();
+}
+
+void text::add_toast(int value, vector_2 pos)
+{
+    string<20> temp;
+
+    // Handle zero case
+    if (value == 0)
+    {
+        temp.push_back('0');
+    }
+    else
+    {
+        // Check if negative and store the sign
+        bool is_negative = false;
+        if (value < 0)
+        {
+            is_negative = true;
+            value = -value; // Make it positive for digit extraction
+        }
+
+        // Extract digits and store them in reverse
+        string<20> reversed;
+        while (value > 0)
+        {
+            reversed.push_back(digit_conv(value));
+            value = value / 10;
+        }
+
+        // Add negative sign first if needed
+        if (is_negative)
+        {
+            temp.push_back('-');
+        }
+
+        // Now push the digits to temp in correct order
+        for (int i = reversed.size() - 1; i >= 0; i--)
+        {
+            temp.push_back(reversed[i]);
+        }
+    }
+
+    toast new_toast;
+
+    if (text::at_location(pos))
+    {
+        pos.y -= 16;
+    }
+
+    new_toast.value = text(temp, pos);
+    new_toast.ticker = 0;
+    text::toasts.push_back(new_toast);
+
+    // Render the new toast
+    text::toasts.back().value.render();
+}
+
+bool text::at_location(vector_2 pos)
+{
+    for (auto &t : text::toasts)
+    {
+        if (t.value.start.x == pos.x && t.value.start.y == pos.y)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void text::update_toasts()
+{
+    int delete_toast = -1;
+    for (int t = 0; t < text::toasts.size(); t++)
+    {
+        text::toasts.at(t).ticker++;
+
+        if (text::toasts.at(t).ticker > 96)
+        {
+            delete_toast = t;
+        }
+    }
+    if (delete_toast > -1)
+    {
+        text::toasts.erase(text::toasts.begin() + delete_toast);
+    }
 }

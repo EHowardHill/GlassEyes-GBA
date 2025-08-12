@@ -48,6 +48,7 @@ void attack_bar::update()
             if (distance < 5)
             {
                 global_data_ptr->enemy_hp[0] -= 5 - distance;
+                text::add_toast((5 - distance) * -1, {96, -36});
             }
 
             BN_LOG(global_data_ptr->enemy_hp[0]);
@@ -284,6 +285,7 @@ void recv::update()
         {
             sound_items::sfx_damage.play();
             global_data_ptr->hp[0] -= 2;
+            text::add_toast(-2, {-96, -36});
             delete_at = t;
         }
     }
@@ -314,6 +316,8 @@ int battle_map()
     int result = RESULT_FIRST;
     character_manager char_mgr;
 
+    int player_ticker = 0;
+
     vector<conversation *, 64> convos[RESULT_SIZE];
 
     switch (global_data_ptr->battle_foe)
@@ -321,6 +325,9 @@ int battle_map()
     case FOE_VISKERS_01:
     {
         convos[RESULT_FIRST].push_back(&garbage_fight_01);
+        convos[RESULT_UP].push_back(&garbage_fight_02);
+        convos[RESULT_UP].push_back(&garbage_fight_03);
+        convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
         break;
     }
     default:
@@ -368,15 +375,10 @@ int battle_map()
     vector_2 player_pos = {-96, 16};
     vector_2 enemy_pos = {96, 16};
 
-    sprite_ptr player01[2] = {
-        sprite_items::spr_jeremy_01.create_sprite(
-            player_pos.x,
-            player_pos.y - 32,
-            6),
-        sprite_items::spr_jeremy_01.create_sprite(
-            player_pos.x,
-            player_pos.y,
-            7)};
+    sprite_ptr player01 = sprite_items::jeremy_battle_intro.create_sprite(
+        player_pos.x,
+        player_pos.y,
+        0);
 
     sprite_ptr enemy01[2] = {
         sprite_items::spr_visker_01.create_sprite(
@@ -403,8 +405,14 @@ int battle_map()
     {
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
-        player01[0].set_y(player_pos.y + y_delta - 32);
-        player01[1].set_y(player_pos.y + y_delta);
+        if (player_ticker < (11 * 5))
+        {
+            player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
+            player_ticker++;
+        }
+
+        player01.set_y(player_pos.y + y_delta);
+
         enemy01[0].set_y(player_pos.y + y_delta - 32);
         enemy01[1].set_y(player_pos.y + y_delta);
 
@@ -458,10 +466,7 @@ int battle_map()
                     char_mgr.db.emplace();
                     char_mgr.db->load(convo->at(0));
                     char_mgr.db->init(&char_mgr);
-                    if (convo->size() > 1)
-                    {
-                        convo->erase(convo->begin());
-                    }
+                    convo->erase(convo->begin());
                     conversation_in_progress = true;
                 }
                 else
@@ -524,6 +529,7 @@ int battle_map()
                 {
                     obj_attack.reset();
                     stage = stage_talking;
+                    result = RESULT_UP;
                 }
             }
             break;
@@ -534,6 +540,7 @@ int battle_map()
         }
         }
 
+        text::update_toasts();
         char_mgr.update(nullptr);
         core::update();
     }

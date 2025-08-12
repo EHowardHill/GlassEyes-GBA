@@ -248,6 +248,7 @@ void attack_bar::update()
             if (distance < 5)
             {
                 global_data_ptr->enemy_hp[0] -= 5 - distance;
+                text::add_toast((5 - distance) * -1, {96, -36});
             }
 
             BN_LOG(global_data_ptr->enemy_hp[0]);
@@ -484,6 +485,7 @@ void recv::update()
         {
             sound_items::sfx_damage.play();
             global_data_ptr->hp[0] -= 2;
+            text::add_toast(-2, {-96, -36});
             delete_at = t;
         }
     }
@@ -514,6 +516,8 @@ int battle_map()
     int result = RESULT_FIRST;
     character_manager char_mgr;
 
+    int player_ticker = 0;
+
     vector<conversation *, 64> convos[RESULT_SIZE];
 
     switch (global_data_ptr->battle_foe)
@@ -521,6 +525,9 @@ int battle_map()
     case FOE_VISKERS_01:
     {
         convos[RESULT_FIRST].push_back(&garbage_fight_01);
+        convos[RESULT_UP].push_back(&garbage_fight_02);
+        convos[RESULT_UP].push_back(&garbage_fight_03);
+        convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
         break;
     }
     default:
@@ -568,15 +575,10 @@ int battle_map()
     vector_2 player_pos = {-96, 16};
     vector_2 enemy_pos = {96, 16};
 
-    sprite_ptr player01[2] = {
-        sprite_items::spr_jeremy_01.create_sprite(
-            player_pos.x,
-            player_pos.y - 32,
-            6),
-        sprite_items::spr_jeremy_01.create_sprite(
-            player_pos.x,
-            player_pos.y,
-            7)};
+    sprite_ptr player01 = sprite_items::jeremy_battle_intro.create_sprite(
+        player_pos.x,
+        player_pos.y,
+        0);
 
     sprite_ptr enemy01[2] = {
         sprite_items::spr_visker_01.create_sprite(
@@ -603,8 +605,14 @@ int battle_map()
     {
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
-        player01[0].set_y(player_pos.y + y_delta - 32);
-        player01[1].set_y(player_pos.y + y_delta);
+        if (player_ticker < (11 * 5))
+        {
+            player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
+            player_ticker++;
+        }
+
+        player01.set_y(player_pos.y + y_delta);
+
         enemy01[0].set_y(player_pos.y + y_delta - 32);
         enemy01[1].set_y(player_pos.y + y_delta);
 
@@ -627,6 +635,15 @@ int battle_map()
         {
         case stage_talking:
         {
+            if (global_data_ptr->enemy_hp[0] <= 0)
+            {
+                result = RESULT_LAST_WIN;
+            }
+            else if (global_data_ptr->hp[0] <= 0)
+            {
+                result = RESULT_LAST_LOSE;
+            }
+
             if (conversation_in_progress)
             {
                 if (!char_mgr.db.has_value())
@@ -712,6 +729,7 @@ int battle_map()
                 {
                     obj_attack.reset();
                     stage = stage_talking;
+                    result = RESULT_UP;
                 }
             }
             break;
@@ -722,6 +740,7 @@ int battle_map()
         }
         }
 
+        text::update_toasts();
         char_mgr.update(nullptr);
         core::update();
     }
@@ -1717,6 +1736,8 @@ constexpr char alphabet[] = {
     '[', ']', '\\', '{', '}', '|', ';', '\'', ':', '"', ',', '.', '/',
     '<', '>', '?'};
 
+vector<toast, 16> text::toasts;
+
 letter::letter(char ch, vector_2 ideal_position_) : ideal_position(ideal_position_)
 {
     char_index = -1;
@@ -2095,6 +2116,113 @@ bool dialogue_box::is_ended()
     return (*active_conversation)[index].action == ACT_END;
 }
 
+char digit_conv(int digit)
+{
+    return (char)((digit % 10) + 48);
+}
+
+void text::add_toast(string<20> value, vector_2 pos)
+{
+    toast new_toast;
+
+    if (text::at_location(pos))
+    {
+        pos.y -= 16;
+    }
+
+    new_toast.value = text(value, pos);
+    new_toast.ticker = 0;
+    text::toasts.push_back(new_toast);
+
+    // Render the new toast
+    text::toasts.back().value.render();
+}
+
+void text::add_toast(int value, vector_2 pos)
+{
+    string<20> temp;
+
+    // Handle zero case
+    if (value == 0)
+    {
+        temp.push_back('0');
+    }
+    else
+    {
+        // Check if negative and store the sign
+        bool is_negative = false;
+        if (value < 0)
+        {
+            is_negative = true;
+            value = -value; // Make it positive for digit extraction
+        }
+
+        // Extract digits and store them in reverse
+        string<20> reversed;
+        while (value > 0)
+        {
+            reversed.push_back(digit_conv(value));
+            value = value / 10;
+        }
+
+        // Add negative sign first if needed
+        if (is_negative)
+        {
+            temp.push_back('-');
+        }
+
+        // Now push the digits to temp in correct order
+        for (int i = reversed.size() - 1; i >= 0; i--)
+        {
+            temp.push_back(reversed[i]);
+        }
+    }
+
+    toast new_toast;
+
+    if (text::at_location(pos))
+    {
+        pos.y -= 16;
+    }
+
+    new_toast.value = text(temp, pos);
+    new_toast.ticker = 0;
+    text::toasts.push_back(new_toast);
+
+    // Render the new toast
+    text::toasts.back().value.render();
+}
+
+bool text::at_location(vector_2 pos)
+{
+    for (auto &t : text::toasts)
+    {
+        if (t.value.start.x == pos.x && t.value.start.y == pos.y)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void text::update_toasts()
+{
+    int delete_toast = -1;
+    for (int t = 0; t < text::toasts.size(); t++)
+    {
+        text::toasts.at(t).ticker++;
+
+        if (text::toasts.at(t).ticker > 96)
+        {
+            delete_toast = t;
+        }
+    }
+    if (delete_toast > -1)
+    {
+        text::toasts.erase(text::toasts.begin() + delete_toast);
+    }
+}
+
 main.cpp: 
 // main.cpp
 #include "bn_core.h"
@@ -2326,6 +2454,17 @@ constexpr conversation garbage_fight_01 = {
     {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "I'll go first 'cos", "I'm hungry as", "all get-out.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
+constexpr conversation garbage_fight_02 = {
+    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "You seem pretty", "good at this, huh?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Let's try THIS then!", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_fight_03 = {
+    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "Okay, fair's fair.", "You may proceed.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "But if you die", "out there..", "Remember,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "All trash makes its", "way back to Visker.", "Eventually.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
 int action_listener(map_manager *man, character_manager *ch_man);
 
 ge_animations.h: 
@@ -2369,6 +2508,7 @@ ge_battle.h:
 #include "bn_regular_bg_items_bg_battle_box.h"
 #include "bn_regular_bg_items_bg_battle_action.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_jeremy_battle_intro.h"
 #include "bn_sprite_items_spr_visker_01.h"
 #include "bn_sprite_items_hearts.h"
 #include "bn_sprite_items_battle_icons.h"
@@ -2409,6 +2549,7 @@ enum BATTLE_RESULT
     RESULT_FIRST,
     RESULT_UP,
     RESULT_DOWN,
+    RESULT_SPARE,
     RESULT_LAST_WIN,
     RESULT_LAST_LOSE,
     RESULT_SIZE
@@ -2916,6 +3057,9 @@ struct letter
     void update(bool shake, int size);
 };
 
+// Forward declare toast before text
+struct toast;
+
 struct text
 {
     vector<letter, 20> letters;
@@ -2926,6 +3070,12 @@ struct text
     string<20> reference;
     int size = SIZE_DEFAULT;
 
+    static vector<toast, 16> toasts;
+    static void add_toast(string<20> value, vector_2 pos);
+    static void add_toast(int value, vector_2 pos);
+    static void update_toasts();
+    static bool at_location(vector_2 pos);
+
     text(const char *value = nullptr, vector_2 start_ = {0, 0});
     text(const string<20> &value, vector_2 start_ = {0, 0});
 
@@ -2935,6 +3085,13 @@ struct text
     void render();
     void set_position(int x, int y);
     bool is_ended();
+};
+
+char digit_conv(int digit);
+
+struct toast {
+    text value;
+    int ticker;
 };
 
 struct dialogue_line

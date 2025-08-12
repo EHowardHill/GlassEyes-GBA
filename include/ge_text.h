@@ -77,6 +77,9 @@ struct letter
     void update(bool shake, int size);
 };
 
+// Forward declare toast before text
+struct toast;
+
 struct text
 {
     vector<letter, 20> letters;
@@ -87,6 +90,12 @@ struct text
     string<20> reference;
     int size = SIZE_DEFAULT;
 
+    static vector<toast, 16> toasts;
+    static void add_toast(string<20> value, vector_2 pos);
+    static void add_toast(int value, vector_2 pos);
+    static void update_toasts();
+    static bool at_location(vector_2 pos);
+
     text(const char *value = nullptr, vector_2 start_ = {0, 0});
     text(const string<20> &value, vector_2 start_ = {0, 0});
 
@@ -96,6 +105,13 @@ struct text
     void render();
     void set_position(int x, int y);
     bool is_ended();
+};
+
+char digit_conv(int digit);
+
+struct toast {
+    text value;
+    int ticker;
 };
 
 struct dialogue_line
