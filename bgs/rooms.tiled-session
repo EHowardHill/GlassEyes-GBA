@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/viskers_house.tmx",
+    "activeFile": "maps/garbage_05.tmx",
     "expandedProjectPaths": [
         "tilesets",
         ".",
@@ -48,6 +48,14 @@
                 "y": 439.99999999999994
             }
         },
+        "maps/garbage_05.tmx": {
+            "scale": 2,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 131.75,
+                "y": 33.5
+            }
+        },
         "maps/room01.tmx": {
             "scale": 2.1634765625,
             "selectedLayer": 1,
@@ -72,7 +80,7 @@
             "scaleInEditor": 1
         },
         "tilesets/garbage-cave01.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 3,
             "scaleInEditor": 1
         },
         "tilesets/room01.tsx": {
@@ -93,16 +101,18 @@
     "map.width": 12,
     "openFiles": [
         "maps/garbage_01.tmx",
-        "maps/garbage_02.tmx",
+        "maps/garbage_04.tmx",
         "maps/garbage_03.tmx",
-        "maps/viskers_house.tmx"
+        "maps/garbage_05.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
-        "maps/garbage_02.tmx",
-        "maps/garbage_03.tmx",
-        "maps/viskers_house.tmx",
         "maps/garbage_01.tmx",
+        "maps/garbage_04.tmx",
+        "maps/garbage_03.tmx",
+        "maps/garbage_05.tmx",
+        "maps/garbage_02.tmx",
+        "maps/viskers_house.tmx",
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
         "maps/room01.tmx",
