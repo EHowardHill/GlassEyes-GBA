@@ -1,5 +1,6 @@
 ge_actions.cpp: 
 #include "bn_log.h"
+#include "bn_music.h"
 
 #include "ge_globals.h"
 #include "ge_sprites.h"
@@ -34,7 +35,9 @@ int action_listener(map_manager *man, character_manager *ch_man)
         bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01 ||
                                       action == CONVO_VISKER_SIGN ||
                                       action == CONVO_GARBAGE_03_SIGN ||
-                                      action == CONVO_VISKER_AFTER_FIGHT);
+                                      action == CONVO_VISKER_AFTER_FIGHT ||
+                                      action == CONVO_GARBAGE_04_SIGN ||
+                                      action == CONVO_GARBAGE_05_SIGN);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -89,6 +92,20 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 ch_man->db.emplace();
                 ch_man->db->load(&garbage_05b);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_GARBAGE_04_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign04);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_GARBAGE_05_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign05);
                 ch_man->db->init(ch_man);
                 break;
             }
@@ -217,6 +234,78 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 {
                     ch_man->db.emplace();
                     ch_man->db->load(&garbage_05);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case TO_GARBAGE_04:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {29, 4};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_04_SIGN] == 1)
+                {
+                    global_data_ptr->entry_map = &map_garbage_03;
+                    global_data_ptr->entry_position = {2, 8};
+                    return 1;
+                }
+                else
+                {
+                    global_data_ptr->entry_map = &map_garbage_03;
+                    global_data_ptr->entry_position = {3, 8};
+                    return 1;
+                }
+                break;
+            }
+            case GARBAGE_04_EXIT_02:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {10, 12};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_03:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {2, 20};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_04:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {29, 12};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_05:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {29, 20};
+                return 1;
+                break;
+            }
+            case EXIT_GARBAGE_01:
+            {
+                music::stop();
+                break;
+            }
+            case CONVO_GARBAGE_FINAL_01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_FINAL_01] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_06);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_06b);
                     ch_man->db->init(ch_man);
                 }
                 break;
@@ -555,6 +644,11 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_02);
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
+        break;
+    }
+    case FOE_VISKERS_02:
+    {
+        convos[RESULT_FIRST].push_back(&garbage_fight_05);
         break;
     }
     default:
@@ -1433,6 +1527,8 @@ ge_map_data.cpp:
 #include "bn_regular_bg_items_map_garbage_01.h"
 #include "bn_regular_bg_items_map_garbage_02.h"
 #include "bn_regular_bg_items_map_garbage_03.h"
+#include "bn_regular_bg_items_map_garbage_04.h"
+#include "bn_regular_bg_items_map_garbage_05.h"
 #include "bn_regular_bg_items_map_room01.h"
 #include "bn_regular_bg_items_map_viskers_house.h"
 
@@ -1508,12 +1604,114 @@ constexpr map map_garbage_03 = {
 	0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,14,0,0,15,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-54,0,0,0,0,0,0,0,0,0,0,0,-51,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,16,15,0,0,0,0,0,0,16,0,0,0,16,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,14,0,0,15,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-54,0,0,0,0,0,0,0,0,0,0,0,-51,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,16,15,0,0,0,0,0,0,17,0,0,0,16,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_garbage_03};
+
+
+
+constexpr map map_garbage_04 = {
+    {32, 24},
+    {1024, 1024},
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,16,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,6,2,2,2,2,4,0,0,6,2,2,2,2,4,6,2,15,17,2,2,2,2,2,2,2,2,2,2,2,4,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,13,61,62,12,0,0,0,0,13,12,0,0,0,0,27,3,3,3,3,3,3,3,3,3,5,0,
+	0,12,0,0,0,0,0,0,0,0,0,0,0,0,13,12,0,0,0,0,28,63,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,0,0,0,0,0,0,0,0,13,12,0,0,0,0,29,64,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,13,68,69,12,0,0,0,0,0,0,0,0,0,0,30,2,2,2,2,2,2,2,2,2,4,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,13,0,0,57,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,13,0,0,57,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,13,12,0,0,0,0,27,3,3,3,3,3,3,3,3,3,5,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,13,12,0,0,0,0,28,63,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,13,0,0,12,0,0,0,0,13,12,0,0,0,0,29,64,0,0,0,0,0,0,0,0,0,0,
+	0,12,0,0,0,0,27,2,2,2,0,0,0,0,13,12,0,0,0,0,30,2,2,2,2,2,2,2,2,2,4,0,
+	0,12,0,0,0,0,0,0,0,0,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,0,0,0,0,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,
+	0,7,3,3,3,3,3,3,3,3,3,3,3,3,5,7,3,3,3,3,3,3,3,3,3,3,3,3,3,3,5,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,21,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,21,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_garbage_04};
+
+
+
+constexpr map map_garbage_05 = {
+    {10, 48},
+    {1536, 1536},
+    {
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,65,67,0,0,64,0,0,0,
+	0,66,0,0,0,0,63,0,0,0,
+	0,67,0,0,0,0,64,0,0,0,
+	0,66,0,0,63,68,0,0,0,0,
+	0,67,0,0,64,0,0,0,0,0,
+	0,66,0,0,64,0,0,0,0,0,
+	0,67,0,0,63,0,0,0,0,0,
+	0,66,0,0,64,65,61,65,0,0,
+	0,66,0,0,0,0,0,0,63,0,
+	0,67,0,0,0,0,0,0,64,0,
+	0,0,68,69,68,66,0,0,64,0,
+	0,0,0,0,0,67,0,0,63,0,
+	0,0,0,0,0,66,0,0,64,0,
+	0,0,0,0,0,67,0,0,63,0,
+	0,0,0,0,0,66,0,0,64,0,
+	0,0,0,0,0,66,0,0,63,0,
+	0,0,0,0,65,61,0,0,64,0,
+	0,0,0,66,0,0,0,0,63,0,
+	0,0,0,67,0,0,0,0,64,0,
+	0,0,0,66,0,0,63,68,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,0,0,66,0,0,63,0,0,0,
+	0,0,0,67,0,0,64,0,0,0,
+	0,14,16,27,0,0,28,14,16,0,
+	0,12,0,0,0,0,0,0,9,0,
+	0,12,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,0,0,13,0,
+	0,12,0,0,0,0,0,0,13,0,
+	0,7,3,3,60,60,3,3,11,0,
+	0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_garbage_05};
 
 
 
@@ -2248,7 +2446,7 @@ void text::update(const bn::sprite_item *portrait = nullptr)
         }
         else if (portrait == &sprite_items::db_ch_visker)
         {
-            sound_items::snd_dialogue_visker.play(0.5);
+            sound_items::snd_dialogue_visker.play(0.4);
         }
         else
         {
@@ -2450,6 +2648,10 @@ void dialogue_box::init(character_manager *ch_man)
             music_items::theme_visker.play(0.75);
             break;
         }
+        case ACT_MUSIC_FADEOUT:
+        {
+            break;
+        }
         case ACT_MUSIC_RESET:
         {
             music::stop();
@@ -2479,7 +2681,6 @@ void dialogue_box::init(character_manager *ch_man)
 
 void dialogue_box::update()
 {
-
     if (!active_conversation || index >= size)
     {
         return;
@@ -2773,6 +2974,7 @@ using namespace bn;
 #include "bn_sprite_items_db_ch_vista.h"
 #include "bn_sprite_items_db_ch_visker.h"
 #include "bn_sprite_items_db_ch_jeremy.h"
+#include "bn_sprite_items_db_ch_visker_wife.h"
 
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_WALK, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
@@ -2802,7 +3004,7 @@ constexpr conversation garbage_01 = {
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Go to Avalon.", "Send me TURKEY.", "Hungry for turkey.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Tell them it for", "\"VISKER\".", "\"King of TRASH\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Uh.. Sure.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "Now if you'll excuse", "me, I'll be waiting", "for a DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "Excuse me, human.", "I wait now..", "for DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
     {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
@@ -2867,16 +3069,16 @@ constexpr conversation garbage_sign03 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_04 = {
-    {0, &sprite_items::db_ch_visker, EM_SAD, ACT_WALK, "So.. Human, uh..", "Close close to", "garbage exit..", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SAD, ACT_DEFAULT, "So.. Human, uh..", "Close close to", "garbage exit..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Human doesn't", "LOOK like fighter", "though.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Since human will", "got to fight", "a lot..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "I fight human.", "First.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {5, 8}},
+    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "I fight human.", "First.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "If human wins,", "then good enough", "to go home.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "If *I* win, then", "I get yummy", "human meal.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Win-win scenario.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I'm not really-", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "Yay.", "Let's fight now.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_FIGHT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_FIGHT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FOE_VISKERS_01, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_fight_01 = {
@@ -2907,7 +3109,40 @@ constexpr conversation garbage_05 = {
 constexpr conversation garbage_05b = {
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Have anything", "else to say?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "What a weirdo..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "..Okay, then.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_sign04 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "To escape, you must", "return to where", "you came from.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_sign05 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "ABANDON ALL HOPE,", "YE WHO ENTER", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_06 = {
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Oh boy, it's you again.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker_wife, EM_HAPPY, ACT_DEFAULT, "Huh? Me?", "You not know me,", "human.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Let me through, Visker.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "OI! HUMAN!", "Human don't speak to", "my wife like that!!", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, &sprite_items::db_ch_jeremy, EM_WAT, ACT_DEFAULT, "You're.. Oh, I see.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "I now need to fight", "human again for", "wife's honor.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Ugh.. I'm never getting", "out of here, am I?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_FIGHT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FOE_VISKERS_02, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_fight_05 = {
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Look, just get out", "out of the way.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_PAIN, ACT_DEFAULT, "LA LA LA", "CAN'T HEAR YOU", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_06b = {
+    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_JEREMY, &jeremy_lay_down, {0, 0}},
+    {0, nullptr, EM_SKIP, ACT_TELEPORT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {5, 2}},
+    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "Let's go home, wife.", "I'm hungry.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker_wife, EM_DEFAULT, ACT_DEFAULT, "Why not eat human.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "I'm angry at human.", "We eat human later.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, GARBAGE_TO_OFFICE, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);
@@ -3240,6 +3475,16 @@ enum action_list
 	CONVO_GARBAGE_03_SIGN,
 	CONVO_VISKER_FIGHT,
 	CONVO_VISKER_AFTER_FIGHT,
+	TO_GARBAGE_04,
+	GARBAGE_04_EXIT_01,
+	GARBAGE_04_EXIT_02,
+	GARBAGE_04_EXIT_03,
+	GARBAGE_04_EXIT_04,
+	GARBAGE_04_EXIT_05,
+	CONVO_GARBAGE_04_SIGN,
+	EXIT_GARBAGE_01,
+	CONVO_GARBAGE_05_SIGN,
+	CONVO_GARBAGE_FINAL_01,
 	ACTIONS_SIZE
 };
 
@@ -3247,11 +3492,6 @@ enum response_list
 {
 	NONE,
 	RESPONSES_SIZE
-};
-
-enum foes
-{
-	FOE_VISKERS_01
 };
 
 struct global_data
@@ -3262,7 +3502,7 @@ struct global_data
 	vector_2 entry_position = {0, 0};
 	vector_2 entry_position_raw = {0, 0};
 	int entry_direction = DIR_RIGHT;
-	int battle_foe = FOE_VISKERS_01;
+	int battle_foe = 0;
 	int hp[4] = {20, 20, 20, 20};
 	int max_hp[4] = {20, 20, 20, 20};
 	int enemy_hp[4] = {20, 20, 20, 20};
@@ -3350,6 +3590,8 @@ ge_map_data.h:
 inline constexpr map map_garbage_01;
 inline constexpr map map_garbage_02;
 inline constexpr map map_garbage_03;
+inline constexpr map map_garbage_04;
+inline constexpr map map_garbage_05;
 inline constexpr map map_room01;
 inline constexpr map map_viskers_house;
 
@@ -3518,6 +3760,17 @@ struct character_manager;
 
 using namespace bn;
 
+enum progress {
+    CUTSCENE_01,
+    CUTSCENE_02,
+    GARBAGE_TO_OFFICE
+};
+
+enum foes {
+    FOE_VISKERS_01,
+    FOE_VISKERS_02
+};
+
 enum actions
 {
     ACT_DEFAULT,
@@ -3529,8 +3782,10 @@ enum actions
     ACT_MULTIPLE_CHOICE,
     ACT_END,
     ACT_FIGHT,
+    ACT_PROGRESS,
     ACT_SFX_KNOCK,
     ACT_MUSIC_VISKER,
+    ACT_MUSIC_FADEOUT,
     ACT_MUSIC_RESET
 };
 

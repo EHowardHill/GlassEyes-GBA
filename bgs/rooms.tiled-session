@@ -20,7 +20,7 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 436,
+                "x": 436.5,
                 "y": 165.5
             }
         },
@@ -28,16 +28,24 @@
             "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 621,
+                "x": 621.25,
                 "y": 124.25
             }
         },
         "maps/garbage_03.tmx": {
             "scale": 1.5,
-            "selectedLayer": 3,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 134,
-                "y": 164.33333333333334
+                "x": 100.33333333333331,
+                "y": 144
+            }
+        },
+        "maps/garbage_04.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 304.66666666666663,
+                "y": 439.99999999999994
             }
         },
         "maps/room01.tmx": {
@@ -52,8 +60,8 @@
             "scale": 1.8356770833333333,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 107.31734997872039,
-                "y": 182.7663498368563
+                "x": 36.22641509433963,
+                "y": 175.6844942545042
             }
         },
         "tilesets/blue-labels.tsx": {
@@ -78,7 +86,7 @@
         }
     },
     "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts",
-    "map.height": 12,
+    "map.height": 48,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,
     "map.tileWidth": 32,
@@ -91,10 +99,10 @@
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
-        "maps/garbage_01.tmx",
         "maps/garbage_02.tmx",
         "maps/garbage_03.tmx",
         "maps/viskers_house.tmx",
+        "maps/garbage_01.tmx",
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
         "maps/room01.tmx",

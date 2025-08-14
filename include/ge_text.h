@@ -16,6 +16,17 @@ struct character_manager;
 
 using namespace bn;
 
+enum progress {
+    CUTSCENE_01,
+    CUTSCENE_02,
+    GARBAGE_TO_OFFICE
+};
+
+enum foes {
+    FOE_VISKERS_01,
+    FOE_VISKERS_02
+};
+
 enum actions
 {
     ACT_DEFAULT,
@@ -27,8 +38,10 @@ enum actions
     ACT_MULTIPLE_CHOICE,
     ACT_END,
     ACT_FIGHT,
+    ACT_PROGRESS,
     ACT_SFX_KNOCK,
     ACT_MUSIC_VISKER,
+    ACT_MUSIC_FADEOUT,
     ACT_MUSIC_RESET
 };
 

@@ -346,6 +346,10 @@ void dialogue_box::init(character_manager *ch_man)
             music_items::theme_visker.play(0.75);
             break;
         }
+        case ACT_MUSIC_FADEOUT:
+        {
+            break;
+        }
         case ACT_MUSIC_RESET:
         {
             music::stop();
@@ -375,7 +379,6 @@ void dialogue_box::init(character_manager *ch_man)
 
 void dialogue_box::update()
 {
-
     if (!active_conversation || index >= size)
     {
         return;

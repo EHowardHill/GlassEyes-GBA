@@ -9,6 +9,8 @@
 inline constexpr map map_garbage_01;
 inline constexpr map map_garbage_02;
 inline constexpr map map_garbage_03;
+inline constexpr map map_garbage_04;
+inline constexpr map map_garbage_05;
 inline constexpr map map_room01;
 inline constexpr map map_viskers_house;
 

@@ -27,7 +27,7 @@ garbage_01
 	db_ch_visker	EM_DEFAULT		Go to Avalon.	Send me TURKEY.	Hungry for turkey.							
 	db_ch_visker	EM_DEFAULT		Tell them it for	"""VISKER""."	"""King of TRASH""."							
 	db_ch_jeremy	EM_CONFUSED		Uh.. Sure.									
-	db_ch_visker	EM_ANGRY	ACT_WALK	Now if you'll excuse	"me, I'll be waiting"	for a DEAD human.				CHAR_VISKER		"{2, 2}"	
+	db_ch_visker	EM_ANGRY	ACT_WALK	"Excuse me, human."	I wait now..	for DEAD human.				CHAR_VISKER		"{2, 2}"	
 		EM_SKIP	ACT_MUSIC_RESET										
 													
 													
@@ -82,16 +82,16 @@ garbage_sign03
 				STOP IT	THANK YOU	MGMT							
 													
 garbage_04													
-	db_ch_visker	EM_SAD	ACT_WALK	"So.. Human, uh.."	Close close to	garbage exit..				CHAR_VISKER			
+	db_ch_visker	EM_SAD		"So.. Human, uh.."	Close close to	garbage exit..							
 	db_ch_visker	EM_DEFAULT		Human doesn't	LOOK like fighter	though.							
 	db_ch_visker	EM_SULLEN		Since human will	got to fight	a lot..							
-	db_ch_visker	EM_HAPPY		I fight human.	First.							"{5, 8}"	
+	db_ch_visker	EM_HAPPY		I fight human.	First.								
 	db_ch_visker	EM_SIDE_EYE		"If human wins,"	then good enough	to go home.							
 	db_ch_visker	EM_EXCITED		"If *I* win, then"	I get yummy	human meal.							
 	db_ch_visker	EM_DEFAULT		Win-win scenario.									
 	db_ch_jeremy	EM_DEFAULT		I'm not really-									
 	db_ch_visker	EM_EXCITED		Yay.	Let's fight now.								
-			ACT_FIGHT							0			
+			ACT_FIGHT							FOE_VISKERS_01			
 													
 garbage_fight_01													
 	db_ch_visker	EM_DEFAULT		You see that?	That your	"""THIRD EYE""."							
@@ -118,3 +118,31 @@ garbage_05b
 	db_ch_jeremy	EM_DEFAULT		Have anything	else to say?								
 	db_ch_visker	EM_HAPPY		..									
 	db_ch_jeremy	EM_DISAPPOINTED		"..Okay, then."									
+													
+garbage_sign04													
+				"To escape, you must"	return to where	you came from.							
+													
+garbage_sign05													
+				"ABANDON ALL HOPE,"	YE WHO ENTER								
+													
+garbage_06													
+	db_ch_jeremy	EM_DISAPPOINTED		"Oh boy, it's you again."									
+	db_ch_visker_wife	EM_HAPPY		Huh? Me?	"You not know me,"	human.							
+	db_ch_jeremy	EM_DISAPPOINTED		"Let me through, Visker."									
+	db_ch_visker	EM_ANGRY		OI! HUMAN!	Human don't speak to	my wife like that!!				CHAR_VISKER		"{2, 2}"	
+	db_ch_jeremy	EM_WAT		"You're.. Oh, I see."									
+	db_ch_visker	EM_ANGRY		I now need to fight	human again for	wife's honor.							
+	db_ch_jeremy	EM_DISAPPOINTED		Ugh.. I'm never getting	"out of here, am I?"								
+			ACT_FIGHT							FOE_VISKERS_02			
+													
+garbage_fight_05													
+	db_ch_jeremy	EM_DISAPPOINTED		"Look, just get out"	out of the way.								
+	db_ch_visker	EM_PAIN		LA LA LA	CAN'T HEAR YOU								
+													
+garbage_06b													
+		EM_SKIP								CHAR_JEREMY	&jeremy_lay_down		
+		EM_SKIP	ACT_TELEPORT							CHAR_VISKER		"{5, 2}"	
+	db_ch_visker	EM_DISAPPOINTED		"Let's go home, wife."	I'm hungry.								
+	db_ch_visker_wife	EM_DEFAULT		Why not eat human.									
+	db_ch_visker	EM_DISAPPOINTED		I'm angry at human.	We eat human later.								
+			ACT_PROGRESS							GARBAGE_TO_OFFICE			

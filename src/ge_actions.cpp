@@ -1,4 +1,5 @@
 #include "bn_log.h"
+#include "bn_music.h"
 
 #include "ge_globals.h"
 #include "ge_sprites.h"
@@ -33,7 +34,9 @@ int action_listener(map_manager *man, character_manager *ch_man)
         bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01 ||
                                       action == CONVO_VISKER_SIGN ||
                                       action == CONVO_GARBAGE_03_SIGN ||
-                                      action == CONVO_VISKER_AFTER_FIGHT);
+                                      action == CONVO_VISKER_AFTER_FIGHT ||
+                                      action == CONVO_GARBAGE_04_SIGN ||
+                                      action == CONVO_GARBAGE_05_SIGN);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -88,6 +91,20 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 ch_man->db.emplace();
                 ch_man->db->load(&garbage_05b);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_GARBAGE_04_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign04);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_GARBAGE_05_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign05);
                 ch_man->db->init(ch_man);
                 break;
             }
@@ -216,6 +233,78 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 {
                     ch_man->db.emplace();
                     ch_man->db->load(&garbage_05);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case TO_GARBAGE_04:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {29, 4};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_04_SIGN] == 1)
+                {
+                    global_data_ptr->entry_map = &map_garbage_03;
+                    global_data_ptr->entry_position = {2, 8};
+                    return 1;
+                }
+                else
+                {
+                    global_data_ptr->entry_map = &map_garbage_03;
+                    global_data_ptr->entry_position = {3, 8};
+                    return 1;
+                }
+                break;
+            }
+            case GARBAGE_04_EXIT_02:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {10, 12};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_03:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {2, 20};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_04:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {29, 12};
+                return 1;
+                break;
+            }
+            case GARBAGE_04_EXIT_05:
+            {
+                global_data_ptr->entry_map = &map_garbage_04;
+                global_data_ptr->entry_position = {29, 20};
+                return 1;
+                break;
+            }
+            case EXIT_GARBAGE_01:
+            {
+                music::stop();
+                break;
+            }
+            case CONVO_GARBAGE_FINAL_01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_FINAL_01] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_06);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_06b);
                     ch_man->db->init(ch_man);
                 }
                 break;

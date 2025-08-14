@@ -318,6 +318,11 @@ int battle_map()
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
         break;
     }
+    case FOE_VISKERS_02:
+    {
+        convos[RESULT_FIRST].push_back(&garbage_fight_05);
+        break;
+    }
     default:
     {
         break;
