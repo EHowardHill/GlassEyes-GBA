@@ -117,4 +117,4 @@ garbage_05
 garbage_05b													
 	db_ch_jeremy	EM_DEFAULT		Have anything	else to say?								
 	db_ch_visker	EM_HAPPY		..									
-	db_ch_jeremy	EM_DISAPPOINTED		What a weirdo..									
+	db_ch_jeremy	EM_DISAPPOINTED		"..Okay, then."									
