@@ -3,11 +3,11 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/garbage_01.tmx",
+    "activeFile": "maps/viskers_house.tmx",
     "expandedProjectPaths": [
         "tilesets",
-        "maps",
-        "."
+        ".",
+        "maps"
     ],
     "exportAsImage.includeBackgroundColor": true,
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -50,7 +50,7 @@
         },
         "maps/viskers_house.tmx": {
             "scale": 1.8356770833333333,
-            "selectedLayer": 2,
+            "selectedLayer": 1,
             "viewCenter": {
                 "x": 107.31734997872039,
                 "y": 182.7663498368563
@@ -84,19 +84,21 @@
     "map.tileWidth": 32,
     "map.width": 12,
     "openFiles": [
-        "tilesets/room01.tsx",
-        "tilesets/floor_wood01.tsx",
-        "maps/room01.tmx",
-        "tilesets/garbage-cave01.tsx",
-        "maps/garbage_01.tmx"
+        "maps/garbage_01.tmx",
+        "maps/garbage_02.tmx",
+        "maps/garbage_03.tmx",
+        "maps/viskers_house.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
+        "maps/garbage_01.tmx",
+        "maps/garbage_02.tmx",
+        "maps/garbage_03.tmx",
+        "maps/viskers_house.tmx",
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
         "maps/room01.tmx",
         "tilesets/garbage-cave01.tsx",
-        "maps/garbage_01.tmx",
         "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts/db_ch_visker.tsx",
         "tilesets/spr_visker_01.tsx"
     ],
