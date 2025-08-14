@@ -18,13 +18,16 @@
 #include "bn_regular_bg_items_bg_battle_box.h"
 #include "bn_regular_bg_items_bg_battle_action.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
-#include "bn_sprite_items_jeremy_battle_intro.h"
 #include "bn_sprite_items_spr_visker_01.h"
 #include "bn_sprite_items_hearts.h"
 #include "bn_sprite_items_battle_icons.h"
 #include "bn_sprite_items_battle_chars.h"
 
+#include "bn_sprite_items_jeremy_battle_intro.h"
+#include "bn_sprite_items_visker_battle_intro.h"
+
 #include "ge_text.h"
+#include "ge_bullet.h"
 
 using namespace bn;
 
@@ -132,7 +135,7 @@ struct status_bar
 struct recv
 {
     int ticker = 0;
-    vector<sprite_ptr, 64> bullets;
+    vector<bullet, bullet_count> bullets;
     int bullet_style = bullet_fall;
     regular_bg_ptr bg_action = regular_bg_items::bg_battle_box.create_bg(0, 0);
     vector_2 eye_pos = {0, 0};

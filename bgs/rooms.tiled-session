@@ -20,40 +20,40 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 499,
-                "y": 305.5
+                "x": 436,
+                "y": 165.5
             }
         },
         "maps/garbage_02.tmx": {
-            "scale": 1.5,
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 596.3333333333333,
-                "y": 166.66666666666666
+                "x": 621,
+                "y": 124.25
             }
         },
         "maps/garbage_03.tmx": {
-            "scale": 1.6055989583333334,
-            "selectedLayer": 2,
+            "scale": 1.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 164.1132106074122,
-                "y": 191.828724353256
+                "x": 134,
+                "y": 164.33333333333334
             }
         },
         "maps/room01.tmx": {
             "scale": 2.1634765625,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 205.68746050374648,
-                "y": 128.03466642592758
+                "x": 205.6874605037465,
+                "y": 127.80355691974361
             }
         },
         "maps/viskers_house.tmx": {
             "scale": 1.8356770833333333,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 107.58972903958008,
-                "y": 183.038728897716
+                "x": 107.31734997872039,
+                "y": 182.7663498368563
             }
         },
         "tilesets/blue-labels.tsx": {
@@ -92,13 +92,13 @@
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
-        "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts/db_ch_visker.tsx",
-        "tilesets/spr_visker_01.tsx",
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
         "maps/room01.tmx",
         "tilesets/garbage-cave01.tsx",
-        "maps/garbage_01.tmx"
+        "maps/garbage_01.tmx",
+        "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts/db_ch_visker.tsx",
+        "tilesets/spr_visker_01.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

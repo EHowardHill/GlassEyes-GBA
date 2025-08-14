@@ -128,11 +128,6 @@ void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
 
-    if (keypad::b_pressed())
-    {
-        alert();
-    }
-
     // Handle dialogue box
     if (db.has_value())
     {

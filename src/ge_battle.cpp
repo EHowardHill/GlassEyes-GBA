@@ -25,6 +25,7 @@
 #include "ge_actions.h"
 #include "ge_globals.h"
 #include "ge_battle.h"
+#include "ge_bullet.h"
 
 using namespace bn;
 
@@ -251,12 +252,7 @@ vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
 
 recv::recv()
 {
-    for (int t = 0; t < 32; t++)
-    {
-        auto bullet = sprite_items::hearts.create_sprite((random_value % 100) - 50, -64 - (t * 14));
-        random_value = ((random_value + 17) * (random_value * 31));
-        bullets.push_back(bullet);
-    }
+    bullet::populate(&bullets, BULLET_FALL);
 }
 
 void recv::update()
@@ -267,21 +263,9 @@ void recv::update()
     for (int t = 0; t < bullets.size(); t++)
     {
         auto bullet = &bullets.at(t);
+        bullet->update();
 
-        switch (bullet_style)
-        {
-        case bullet_fall:
-        {
-            bullet->set_y(bullet->y() + 1);
-            break;
-        }
-        default:
-        {
-            break;
-        }
-        }
-
-        if (abs(eye_pos.x - bullet->x().integer()) + abs(eye_pos.y - bullet->y().integer()) < 12)
+        if (abs(eye_pos.x - bullet->item.value().x().integer()) + abs(eye_pos.y - bullet->item.value().y().integer()) < 12)
         {
             sound_items::sfx_damage.play();
             global_data_ptr->hp[0] -= 2;
@@ -312,13 +296,17 @@ void recv::update()
 
 int battle_map()
 {
+    music::stop();
+    music_items::boss.play();
+
     int stage = stage_talking;
     int result = RESULT_FIRST;
     character_manager char_mgr;
 
     int player_ticker = 0;
+    int enemy_ticker = 0;
 
-    vector<conversation *, 64> convos[RESULT_SIZE];
+    vector<conversation *, 32> convos[RESULT_SIZE];
 
     switch (global_data_ptr->battle_foe)
     {
@@ -380,18 +368,10 @@ int battle_map()
         player_pos.y,
         0);
 
-    sprite_ptr enemy01[2] = {
-        sprite_items::spr_visker_01.create_sprite(
-            enemy_pos.x,
-            enemy_pos.y - 32,
-            0),
-        sprite_items::spr_visker_01.create_sprite(
-            enemy_pos.x,
-            enemy_pos.y,
-            1)};
-
-    enemy01[0].set_horizontal_flip(true);
-    enemy01[1].set_horizontal_flip(true);
+    sprite_ptr enemy01 = sprite_items::visker_battle_intro.create_sprite(
+        enemy_pos.x,
+        enemy_pos.y,
+        0);
 
     int y_delta = 0;
     bool conversation_in_progress = false;
@@ -413,8 +393,13 @@ int battle_map()
 
         player01.set_y(player_pos.y + y_delta);
 
-        enemy01[0].set_y(player_pos.y + y_delta - 32);
-        enemy01[1].set_y(player_pos.y + y_delta);
+        if (enemy_ticker < (7 * 5))
+        {
+            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
+            enemy_ticker++;
+        }
+
+        enemy01.set_y(enemy_pos.y + y_delta);
 
         if (char_mgr.db.has_value())
         {
@@ -480,6 +465,7 @@ int battle_map()
         {
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
+                music::stop();
                 return CONTINUE;
             }
 

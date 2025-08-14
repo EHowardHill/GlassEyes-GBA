@@ -15,11 +15,12 @@
 #include "bn_music_items_info.h"
 
 // Sprites
-#include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_spr_font_01.h"
 #include "bn_regular_bg_items_bg_dialogue_box.h"
 
+#include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_db_ch_vista.h"
+#include "bn_sprite_items_db_ch_visker.h"
 
 using namespace bn;
 
@@ -131,13 +132,24 @@ void text::update(const bn::sprite_item *portrait = nullptr)
         return;
     }
 
-    if (portrait == &sprite_items::db_ch_vista)
+    if (index % 2 == 0)
     {
-        sound_items::snd_dialogue_vista.play(0.7);
-    }
-    else
-    {
-        sound_items::snd_dialogue_generic.play(0.5);
+        if (portrait == &sprite_items::db_ch_vista)
+        {
+            sound_items::snd_dialogue_vista.play(0.7);
+        }
+        else if (portrait == &sprite_items::db_ch_jeremy)
+        {
+            sound_items::snd_dialogue_jeremy.play(0.7);
+        }
+        else if (portrait == &sprite_items::db_ch_visker)
+        {
+            sound_items::snd_dialogue_visker.play(0.4);
+        }
+        else
+        {
+            sound_items::snd_dialogue_generic.play(0.5);
+        }
     }
 
     char ch = reference[index];
@@ -298,7 +310,8 @@ void dialogue_box::init(character_manager *ch_man)
             {
                 if (line.action == ACT_TELEPORT)
                 {
-                    ch->v_sprite.bounds.position = line.navigate;
+                    ch->v_sprite.bounds.position.x = line.navigate.x * 32;
+                    ch->v_sprite.bounds.position.y = line.navigate.y * 32;
                 }
                 else if (line.action == ACT_WALK)
                 {
@@ -337,6 +350,13 @@ void dialogue_box::init(character_manager *ch_man)
         {
             music::stop();
             global_data_ptr->bg_track->play(0.5);
+            break;
+        }
+        case ACT_FIGHT:
+        {
+            auto pos = ch_man->player_ptr->v_sprite.bounds.position;
+            global_data_ptr->entry_position = {pos.x.integer() / 32, pos.y.integer() / 32};
+            ch_man->alert();
             break;
         }
         default:

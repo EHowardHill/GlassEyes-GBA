@@ -104,5 +104,10 @@ int main()
             value = battle_map();
             core::update();
         }
+
+        if (!music::playing())
+        {
+            global_data_ptr->bg_track->play();
+        }
     }
 }

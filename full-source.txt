@@ -32,7 +32,9 @@ int action_listener(map_manager *man, character_manager *ch_man)
         // Get the action for current position
         int action = man->action(current_position);
         bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01 ||
-                                      action == CONVO_VISKER_SIGN);
+                                      action == CONVO_VISKER_SIGN ||
+                                      action == CONVO_GARBAGE_03_SIGN ||
+                                      action == CONVO_VISKER_AFTER_FIGHT);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -73,6 +75,20 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 ch_man->db.emplace();
                 ch_man->db->load(&garbage_sign02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_GARBAGE_03_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign03);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_VISKER_AFTER_FIGHT:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_05b);
                 ch_man->db->init(ch_man);
                 break;
             }
@@ -182,6 +198,29 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 }
                 break;
             }
+            case TO_GARBAGE_03:
+            {
+                global_data_ptr->entry_map = &map_garbage_03;
+                global_data_ptr->entry_position = {1, 3};
+                return 1;
+                break;
+            }
+            case CONVO_VISKER_FIGHT:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_FIGHT] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_04);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[CONVO_VISKER_FIGHT] == 2)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_05);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
             default:
             {
                 break;
@@ -225,6 +264,7 @@ ge_battle.cpp:
 #include "ge_actions.h"
 #include "ge_globals.h"
 #include "ge_battle.h"
+#include "ge_bullet.h"
 
 using namespace bn;
 
@@ -451,12 +491,7 @@ vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
 
 recv::recv()
 {
-    for (int t = 0; t < 32; t++)
-    {
-        auto bullet = sprite_items::hearts.create_sprite((random_value % 100) - 50, -64 - (t * 14));
-        random_value = ((random_value + 17) * (random_value * 31));
-        bullets.push_back(bullet);
-    }
+    bullet::populate(&bullets, BULLET_FALL);
 }
 
 void recv::update()
@@ -467,21 +502,9 @@ void recv::update()
     for (int t = 0; t < bullets.size(); t++)
     {
         auto bullet = &bullets.at(t);
+        bullet->update();
 
-        switch (bullet_style)
-        {
-        case bullet_fall:
-        {
-            bullet->set_y(bullet->y() + 1);
-            break;
-        }
-        default:
-        {
-            break;
-        }
-        }
-
-        if (abs(eye_pos.x - bullet->x().integer()) + abs(eye_pos.y - bullet->y().integer()) < 12)
+        if (abs(eye_pos.x - bullet->item.value().x().integer()) + abs(eye_pos.y - bullet->item.value().y().integer()) < 12)
         {
             sound_items::sfx_damage.play();
             global_data_ptr->hp[0] -= 2;
@@ -512,13 +535,17 @@ void recv::update()
 
 int battle_map()
 {
+    music::stop();
+    music_items::boss.play();
+
     int stage = stage_talking;
     int result = RESULT_FIRST;
     character_manager char_mgr;
 
     int player_ticker = 0;
+    int enemy_ticker = 0;
 
-    vector<conversation *, 64> convos[RESULT_SIZE];
+    vector<conversation *, 32> convos[RESULT_SIZE];
 
     switch (global_data_ptr->battle_foe)
     {
@@ -580,18 +607,10 @@ int battle_map()
         player_pos.y,
         0);
 
-    sprite_ptr enemy01[2] = {
-        sprite_items::spr_visker_01.create_sprite(
-            enemy_pos.x,
-            enemy_pos.y - 32,
-            0),
-        sprite_items::spr_visker_01.create_sprite(
-            enemy_pos.x,
-            enemy_pos.y,
-            1)};
-
-    enemy01[0].set_horizontal_flip(true);
-    enemy01[1].set_horizontal_flip(true);
+    sprite_ptr enemy01 = sprite_items::visker_battle_intro.create_sprite(
+        enemy_pos.x,
+        enemy_pos.y,
+        0);
 
     int y_delta = 0;
     bool conversation_in_progress = false;
@@ -613,8 +632,13 @@ int battle_map()
 
         player01.set_y(player_pos.y + y_delta);
 
-        enemy01[0].set_y(player_pos.y + y_delta - 32);
-        enemy01[1].set_y(player_pos.y + y_delta);
+        if (enemy_ticker < (7 * 5))
+        {
+            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
+            enemy_ticker++;
+        }
+
+        enemy01.set_y(enemy_pos.y + y_delta);
 
         if (char_mgr.db.has_value())
         {
@@ -680,6 +704,7 @@ int battle_map()
         {
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
+                music::stop();
                 return CONTINUE;
             }
 
@@ -743,6 +768,387 @@ int battle_map()
         text::update_toasts();
         char_mgr.update(nullptr);
         core::update();
+    }
+}
+
+
+ge_bullet.cpp: 
+// ge_bullet.cpp
+/*
+This is for Gameboy Advance, so the screen resolution is 240x160.
+*/
+#include "ge_bullet.h"
+#include "ge_structs.h"
+#include "bn_math.h"
+#include "bn_sprite_ptr.h"
+#include "bn_sprite_items_hearts.h"
+
+using namespace bn;
+
+unsigned int bullet::random_value = 32;
+fixed_point bullet::s_target = fixed_point(0, 0);
+
+static inline unsigned int rng_next(unsigned int v)
+{
+    // extremely tiny LCG-ish step (good enough for patterns)
+    return (v * 1664525u + 1013904223u);
+}
+
+// fast triangle wave in [-amp, +amp] without trig
+// t: frame ticker, period>0
+static inline fixed tri_wave(int t, int period, fixed amp)
+{
+    if (period <= 0)
+        return fixed(0);
+    int m = t % period;
+    int half = period / 2;
+    int q = (m < half) ? m : (period - m);
+    // scale q in [0, half] to [0, amp], then map to [-amp, +amp]
+    fixed v = amp * fixed(q) / fixed(half > 0 ? half : 1);
+    return (m < half) ? v : -v;
+}
+
+bullet::bullet(fixed_point pos, int anim_type_) : anim_type(anim_type_)
+{
+    item = sprite_items::hearts.create_sprite(pos.x(), pos.y(), 0);
+
+    // basic defaults
+    vx = 0;
+    vy = 1;
+
+    switch (anim_type)
+    {
+    case BULLET_FALL:
+    {
+        vx = 0;
+        vy = 1;
+        break;
+    }
+    case BULLET_RISE:
+    {
+        vx = 0;
+        vy = -1;
+        break;
+    }
+    case BULLET_ZIGZAG:
+    {
+        // downward with sharp left/right ramps (triangle wave sign)
+        vy = fixed(1.2);
+        amplitude = fixed(22); // horizontal swing
+        period = 28 + int(random_value % 16);
+        zig_dir = (random_value & 1) ? 1 : -1;
+        base_x = pos.x();
+        break;
+    }
+    case BULLET_WAVE:
+    {
+        // smooth side-to-side while falling
+        vy = fixed(1);
+        amplitude = fixed(32);
+        period = 48 + int(random_value % 24);
+        base_x = pos.x();
+        break;
+    }
+    case BULLET_ACCEL:
+    {
+        // starts slow, speeds up
+        vy = fixed(0.2);
+        ax = fixed(0.05); // we’ll use ax to accelerate vy each frame
+        max_speed = fixed(2.8);
+        break;
+    }
+    case BULLET_BOUNCE:
+    {
+        // horizontal bouncing, slow vertical drift
+        vy = fixed(0.8);
+        vx = ((random_value & 1) ? fixed(1.2) : fixed(-1.2));
+        min_x = fixed(-116);
+        max_x = fixed(116);
+        break;
+    }
+    case BULLET_HOMING:
+    {
+        // gentle homing toward s_target
+        // initial small velocity so steering has something to work with
+        vx = fixed(0.6) * ((random_value & 1) ? 1 : -1);
+        vy = fixed(0.6);
+        turn_rate = fixed(0.05);
+        max_speed = fixed(2.2);
+        break;
+    }
+    case BULLET_ORBIT:
+    {
+        // set orbit center near current pos; start at a small offset
+        orbit_cx = pos.x();
+        orbit_cy = pos.y();
+        rel_x = fixed(24); // start offset to the right
+        rel_y = fixed(0);
+        radial_drift = fixed(0); // pure orbit
+        break;
+    }
+    case BULLET_SPIRAL:
+    {
+        orbit_cx = pos.x();
+        orbit_cy = pos.y();
+        rel_x = fixed(36);
+        rel_y = fixed(0);
+        radial_drift = fixed(-0.20); // spiral inward
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+}
+
+void bullet::update()
+{
+    if (!item.has_value())
+        return;
+
+    fixed x = item.value().x();
+    fixed y = item.value().y();
+
+    switch (anim_type)
+    {
+    case BULLET_FALL:
+    {
+        y += 1;
+        break;
+    }
+    case BULLET_RISE:
+    {
+        y -= 1;
+        break;
+    }
+    case BULLET_ZIGZAG:
+    {
+        // Move horizontally at constant speed in current direction
+        x += zig_dir * fixed(2); // horizontal speed
+
+        // Check if we've reached the amplitude limit
+        if (bn::abs(x - base_x) >= amplitude)
+        {
+            // Clamp to amplitude and reverse direction
+            x = base_x + zig_dir * amplitude;
+            zig_dir = -zig_dir;
+        }
+
+        y += vy;
+        break;
+    }
+    case BULLET_WAVE:
+    {
+        // smooth triangle wave (already smooth enough for 60fps)
+        x = base_x + tri_wave(ticker, period, amplitude);
+        y += vy;
+        break;
+    }
+    case BULLET_ACCEL:
+    {
+        // accelerate downward, clamp to max_speed
+        vy += ax;
+        if (vy > max_speed)
+            vy = max_speed;
+        y += vy;
+        x += vx; // (vx defaults 0, but you can set patterns)
+        break;
+    }
+    case BULLET_BOUNCE:
+    {
+        x += vx;
+        y += vy;
+        if (x <= min_x)
+        {
+            x = min_x;
+            vx = -vx;
+        }
+        if (x >= max_x)
+        {
+            x = max_x;
+            vx = -vx;
+        }
+        break;
+    }
+    case BULLET_HOMING:
+    {
+        // vector toward target
+        fixed tx = s_target.x() - x;
+        fixed ty = s_target.y() - y;
+
+        // normalize approx without sqrt: scale by max(|tx|,|ty|)
+        fixed atx = bn::abs(tx);
+        fixed aty = bn::abs(ty);
+        fixed m = (atx > aty ? atx : aty);
+        fixed ux = (m > 0 ? tx / m : fixed(0));
+        fixed uy = (m > 0 ? ty / m : fixed(0));
+
+        // steer slightly toward (ux, uy)
+        vx = vx + turn_rate * (ux - vx);
+        vy = vy + turn_rate * (uy - vy);
+
+        // clamp speed
+        fixed spd_m = bn::max(bn::abs(vx), bn::abs(vy));
+        if (spd_m > max_speed)
+        {
+            vx = vx * (max_speed / spd_m);
+            vy = vy * (max_speed / spd_m);
+        }
+
+        x += vx;
+        y += vy;
+        break;
+    }
+    case BULLET_ORBIT:
+    case BULLET_SPIRAL:
+    {
+        // rotate relative vector by a tiny fixed angle:
+        // [rel_x'] = [ c -s ][rel_x]
+        // [rel_y']   [ s  c ][rel_y]
+        fixed nx = ROT_C * rel_x - ROT_S * rel_y;
+        fixed ny = ROT_S * rel_x + ROT_C * rel_y;
+
+        // spiral drift (in/out)
+        if (radial_drift != 0)
+        {
+            // nudge outward/inward a little along the current relative
+            // (scale ~ unit by max(|nx|,|ny|) to avoid sqrt)
+            fixed mm = bn::max(bn::abs(nx), bn::abs(ny));
+            if (mm > 0)
+            {
+                nx += radial_drift * (nx / mm);
+                ny += radial_drift * (ny / mm);
+            }
+        }
+
+        rel_x = nx;
+        rel_y = ny;
+
+        x = orbit_cx + rel_x;
+        y = orbit_cy + rel_y;
+        break;
+    }
+    default:
+        break;
+    }
+
+    item.value().set_x(x);
+    item.value().set_y(y);
+    ticker++;
+}
+
+void bullet::populate(vector<bullet, bullet_count> *bullets, int anim_type)
+{
+    for (int b = 0; b < bullet_count; b++)
+    {
+        switch (anim_type)
+        {
+        case BULLET_FALL:
+        {
+            fixed x_pos = (fixed(int(random_value % 200)) - fixed(100));
+            fixed y_pos = fixed(-64 - (b * 14));
+            bullet nb(fixed_point(x_pos, y_pos), anim_type);
+            random_value = rng_next(random_value);
+            bullets->push_back(nb);
+            break;
+        }
+        case BULLET_RISE:
+        {
+            fixed x_pos = (fixed(int(random_value % 200)) - fixed(100));
+            fixed y_pos = fixed(64 + (b * 14));
+            bullet nb(fixed_point(x_pos, y_pos), anim_type);
+            random_value = rng_next(random_value);
+            bullets->push_back(nb);
+            break;
+        }
+        case BULLET_ZIGZAG:
+        case BULLET_WAVE:
+        {
+            fixed x_pos = (fixed(int(random_value % 200)) - fixed(100));
+            fixed y_pos = fixed(-80 - (b * 10));
+            bullet nb(fixed_point(x_pos, y_pos), anim_type);
+            // mild randomization
+            nb.amplitude = fixed(16 + int(random_value % 24));
+            nb.period = 28 + int((random_value >> 8) % 40);
+            random_value = rng_next(random_value);
+            bullets->push_back(nb);
+            break;
+        }
+        case BULLET_ACCEL:
+        {
+            fixed x_pos = (fixed(int(random_value % 200)) - fixed(100));
+            fixed y_pos = fixed(-70 - (b * 12));
+            bullet nb(fixed_point(x_pos, y_pos), anim_type);
+            nb.vx = fixed(((int)(random_value & 3) - 1)); // -1..+2 -> -1..+1
+            nb.ax = fixed(0.05 + (int((random_value >> 8) % 5)) * 0.01);
+            random_value = rng_next(random_value);
+            bullets->push_back(nb);
+            break;
+        }
+        case BULLET_BOUNCE:
+        {
+            fixed x_pos = (fixed(int(random_value % 200)) - fixed(100));
+            fixed y_pos = fixed(-60 - (b * 12));
+            bullet nb(fixed_point(x_pos, y_pos), anim_type);
+            nb.vx = ((random_value & 1) ? fixed(1.2) : fixed(-1.2));
+            nb.vy = fixed(0.9);
+            random_value = rng_next(random_value);
+            bullets->push_back(nb);
+            break;
+        }
+        case BULLET_HOMING:
+        {
+            fixed x_pos = (fixed(int(random_value % 200)) - fixed(100));
+            fixed y_pos = fixed(-70 - (b * 8));
+            bullet nb(fixed_point(x_pos, y_pos), anim_type);
+            nb.turn_rate = fixed(0.05 + (int((random_value >> 8) % 4)) * 0.01); // 0.05..0.08
+            nb.max_speed = fixed(1.8 + int((random_value >> 12) % 5) * 0.2);    // 1.8..2.6
+            random_value = rng_next(random_value);
+            bullets->push_back(nb);
+            break;
+        }
+        case BULLET_ORBIT:
+        case BULLET_SPIRAL:
+        {
+            // Create a simple ring that orbits its own local center, staggered
+            fixed cx = (fixed(int(random_value % 120)) - fixed(60));
+            fixed cy = fixed(-50 - (b * 6));
+            bullet nb(fixed_point(cx, cy), anim_type);
+            // set different starting angles around the ring
+            int k = (b * 11) & 31;
+            // place rel vector around a square-ish ring (no trig)
+            fixed base = (anim_type == BULLET_SPIRAL) ? fixed(36) : fixed(24);
+            switch (k % 4)
+            {
+            case 0:
+                nb.rel_x = base;
+                nb.rel_y = 0;
+                break;
+            case 1:
+                nb.rel_x = 0;
+                nb.rel_y = base;
+                break;
+            case 2:
+                nb.rel_x = -base;
+                nb.rel_y = 0;
+                break;
+            default:
+                nb.rel_x = 0;
+                nb.rel_y = -base;
+                break;
+            }
+            if (anim_type == BULLET_SPIRAL)
+            {
+                nb.radial_drift = fixed(-0.20);
+            }
+            random_value = rng_next(random_value);
+            bullets->push_back(nb);
+            break;
+        }
+        default:
+            break;
+        }
     }
 }
 
@@ -877,11 +1283,6 @@ void character_manager::alert()
 void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
-
-    if (keypad::b_pressed())
-    {
-        alert();
-    }
 
     // Handle dialogue box
     if (db.has_value())
@@ -1067,9 +1468,9 @@ constexpr map map_garbage_02 = {
     {1024, 1024},
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,6,3,3,3,3,3,3,3,15,17,3,4,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,8,2,2,2,2,2,2,2,2,2,14,16,12,0,0,0,0,0,0,0,0,0,0,6,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,8,2,2,2,2,2,2,2,2,2,14,16,12,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,12,3,3,3,3,3,3,3,3,3,15,17,5,0,0,0,8,2,2,2,2,2,2,5,0,
 	0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,
 	0,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,
@@ -1080,7 +1481,7 @@ constexpr map map_garbage_02 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -1094,23 +1495,23 @@ constexpr map map_garbage_03 = {
     {512, 512},
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,
-	6,2,2,2,2,2,2,2,14,2,4,0,
+	6,2,2,2,2,2,2,2,14,16,4,0,
 	0,0,0,0,0,0,0,0,0,0,13,0,
 	0,0,0,0,0,0,0,0,0,0,13,0,
 	7,3,3,3,3,3,27,4,0,0,13,0,
 	0,0,0,0,0,66,27,29,0,0,13,0,
 	0,0,0,0,0,67,28,30,0,0,13,0,
-	0,6,2,2,2,2,16,5,0,0,13,0,
+	0,6,2,2,2,14,16,5,0,0,13,0,
 	0,0,0,0,0,0,0,0,0,0,13,0,
 	0,0,0,0,0,0,0,0,0,0,13,0,
 	0,7,3,3,3,3,3,3,3,3,5,0,
 	0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-54,0,0,0,0,0,0,0,0,0,0,0,-51,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,14,0,0,15,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-54,0,0,0,0,0,0,0,0,0,0,0,-51,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,16,15,0,0,0,0,0,0,16,0,0,0,16,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_garbage_03};
 
@@ -1153,7 +1554,7 @@ constexpr map map_viskers_house = {
 	0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,13,0,0,0,0,10,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,11,0,0,0,0,0,0,10,0,0,13,0,0,0,0,10,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -1718,11 +2119,12 @@ ge_text.cpp:
 #include "bn_music_items_info.h"
 
 // Sprites
-#include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_spr_font_01.h"
 #include "bn_regular_bg_items_bg_dialogue_box.h"
 
+#include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_db_ch_vista.h"
+#include "bn_sprite_items_db_ch_visker.h"
 
 using namespace bn;
 
@@ -1834,13 +2236,24 @@ void text::update(const bn::sprite_item *portrait = nullptr)
         return;
     }
 
-    if (portrait == &sprite_items::db_ch_vista)
+    if (index % 2 == 0)
     {
-        sound_items::snd_dialogue_vista.play(0.7);
-    }
-    else
-    {
-        sound_items::snd_dialogue_generic.play(0.5);
+        if (portrait == &sprite_items::db_ch_vista)
+        {
+            sound_items::snd_dialogue_vista.play(0.7);
+        }
+        else if (portrait == &sprite_items::db_ch_jeremy)
+        {
+            sound_items::snd_dialogue_jeremy.play(0.7);
+        }
+        else if (portrait == &sprite_items::db_ch_visker)
+        {
+            sound_items::snd_dialogue_visker.play(0.5);
+        }
+        else
+        {
+            sound_items::snd_dialogue_generic.play(0.5);
+        }
     }
 
     char ch = reference[index];
@@ -2001,7 +2414,8 @@ void dialogue_box::init(character_manager *ch_man)
             {
                 if (line.action == ACT_TELEPORT)
                 {
-                    ch->v_sprite.bounds.position = line.navigate;
+                    ch->v_sprite.bounds.position.x = line.navigate.x * 32;
+                    ch->v_sprite.bounds.position.y = line.navigate.y * 32;
                 }
                 else if (line.action == ACT_WALK)
                 {
@@ -2040,6 +2454,13 @@ void dialogue_box::init(character_manager *ch_man)
         {
             music::stop();
             global_data_ptr->bg_track->play(0.5);
+            break;
+        }
+        case ACT_FIGHT:
+        {
+            auto pos = ch_man->player_ptr->v_sprite.bounds.position;
+            global_data_ptr->entry_position = {pos.x.integer() / 32, pos.y.integer() / 32};
+            ch_man->alert();
             break;
         }
         default:
@@ -2330,6 +2751,11 @@ int main()
             value = battle_map();
             core::update();
         }
+
+        if (!music::playing())
+        {
+            global_data_ptr->bg_track->play();
+        }
     }
 }
 
@@ -2362,22 +2788,20 @@ constexpr conversation test_convo = {
 constexpr conversation garbage_01 = {
     {0, nullptr, EM_SKIP, ACT_MUSIC_VISKER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_JEREMY, &jeremy_lay_down, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Hmm, he feels warm.", "", "Ewww.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, &visker_poke, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "It body warm.", "", "Ewww.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, &visker_poke, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_PAIN, ACT_DEFAULT, "Ow, my head..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "DAGNABBIT", "First human down the", "chute in ages,", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "And he's ALIVE?", "Hey, could you do me", "a huge favor pal?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "NO, NO LIKE,", "First human down the", "chute in ages,", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "And it ALIVE?", "Hey, do something", "for me, human.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "..W-What?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_JEREMY, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Hurry up and die,", "I'm real real hungry", "for human right now.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Go and DIE. NOW.", "I'm so so HUNGRY", "for HUMAN.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_ANNOYED, ACT_DEFAULT, "Well, excuse ME.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "*sigh*", "It's okay.", "I forgive you.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "*sigh*", "It okay.", "I forgive you.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_SAD, ACT_DEFAULT, "I need to get out", "of here.", "Where's the exit?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_CONFUSED, ACT_DEFAULT, "Why would I tell you", "I want you to die", "so I can eat you..?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "I tell you what.", "I'll give you a key", "on one condition.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Go to Avalon village", "and send back a", "turkey.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "That's for \"VISKER", "AT THE TRASH CHUTE\".", "Okay?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_CONFUSED, ACT_DEFAULT, "Why would I say?", "I want you to die", "so I eat you.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "..Okay, I let you", "go but you have to", "do me favor.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Go to Avalon.", "Send me TURKEY.", "Hungry for turkey.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Tell them it for", "\"VISKER\".", "\"King of TRASH\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Uh.. Sure.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Write it down cos", "it's super hard.", "\"1234\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "..Got it.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "Now if you'll excuse", "me, I'll be waiting", "for a DEAD human.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
     {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
@@ -2389,21 +2813,21 @@ constexpr conversation garbage_02 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_02b = {
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Aaaaany moment now..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Dead human fall..", "", "Any moment now..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_03 = {
     {0, &sprite_items::db_ch_visker, EM_SKIP, ACT_TELEPORT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {14, 5}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "HEY HEY HEY", "Where do you think", "YOU'RE going?", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {19, 6}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "HEY HEY HEY", "Where YOU going?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {19, 6}},
     {0, &sprite_items::db_ch_jeremy, EM_CONFUSED, ACT_DEFAULT, "Home?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "You do understand", "how dangerous it is", "for a human, right?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..Yes?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_WAT, ACT_DEFAULT, "Muetos hate humans.", "They'll all want", "you dead!", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "But it like,", "SO dangerous.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..and my", "other options", "are what?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_WAT, ACT_DEFAULT, "Muetos hate humans.", "They ALL want", "you dead.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..like you?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "I..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_DEFAULT, "Well played.", "", "Proceed.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_DEFAULT, "Human win", "this time.", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_sign01 = {
@@ -2418,7 +2842,7 @@ constexpr conversation garbage_sign01b = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_sign02 = {
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "VISKER'S HOUSE", "NO HUMANS ALLOWED!!", "UNLESS YOU'RE DEAD", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "VISKER HOUSE", "NO HUMANS ALLOWED", "UNLESS you DEAD", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation visker_h_01 = {
@@ -2436,33 +2860,54 @@ constexpr conversation visker_h_03 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Half of them are", "from the exact same", "family reunion.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
+constexpr conversation garbage_sign03 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "TO WHOEVER IS", "PAINTING ALL", "THESE POLKA DOTS", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "PAINT COSTS THE", "CITY MONEY", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "STOP IT", "THANK YOU", "MGMT", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
 constexpr conversation garbage_04 = {
-    {0, &sprite_items::db_ch_visker, EM_SAD, ACT_WALK, "So you're pretty", "close to the exit,", "and I just, uh..", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {7, 8}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "I figured you didn't", "look like a FIGHTER,", "you know?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_SULLEN, ACT_DEFAULT, "Since you'll be", "doing a lot of it", "anyways,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_HAPPY, ACT_DEFAULT, "How 'bout we fight.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_SIDE_EYE, ACT_DEFAULT, "If you win, you'll", "be good enough for", "the forest.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_EXCITED, ACT_DEFAULT, "If *I* win, then", "I get to eat you.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Win-win scenario.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SAD, ACT_WALK, "So.. Human, uh..", "Close close to", "garbage exit..", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Human doesn't", "LOOK like fighter", "though.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Since human will", "got to fight", "a lot..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "I fight human.", "First.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {5, 8}},
+    {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "If human wins,", "then good enough", "to go home.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "If *I* win, then", "I get yummy", "human meal.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Win-win scenario.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I'm not really-", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "Great.", "It's settled then.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "Yay.", "Let's fight now.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_FIGHT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_fight_01 = {
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "You see that?", "That's your", "\"THIRD EYE\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "It's a direct", "window to your soul.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "I'll go first 'cos", "I'm hungry as", "all get-out.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "You see that?", "That your", "\"THIRD EYE\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "It a direct", "window to your soul.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "I so so hungry.", "I go first.", "Mkay?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_fight_02 = {
-    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "You seem pretty", "good at this, huh?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Let's try THIS then!", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "Human is good", "at this.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "But Human is not", "ready for", "THIS!", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_fight_03 = {
-    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "Okay, fair's fair.", "You may proceed.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "But if you die", "out there..", "Remember,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "All trash makes its", "way back to Visker.", "Eventually.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_DEFAULT, "Ow", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_fight_04 = {
+    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_DEFAULT, "OW OW OW", "OKAY, HUMAN WIN", "HUMAN WIN", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_05 = {
+    {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "Fine.", "Grrr.", "Human can go.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "But if human", "*dies*..", "Remember..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "All trash returns", "back to VISKER.", "KING of TRASH.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation garbage_05b = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Have anything", "else to say?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "What a weirdo..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);
@@ -2508,13 +2953,16 @@ ge_battle.h:
 #include "bn_regular_bg_items_bg_battle_box.h"
 #include "bn_regular_bg_items_bg_battle_action.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
-#include "bn_sprite_items_jeremy_battle_intro.h"
 #include "bn_sprite_items_spr_visker_01.h"
 #include "bn_sprite_items_hearts.h"
 #include "bn_sprite_items_battle_icons.h"
 #include "bn_sprite_items_battle_chars.h"
 
+#include "bn_sprite_items_jeremy_battle_intro.h"
+#include "bn_sprite_items_visker_battle_intro.h"
+
 #include "ge_text.h"
+#include "ge_bullet.h"
 
 using namespace bn;
 
@@ -2622,7 +3070,7 @@ struct status_bar
 struct recv
 {
     int ticker = 0;
-    vector<sprite_ptr, 64> bullets;
+    vector<bullet, bullet_count> bullets;
     int bullet_style = bullet_fall;
     regular_bg_ptr bg_action = regular_bg_items::bg_battle_box.create_bg(0, 0);
     vector_2 eye_pos = {0, 0};
@@ -2641,6 +3089,77 @@ vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed);
 int battle_map();
 
 #endif
+
+ge_bullet.h: 
+// ge_bullet.h
+
+#ifndef GE_BULLET_H
+#define GE_BULLET_H
+
+#include "bn_vector.h"
+#include "bn_optional.h"
+#include "bn_sprite_ptr.h"
+#include "bn_fixed_point.h"
+
+#define bullet_count 16
+
+enum BULLET_ANIM_TYPES
+{
+    BULLET_FALL,
+    BULLET_RISE,
+    BULLET_ZIGZAG,
+    BULLET_WAVE,
+    BULLET_ACCEL,
+    BULLET_BOUNCE,
+    BULLET_HOMING,
+    BULLET_ORBIT,
+    BULLET_SPIRAL
+};
+
+struct bullet
+{
+    bn::optional<bn::sprite_ptr> item;
+    int anim_type;
+    int ticker = 0;
+
+    // Motion state (kept simple / fixed-point friendly)
+    bn::fixed vx = 0;
+    bn::fixed vy = 0;
+    bn::fixed ax = 0;         // for ACCEL
+    bn::fixed amplitude = 16; // for ZIGZAG/WAVE
+    int period = 48;          // frames per cycle
+    bn::fixed base_x = 0;     // x anchor for WAVE
+    int zig_dir = 1;          // direction flip for ZIGZAG
+    bn::fixed min_x = -120;   // screen-ish bounds for BOUNCE
+    bn::fixed max_x = 120;
+
+    // Homing
+    bn::fixed turn_rate = bn::fixed(0.04); // radians-ish per frame (tuned)
+    bn::fixed max_speed = bn::fixed(2.0);
+
+    // Orbit/Spiral (center + relative vector we rotate a tiny angle each frame)
+    bn::fixed orbit_cx = 0;
+    bn::fixed orbit_cy = 0;
+    bn::fixed rel_x = 0;
+    bn::fixed rel_y = 0;
+    // Small rotation each frame: cos≈0.999, sin≈0.035 (≈2 degrees)
+    static constexpr bn::fixed ROT_C = bn::fixed(0.999);
+    static constexpr bn::fixed ROT_S = bn::fixed(0.035);
+    bn::fixed radial_drift = 0; // <0 to spiral inward, >0 outward
+
+    bullet(bn::fixed_point pos, int anim_type_);
+
+    void update();
+    static void populate(bn::vector<bullet, bullet_count> *bullets, int anim_type);
+
+    // Set by your game each frame before update() if you use HOMING
+    static bn::fixed_point s_target;
+
+    static unsigned int random_value;
+};
+
+#endif
+
 
 ge_character_manager.h: 
 // ge_character_manager.h
@@ -2718,6 +3237,9 @@ enum action_list
 	CONVO_VISKER_BED,
 	CONVO_VISKER_NIGHTSTAND,
 	CONVO_VISKER_FOOD,
+	CONVO_GARBAGE_03_SIGN,
+	CONVO_VISKER_FIGHT,
+	CONVO_VISKER_AFTER_FIGHT,
 	ACTIONS_SIZE
 };
 
@@ -3006,6 +3528,7 @@ enum actions
     ACT_SPAWN,
     ACT_MULTIPLE_CHOICE,
     ACT_END,
+    ACT_FIGHT,
     ACT_SFX_KNOCK,
     ACT_MUSIC_VISKER,
     ACT_MUSIC_RESET

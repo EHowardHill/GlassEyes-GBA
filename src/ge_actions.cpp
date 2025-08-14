@@ -31,7 +31,9 @@ int action_listener(map_manager *man, character_manager *ch_man)
         // Get the action for current position
         int action = man->action(current_position);
         bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01 ||
-                                      action == CONVO_VISKER_SIGN);
+                                      action == CONVO_VISKER_SIGN ||
+                                      action == CONVO_GARBAGE_03_SIGN ||
+                                      action == CONVO_VISKER_AFTER_FIGHT);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -72,6 +74,20 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 ch_man->db.emplace();
                 ch_man->db->load(&garbage_sign02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_GARBAGE_03_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_sign03);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_VISKER_AFTER_FIGHT:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&garbage_05b);
                 ch_man->db->init(ch_man);
                 break;
             }
@@ -177,6 +193,29 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 {
                     ch_man->db.emplace();
                     ch_man->db->load(&visker_h_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case TO_GARBAGE_03:
+            {
+                global_data_ptr->entry_map = &map_garbage_03;
+                global_data_ptr->entry_position = {1, 3};
+                return 1;
+                break;
+            }
+            case CONVO_VISKER_FIGHT:
+            {
+                if (global_data_ptr->action_iterations[CONVO_VISKER_FIGHT] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_04);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[CONVO_VISKER_FIGHT] == 2)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&garbage_05);
                     ch_man->db->init(ch_man);
                 }
                 break;

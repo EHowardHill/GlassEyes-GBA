@@ -26,6 +26,7 @@ enum actions
     ACT_SPAWN,
     ACT_MULTIPLE_CHOICE,
     ACT_END,
+    ACT_FIGHT,
     ACT_SFX_KNOCK,
     ACT_MUSIC_VISKER,
     ACT_MUSIC_RESET
