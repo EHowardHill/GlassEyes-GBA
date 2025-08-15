@@ -8,6 +8,7 @@
 #include "bn_sprite_items_spr_jeremy_01.h"
 #include "bn_sprite_items_spr_visker_01.h"
 #include "bn_sprite_items_spr_visker_wife_01.h"
+#include "bn_sprite_items_spr_ginger_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -182,10 +183,8 @@ character::character(int index_, vector_2 start_, bool npc_) : index(index_), np
     start.x = (start_.x * 32) + 16;
     start.y = (start_.y * 32) + 16;
 
-    // Initialize v_sprite bounds position
-    // v_sprite_ptr::manager.push_back(&v_sprite);
     v_sprite.bounds.position = start;
-    v_sprite.bounds.width = 32;
+    v_sprite.bounds.width = 28;
     v_sprite.bounds.height = 32;
 
     update_sprite_item(index_);
@@ -225,6 +224,11 @@ void character::update_sprite_item(int index_)
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_visker_wife_01;
         break;
     }
+    case CHAR_GINGER:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_ginger_01;
+        break;
+    }
 
     default:
     {
@@ -258,23 +262,6 @@ void character::update(map_manager *current_map, bool db_inactive)
             (current_map->current_map->size.x * 32) - bound_1.x,
             (current_map->current_map->size.y * 32) - bound_1.y};
 
-        if (!db_inactive)
-        {
-            bound_2.y = bound_2.y + 96;
-        }
-
-        v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
-        v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
-
-        if (v_sprite_ptr::camera.x < bound_1.x)
-            v_sprite_ptr::camera.x = bound_1.x;
-        if (v_sprite_ptr::camera.y < bound_1.y)
-            v_sprite_ptr::camera.y = bound_1.y;
-        if (v_sprite_ptr::camera.x > bound_2.x)
-            v_sprite_ptr::camera.x = bound_2.x;
-        if (v_sprite_ptr::camera.y > bound_2.y)
-            v_sprite_ptr::camera.y = bound_2.y;
-
         if (db_inactive)
         {
             if (bn::keypad::up_held())
@@ -295,6 +282,40 @@ void character::update(map_manager *current_map, bool db_inactive)
             if (bn::keypad::right_held())
             {
                 delta.x = 1;
+            }
+        }
+
+        if (db_inactive || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
+        {
+            v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
+            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+
+            if (v_sprite_ptr::camera.x < bound_1.x)
+                v_sprite_ptr::camera.x = bound_1.x;
+            if (v_sprite_ptr::camera.y < bound_1.y)
+                v_sprite_ptr::camera.y = bound_1.y;
+            if (v_sprite_ptr::camera.x > bound_2.x)
+                v_sprite_ptr::camera.x = bound_2.x;
+            if (v_sprite_ptr::camera.y > bound_2.y)
+                v_sprite_ptr::camera.y = bound_2.y;
+        }
+    }
+    else
+    {
+        if (!db_inactive)
+        {
+            if (v_sprite.sprite_ptr_raw.has_value())
+            {
+                // Calculate where this sprite appears on screen
+                bound screen_pos = v_sprite.real_position();
+
+                // Keep sprites at y=0 or above for ~80 pixels of buffer from dialogue box
+                if (screen_pos.position.y > 0)
+                {
+                    // Move camera down just enough to keep sprite above this threshold
+                    fixed adjustment = screen_pos.position.y - 0;
+                    v_sprite_ptr::camera.y += adjustment;
+                }
             }
         }
     }

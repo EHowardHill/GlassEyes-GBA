@@ -346,6 +346,12 @@ void dialogue_box::init(character_manager *ch_man)
             music_items::theme_visker.play(0.75);
             break;
         }
+        case ACT_MUSIC_GINGER:
+        {
+            music::stop();
+            music_items::theme_ginger.play(0.75);
+            break;
+        }
         case ACT_MUSIC_FADEOUT:
         {
             break;
@@ -360,14 +366,21 @@ void dialogue_box::init(character_manager *ch_man)
         {
             auto pos = ch_man->player_ptr->v_sprite.bounds.position;
             global_data_ptr->entry_position = {pos.x.integer() / 32, pos.y.integer() / 32};
+            global_data_ptr->battle_foe = line.index;
             ch_man->alert();
             break;
         }
         case ACT_PROGRESS:
         {
-            global_data_ptr->progress_cue = true;
             global_data_ptr->process_stage = line.index;
-            ch_man->status = NEW_MAP;
+            ch_man->status = NEW_CHAPTER;
+            break;
+        }
+        case ACT_CUE_GINGER:
+        {
+            auto ginger = ch_man->find_by_index(CHAR_GINGER);
+            ginger->is_follow = true;
+            ginger->follow_id = CHAR_JEREMY;
             break;
         }
         default:

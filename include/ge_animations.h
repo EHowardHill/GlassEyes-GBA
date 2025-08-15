@@ -16,3 +16,6 @@ const animation visker_poke = {{9, 10}, 2, SP_DEFAULT, true};
 
 // Jeremy
 const animation jeremy_lay_down = {{9}, 1, SP_DEFAULT, true};
+
+// Ginger
+const animation ginger_eat_lime = {{9}, 1, SP_DEFAULT, true};

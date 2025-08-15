@@ -36,7 +36,8 @@ int action_listener(map_manager *man, character_manager *ch_man)
                                       action == CONVO_GARBAGE_03_SIGN ||
                                       action == CONVO_VISKER_AFTER_FIGHT ||
                                       action == CONVO_GARBAGE_04_SIGN ||
-                                      action == CONVO_GARBAGE_05_SIGN);
+                                      action == CONVO_GARBAGE_05_SIGN ||
+                                      action == LAB_COMPUTER);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -106,6 +107,46 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 ch_man->db.emplace();
                 ch_man->db->load(&garbage_sign05);
                 ch_man->db->init(ch_man);
+                break;
+            }
+            case LAB_COMPUTER:
+            {
+                if (global_data_ptr->action_iterations[LAB_COMPUTER] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_03);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 2)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_03b);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 3)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_03c);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 4)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_03d);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 5)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_03e);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 6)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_03f);
+                    ch_man->db->init(ch_man);
+                }
                 break;
             }
             default:
@@ -307,6 +348,76 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     ch_man->db->load(&garbage_06b);
                     ch_man->db->init(ch_man);
                 }
+                break;
+            }
+            case CONVO_LAB_RUG:
+            {
+                if (global_data_ptr->action_iterations[CONVO_LAB_RUG] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case LAB_BED:
+            {
+                if (global_data_ptr->action_iterations[LAB_BED] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_02);
+                    ch_man->db->init(ch_man);
+                }
+                else if (global_data_ptr->action_iterations[LAB_BED] == 2)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_02b);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_LAB_GINGER:
+            {
+                if (global_data_ptr->action_iterations[CONVO_LAB_GINGER] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_05);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case LAB_DOOR:
+            {
+                if (global_data_ptr->action_iterations[LAB_DOOR] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_06);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case LAB_FRIDGE:
+            {
+                if (global_data_ptr->action_iterations[LAB_FRIDGE] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_07);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case LAB_LOCKER:
+            {
+                if (global_data_ptr->action_iterations[LAB_LOCKER] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&lab_08);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case TO_LAB_OUTSIDE:
+            {
                 break;
             }
             default:

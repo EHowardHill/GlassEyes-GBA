@@ -45,16 +45,15 @@ struct map
 
 struct map_manager
 {
-  optional<regular_bg_ptr> floor_ptr;
   optional<regular_bg_ptr> collider_ptr;
   const map *current_map;
 
-  map_manager(const regular_bg_item *item_, const map *current_map_);
+  map_manager(const map *current_map_);
 
   void update();
   int collision(vector_2 location);
   bool check_box_collision(bound box);
-  int action(vector_2 location);  // Added this declaration
+  int action(vector_2 location); // Added this declaration
 };
 
 #endif

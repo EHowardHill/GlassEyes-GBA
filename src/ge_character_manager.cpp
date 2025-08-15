@@ -35,6 +35,14 @@ character *character_manager::add_character(int index, vector_2 position, bool i
     characters.push_back(make_unique<character>(index, position, is_npc));
     character *new_char = characters.back().get();
 
+    if (global_data_ptr->process_stage != GARBAGE_TO_BLACK)
+    {
+        if (index == CHAR_GINGER)
+        {
+            new_char->is_follow = true;
+        }
+    }
+
     // Track player
     if (!is_npc && !player_ptr)
     {
@@ -109,7 +117,6 @@ character *character_manager::find_by_index(int index)
 void character_manager::alert()
 {
     vector_2 player_pos = player_ptr->v_sprite.real_position().position;
-    
 
     sprite_ptr alert_box = sprite_items::hearts.create_sprite(player_pos.x, player_pos.y - 48, 0);
     music::stop();
@@ -153,6 +160,40 @@ void character_manager::update(map_manager *current_map = nullptr)
         if (ch)
         {
             ch->update(current_map, db_inactive);
+
+            if (ch->is_follow)
+            {
+                auto f_ch = find_by_index(ch->follow_id);
+                vector_2 f_pos = {f_ch->v_sprite.bounds.position.x / 32, f_ch->v_sprite.bounds.position.y / 32};
+
+                switch (f_ch->face)
+                {
+                case DIR_UP:
+                {
+                    ch->move_to = {f_pos.x.integer(), f_pos.y.integer() + 1};
+                    break;
+                }
+                case DIR_DOWN:
+                {
+                    ch->move_to = {f_pos.x.integer(), f_pos.y.integer() - 1};
+                    break;
+                }
+                case DIR_LEFT:
+                {
+                    ch->move_to = {f_pos.x.integer() + 1, f_pos.y.integer()};
+                    break;
+                }
+                case DIR_RIGHT:
+                {
+                    ch->move_to = {f_pos.x.integer() - 1, f_pos.y.integer()};
+                    break;
+                }
+                default:
+                {
+                    break;
+                }
+                }
+            }
         }
     }
 }

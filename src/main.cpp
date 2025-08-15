@@ -34,16 +34,7 @@ using namespace bn;
 
 int navigate_map()
 {
-    const regular_bg_item *floor_texture;
-
-    // Set floor
-    /*
-    if (global_data_ptr->entry_map == &map_room01) {
-        floor_texture = &bn::regular_bg_items::floor_wood01;
-    }
-    */
-
-    map_manager current_map(floor_texture, global_data_ptr->entry_map);
+    map_manager current_map(global_data_ptr->entry_map);
     character_manager char_mgr;
 
     for (int y = 0; y < current_map.current_map->size.y.integer(); y++)
@@ -59,7 +50,10 @@ int navigate_map()
         }
     }
 
-    char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, true);
+    if (global_data_ptr->entry_map != &map_room01)
+    {
+        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, true);
+    }
 
     int loop_value = 0;
     bool handle_frame = true;
@@ -88,17 +82,14 @@ int main()
 {
     core::init();
 
-    // Initial map
+    // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->entry_map = &map_garbage_01;
-    global_data_ptr->entry_position = {9, 5};
-    global_data_ptr->bg_track = &music_items::bg_garbage;
+    global_data_ptr->process_stage = CUTSCENE_TO_GARBAGE;
+
+    int value = NEW_CHAPTER;
 
     while (true)
     {
-        int value = navigate_map();
-        core::update();
-
         switch (value)
         {
         case BATTLE:
@@ -106,22 +97,59 @@ int main()
             value = battle_map();
             break;
         }
-        case NEW_MAP:
+        case NEW_CHAPTER:
         {
             switch (global_data_ptr->process_stage)
             {
-            case GARBAGE_TO_OFFICE:
+            case CUTSCENE_TO_GARBAGE:
             {
-
+                global_data_ptr->entry_map = &map_garbage_01;
+                global_data_ptr->entry_position = {9, 5};
+                global_data_ptr->bg_track = &music_items::bg_garbage;
+                break;
+            }
+            case GARBAGE_TO_BLACK:
+            {
+                music::stop();
+                sound_items::sfx_knock.play();
+                for (int t = 0; t < 96; t++)
+                {
+                    core::update();
+                }
+                global_data_ptr->entry_map = &map_lab_01;
+                global_data_ptr->entry_position = {4, 5};
+                global_data_ptr->bg_track = &music_items::bg_office;
+                break;
+            }
+            case BLACK_TO_LAB:
+            {
+                global_data_ptr->entry_map = &map_lab_01;
+                global_data_ptr->entry_position = {4, 5};
+                global_data_ptr->bg_track = &music_items::bg_office;
+                break;
+            }
+            default:
+            {
+                global_data_ptr->entry_map = &map_garbage_01;
+                global_data_ptr->entry_position = {9, 5};
+                global_data_ptr->bg_track = &music_items::bg_garbage;
                 break;
             }
             }
-        }
-        }
 
-        if (!music::playing())
+            value = CONTINUE;
+            break;
+        }
+        default:
         {
-            global_data_ptr->bg_track->play();
+            if (!music::playing())
+            {
+                global_data_ptr->bg_track->play();
+            }
+
+            value = navigate_map();
+            break;
+        }
         }
 
         core::update();

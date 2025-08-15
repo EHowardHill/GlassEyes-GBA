@@ -68,7 +68,8 @@ enum character_list
     CHAR_VISTA,
     CHAR_JEREMY,
     CHAR_VISKER,
-    CHAR_VISKER_WIFE
+    CHAR_VISKER_WIFE,
+    CHAR_GINGER
 };
 
 enum facing
@@ -93,6 +94,8 @@ struct character
 
     bool npc = true;
     vector_2 move_to = {0, 0};
+    bool is_follow = false;
+    int follow_id = CHAR_JEREMY;
 
     character(int index_, vector_2 start_, bool npc_);
 

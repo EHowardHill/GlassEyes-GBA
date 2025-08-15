@@ -129,7 +129,7 @@ garbage_06
 	db_ch_jeremy	EM_DISAPPOINTED		Oh boy.	You again.								
 	db_ch_visker_wife	EM_HAPPY		Huh? Me?	"You not know me,"	human.							
 	db_ch_jeremy	EM_DISAPPOINTED		Let me through.									
-	db_ch_visker	EM_ANGRY		OI! HUMAN!	Human don't speak to	my wife like that!!				CHAR_VISKER		"{5, 2}"	
+	db_ch_visker	EM_ANGRY	ACT_WALK	OI! HUMAN!	Human don't speak to	my wife like that!!				CHAR_VISKER		"{5, 2}"	
 	db_ch_jeremy	EM_WAT		"You're.. Oh, I see."									
 	db_ch_visker	EM_ANGRY		I now need to fight	human again for	wife's honor.							
 	db_ch_jeremy	EM_DISAPPOINTED		Ugh..	I'm never getting	out of here.							
@@ -137,7 +137,7 @@ garbage_06
 													
 garbage_fight_05													
 	db_ch_jeremy	EM_DISAPPOINTED		"Look, just get out"	out of the way.								
-	db_ch_visker	EM_PAIN		LA LA LA	CAN'T HEAR YOU								
+	db_ch_visker	EM_ANNOYED		LA LA LA	CAN'T HEAR YOU								
 													
 garbage_06b													
 		EM_SKIP								CHAR_JEREMY	&jeremy_lay_down		
@@ -145,4 +145,95 @@ garbage_06b
 	db_ch_visker	EM_DISAPPOINTED		"Let's go home, wife."	I'm hungry.								
 	db_ch_visker_wife	EM_DEFAULT		Why not eat human.									
 	db_ch_visker	EM_DISAPPOINTED		I'm angry at human.	We eat human later.								
-			ACT_PROGRESS							GARBAGE_TO_OFFICE			
+			ACT_PROGRESS							GARBAGE_TO_BLACK			
+													
+lab_01													
+		EM_SKIP								CHAR_JEREMY	&jeremy_lay_down		
+	db_ch_jeremy	EM_PAIN		Ugh..	Everything hurts..					CHAR_GINGER	&ginger_eat_lime		
+	db_ch_jeremy	EM_PAIN		"Man, I am TIRED"	of waking up in	"weird places, ugh."							
+	db_ch_jeremy	EM_DISAPPOINTED		And why do I smell	like..	Limes?							
+													
+lab_02													
+				Surely an empty cot	would have been	better than a rug?							
+													
+lab_02b													
+				You don't really	feel tired anymore.								
+													
+lab_03													
+				The outpost computer	must have all sorts	of secrets.							
+				The password	being one of them.								
+													
+lab_03b													
+				If you want to spam	"random passwords,"	be my guest.							
+													
+lab_03c													
+	db_ch_jeremy	EM_DEFAULT		Ok.. Let's try..		"""NBOutpost1972"""							
+				It didn't work.									
+lab_03d													
+	db_ch_jeremy	EM_DEFAULT		Ok.. Let's try..		"""NBOutpost1971"""							
+				It didn't work.									
+													
+lab_03e													
+	db_ch_jeremy	EM_DEFAULT		Ok.. Let's try..		"""NBOutpost1970"""							
+				It didn't work.									
+													
+lab_03f													
+	db_ch_jeremy	EM_DEFAULT		Ok.. Let's try..		"""NBOutpost1969"""							
+				LOGIN SUCCESSFUL									
+	db_ch_jeremy	EM_WAT		Oh crap									
+	db_ch_jeremy	EM_DEFAULT		Uh.. Let's see	what's on here.								
+				31-Dec-69									
+				FINAL LOG.	Funding cuts are	sending us home.							
+				"Unfortunately,"	we haven't been	able to find them.							
+				In all honesty	this whole year	feels like it's been							
+				a huge waste.		Our prevailing							
+				theory as to where	new muetos come	from is that							
+				"they ""pop out of"	"the ground"". It's as"	good as any.							
+													
+lab_04													
+	db_ch_jeremy	EM_DEFAULT		"You know, once"	"I finish my degree,"								
+				I might be able to	understand what	these books mean.							
+													
+lab_05													
+		EM_SKIP	ACT_MUSIC_GINGER										
+	db_ch_jeremy	EM_DEFAULT		..									
+	db_ch_ginger	EM_HAPPY		Oh! You're awake!	Thank goodness.								
+	db_ch_ginger	EM_EMBARRASSED		"You're not, like,"	"super injured,"	are you?							
+	db_ch_jeremy	EM_DEFAULT		Did you put	lime juice on my	cuts?							
+	db_ch_ginger	EM_DEFAULT		"Well yeah, "	"it's antiseptic,"	right?							
+	db_ch_jeremy	EM_DEFAULT		It stings but it	is not	antiseptic.							
+	db_ch_ginger	EM_DEFAULT		Oh.		Uh..							
+	db_ch_ginger	EM_DEFAULT				You want a lime?							
+	db_ch_jeremy	EM_DEFAULT		..									
+	db_ch_jeremy	EM_DEFAULT		Fine.									
+	db_ch_ginger	EM_SIDE_EYE		I found you out	near the garbage	chute.							
+	db_ch_ginger	EM_SAD		The rat who lives	out there usually	eats dead humans.							
+	db_ch_jeremy	EM_DEFAULT		I've been made	well-aware.								
+	db_ch_ginger	EM_HAPPY		"I'm Ginger,"	by the way.					CHAR_GINGER			
+	db_ch_ginger	EM_HAPPY		I'm heading to	Canterbury.								
+	db_ch_ginger	EM_DEFAULT		I figured that since	"you were a human,"	you were too.							
+	db_ch_jeremy	EM_DEFAULT		I really don't want	to go that far..	But you're right.							
+	db_ch_jeremy	EM_DEFAULT		They won't let me	back into the city	without an ID.							
+	db_ch_ginger	EM_HAPPY		"Perfect! You, uh.."	know how to	get there?							
+	db_ch_jeremy	EM_DEFAULT		"You're a mueto,"	don't you?								
+	db_ch_ginger	EM_SIDE_EYE		I guess we'll	have to figure it	"out, huh?"							
+	db_ch_jeremy	EM_DEFAULT		I guess.									
+		EM_SKIP	ACT_MUSIC_RESET										
+		EM_SKIP	ACT_CUE_GINGER										
+													
+lab_06													
+	db_ch_ginger	EM_HAPPY		I've been hiding out	in this old	outpost lab.							
+	db_ch_ginger	EM_SIDE_EYE		"It's nice to have,"	"y'know,"	running water.							
+	db_ch_ginger	EM_DEFAULT		Clean bathrooms	are hard to come by	out here.							
+	db_ch_ginger	EM_SAD		I'll admit I'm not	thrilled about	leaving.							
+													
+lab_07													
+	db_ch_ginger	EM_WAT		Oh- you don't	want to open	the fridge door.							
+	db_ch_jeremy	EM_DEFAULT		Why not?									
+	db_ch_ginger	EM_SIDE_EYE		The dehydrated	limes were the only	fresh things.							
+	db_ch_ginger	EM_SAD		Everything else..	Let's just say it	has a smell.							
+	db_ch_ginger	EM_DEFAULT		This place was	probably abandoned	for a year or two.							
+													
+lab_08													
+	db_ch_jeremy	EM_ANGRY		Damn..	They emptied out	the lockers.							
+	db_ch_jeremy	EM_DEFAULT		All I have to defend	myself is a stick.								

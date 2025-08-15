@@ -39,6 +39,15 @@ enum action_list
 	EXIT_GARBAGE_01,
 	CONVO_GARBAGE_05_SIGN,
 	CONVO_GARBAGE_FINAL_01,
+	CONVO_LAB_RUG,
+	LAB_BED,
+	LAB_COMPUTER,
+	LAB_BOOKSHELF,
+	CONVO_LAB_GINGER,
+	LAB_DOOR,
+	LAB_FRIDGE,
+	LAB_LOCKER,
+	TO_LAB_OUTSIDE,
 	ACTIONS_SIZE
 };
 
@@ -61,8 +70,9 @@ struct global_data
 	int max_hp[4] = {20, 20, 20, 20};
 	int enemy_hp[4] = {20, 20, 20, 20};
 	int enemy_max_hp[4] = {20, 20, 20, 20};
+	int enemy_allowed_moveset = 2;
 	bool progress_cue = false;
-	bool process_stage = 0;
+	int process_stage = 0;
 
 	const music_item *bg_track;
 };

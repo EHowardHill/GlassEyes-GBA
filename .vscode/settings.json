@@ -13,6 +13,10 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "list": "cpp",
-        "atomic": "cpp"
+        "atomic": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp"
     }
 }

@@ -12,6 +12,7 @@ using namespace bn;
 #include "bn_sprite_items_db_ch_visker.h"
 #include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_db_ch_visker_wife.h"
+#include "bn_sprite_items_db_ch_ginger.h"
 
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_WALK, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
@@ -161,7 +162,7 @@ constexpr conversation garbage_06 = {
     {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Oh boy.", "You again.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker_wife, EM_HAPPY, ACT_DEFAULT, "Huh? Me?", "You not know me,", "human.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Let me through.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "OI! HUMAN!", "Human don't speak to", "my wife like that!!", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {5, 2}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_WALK, "OI! HUMAN!", "Human don't speak to", "my wife like that!!", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {5, 2}},
     {0, &sprite_items::db_ch_jeremy, EM_WAT, ACT_DEFAULT, "You're.. Oh, I see.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "I now need to fight", "human again for", "wife's honor.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Ugh..", "I'm never getting", "out of here.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -170,7 +171,7 @@ constexpr conversation garbage_06 = {
 
 constexpr conversation garbage_fight_05 = {
     {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Look, just get out", "out of the way.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_PAIN, ACT_DEFAULT, "LA LA LA", "CAN'T HEAR YOU", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_DEFAULT, "LA LA LA", "CAN'T HEAR YOU", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_06b = {
@@ -179,7 +180,113 @@ constexpr conversation garbage_06b = {
     {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "Let's go home, wife.", "I'm hungry.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker_wife, EM_DEFAULT, ACT_DEFAULT, "Why not eat human.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "I'm angry at human.", "We eat human later.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, GARBAGE_TO_OFFICE, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, GARBAGE_TO_BLACK, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_01 = {
+    {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_JEREMY, &jeremy_lay_down, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_PAIN, ACT_DEFAULT, "Ugh..", "Everything hurts..", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_GINGER, &ginger_eat_lime, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_PAIN, ACT_DEFAULT, "Man, I am TIRED", "of waking up in", "weird places, ugh.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "And why do I smell", "like..", "Limes?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_02 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Surely an empty cot", "would have been", "better than a rug?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_02b = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "You don't really", "feel tired anymore.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_03 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "The outpost computer", "must have all sorts", "of secrets.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "The password", "being one of them.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_03b = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "If you want to spam", "random passwords,", "be my guest.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_03c = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Ok.. Let's try..", "", "\"NBOutpost1972\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "It didn't work.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_03d = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Ok.. Let's try..", "", "\"NBOutpost1971\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "It didn't work.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_03e = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Ok.. Let's try..", "", "\"NBOutpost1970\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "It didn't work.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_03f = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Ok.. Let's try..", "", "\"NBOutpost1969\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "LOGIN SUCCESSFUL", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_WAT, ACT_DEFAULT, "Oh crap", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Uh.. Let's see", "what's on here.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "31-Dec-69", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "FINAL LOG.", "Funding cuts are", "sending us home.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Unfortunately,", "we haven't been", "able to find them.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "In all honesty", "this whole year", "feels like it's been", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "a huge waste.", "", "Our prevailing", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "theory as to where", "new muetos come", "from is that", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "they \"pop out of", "the ground\". It's as", "good as any.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_04 = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "You know, once", "I finish my degree,", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "I might be able to", "understand what", "these books mean.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_05 = {
+    {0, nullptr, EM_SKIP, ACT_MUSIC_GINGER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Oh! You're awake!", "Thank goodness.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_EMBARRASSED, ACT_DEFAULT, "You're not, like,", "super injured,", "are you?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Did you put", "lime juice on my", "cuts?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Well yeah,", "it's antiseptic,", "right?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "It stings but it", "is not", "antiseptic.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Oh.", "", "Uh..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "", "", "You want a lime?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Fine.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "I found you out", "near the garbage", "chute.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SAD, ACT_DEFAULT, "The rat who lives", "out there usually", "eats dead humans.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I've been made", "well-aware.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "I'm Ginger,", "by the way.", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_GINGER, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "I'm heading to", "Canterbury.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "I figured that since", "you were a human,", "you were too.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I really don't want", "to go that far..", "But you're right.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "They won't let me", "back into the city", "without an ID.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Perfect! You, uh..", "know how to", "get there?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "You're a mueto,", "don't you?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "I guess we'll", "have to figure it", "out, huh?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I guess.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_SKIP, ACT_CUE_GINGER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_06 = {
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "I've been hiding out", "in this old", "outpost lab.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "It's nice to have,", "y'know,", "running water.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Clean bathrooms", "are hard to come by", "out here.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SAD, ACT_DEFAULT, "I'll admit I'm not", "thrilled about", "leaving.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_07 = {
+    {0, &sprite_items::db_ch_ginger, EM_WAT, ACT_DEFAULT, "Oh- you don't", "want to open", "the fridge door.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Why not?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "The dehydrated", "limes were the only", "fresh things.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SAD, ACT_DEFAULT, "Everything else..", "Let's just say it", "has a smell.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "This place was", "probably abandoned", "for a year or two.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation lab_08 = {
+    {0, &sprite_items::db_ch_jeremy, EM_ANGRY, ACT_DEFAULT, "Damn..", "They emptied out", "the lockers.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "All I have to defend", "myself is a stick.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);

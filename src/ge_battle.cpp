@@ -9,6 +9,7 @@
 #include "bn_music_items_info.h"
 #include "bn_sound_items.h"
 #include "bn_math.h"
+#include "bn_vector.h"
 
 #include "bn_camera_ptr.h"
 #include "bn_regular_bg_items_bg_battle_grid.h"
@@ -161,8 +162,8 @@ void status_bar_menu::update()
     if (keypad::up_pressed())
     {
         index--;
-        if (index < 0) // Check against 0, not STATUS_BAR_ATTACK
-            index = 4; // Wrap to last item (DEFEND)
+        if (index < 0)
+            index = 4;
         update_label();
     }
     else if (keypad::down_pressed())
@@ -252,30 +253,29 @@ vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
 
 recv::recv()
 {
-    bullet::populate(&bullets, BULLET_FALL);
+    random_value = (random_value + 17) / 3 + ticker;
+    bullet::populate(&bullets, random_value % global_data_ptr->enemy_allowed_moveset);
 }
 
 void recv::update()
 {
     heart.set_position(eye_pos.x, eye_pos.y);
 
-    int delete_at = -1;
     for (int t = 0; t < bullets.size(); t++)
     {
         auto bullet = &bullets.at(t);
         bullet->update();
 
-        if (abs(eye_pos.x - bullet->item.value().x().integer()) + abs(eye_pos.y - bullet->item.value().y().integer()) < 12)
+        if (bullet->item.value().visible())
         {
-            sound_items::sfx_damage.play();
-            global_data_ptr->hp[0] -= 2;
-            text::add_toast(-2, {-96, -36});
-            delete_at = t;
+            if (abs(eye_pos.x - bullet->item.value().x().integer()) + abs(eye_pos.y - bullet->item.value().y().integer()) < 12)
+            {
+                sound_items::sfx_damage.play();
+                global_data_ptr->hp[0] -= 2;
+                text::add_toast(-2, {-96, -36});
+                bullet->item.value().set_visible(false);
+            }
         }
-    }
-    if (delete_at != -1)
-    {
-        bullets.erase(bullets.begin() + delete_at);
     }
 
     eye_pos.x += keypad::right_held();
@@ -312,6 +312,10 @@ int battle_map()
     {
     case FOE_VISKERS_01:
     {
+        global_data_ptr->enemy_max_hp[0] = 12;
+        global_data_ptr->enemy_hp[0] = 12;
+        global_data_ptr->enemy_allowed_moveset = 3;
+
         convos[RESULT_FIRST].push_back(&garbage_fight_01);
         convos[RESULT_UP].push_back(&garbage_fight_02);
         convos[RESULT_UP].push_back(&garbage_fight_03);
@@ -320,6 +324,10 @@ int battle_map()
     }
     case FOE_VISKERS_02:
     {
+        global_data_ptr->enemy_max_hp[0] = 99;
+        global_data_ptr->enemy_hp[0] = 99;
+        global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
+
         convos[RESULT_FIRST].push_back(&garbage_fight_05);
         break;
     }
@@ -471,6 +479,7 @@ int battle_map()
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 music::stop();
+                text::toasts.clear();
                 return CONTINUE;
             }
 
@@ -480,7 +489,7 @@ int battle_map()
             }
             obj_recv.value().update();
 
-            if (obj_recv.value().ticker > 500)
+            if (obj_recv.value().ticker > 250)
             {
                 obj_recv.reset();
                 stage = stage_status;

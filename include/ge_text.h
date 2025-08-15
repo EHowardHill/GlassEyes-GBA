@@ -19,7 +19,9 @@ using namespace bn;
 enum progress {
     CUTSCENE_01,
     CUTSCENE_02,
-    GARBAGE_TO_OFFICE
+    CUTSCENE_TO_GARBAGE,
+    GARBAGE_TO_BLACK,
+    BLACK_TO_LAB,
 };
 
 enum foes {
@@ -39,8 +41,10 @@ enum actions
     ACT_END,
     ACT_FIGHT,
     ACT_PROGRESS,
+    ACT_CUE_GINGER,
     ACT_SFX_KNOCK,
     ACT_MUSIC_VISKER,
+    ACT_MUSIC_GINGER,
     ACT_MUSIC_FADEOUT,
     ACT_MUSIC_RESET
 };

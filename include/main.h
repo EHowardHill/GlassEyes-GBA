@@ -6,6 +6,7 @@
 enum RETURN_TYPE {
     CONTINUE,
     NEW_MAP,
+    NEW_CHAPTER,
     BATTLE
 };
 

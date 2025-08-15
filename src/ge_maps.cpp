@@ -7,11 +7,9 @@
 #include "ge_sprites.h"
 #include "ge_character_manager.h"
 
-map_manager::map_manager(const regular_bg_item *item_, const map *current_map_)
+map_manager::map_manager(const map *current_map_)
     : current_map(current_map_)
 {
-    if (item_ != nullptr)
-        floor_ptr = item_->create_bg(0, 0);
     collider_ptr = current_map_->bg_item_ptr->create_bg(0, 0);
 }
 
@@ -22,9 +20,7 @@ void map_manager::update()
     vector_2 offset = {
         current_map->raw_size.x / 2,
         current_map->raw_size.y / 2};
-
-    if (floor_ptr.has_value())
-        floor_ptr.value().set_position(-cam->x, -cam->y);
+        
     collider_ptr.value().set_position(-cam->x + offset.x, -cam->y + offset.y);
 }
 

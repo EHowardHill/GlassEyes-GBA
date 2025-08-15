@@ -5,9 +5,9 @@
     },
     "activeFile": "maps/garbage_05.tmx",
     "expandedProjectPaths": [
+        "maps",
         "tilesets",
-        ".",
-        "maps"
+        "."
     ],
     "exportAsImage.includeBackgroundColor": true,
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -20,7 +20,7 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 398,
+                "x": 384.5,
                 "y": 191
             }
         },
@@ -36,40 +36,40 @@
             "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 192,
-                "y": 192
+                "x": 306,
+                "y": 191.99999999999997
             }
         },
         "maps/garbage_04.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 512,
-                "y": 384
+                "x": 842.6666666666666,
+                "y": 383.99999999999994
             }
         },
         "maps/garbage_05.tmx": {
             "scale": 2,
-            "selectedLayer": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 219,
-                "y": 77.25
+                "x": 343,
+                "y": 77
             }
         },
         "maps/lab_01.tmx": {
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 514,
-                "y": 287.66666666666663
+                "x": 550,
+                "y": 287.3333333333333
             }
         },
         "maps/room01.tmx": {
             "scale": 2.1634765625,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 205.6874605037465,
-                "y": 127.80355691974361
+                "x": 205.68746050374648,
+                "y": 127.57244741355962
             }
         },
         "maps/viskers_house.tmx": {
@@ -91,6 +91,9 @@
             "scaleInDock": 3,
             "scaleInEditor": 1
         },
+        "tilesets/lab01.tsx": {
+            "scaleInDock": 1
+        },
         "tilesets/room01.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1,
@@ -111,22 +114,24 @@
         "maps/garbage_01.tmx",
         "maps/garbage_04.tmx",
         "maps/garbage_03.tmx",
-        "maps/garbage_05.tmx"
+        "maps/garbage_05.tmx",
+        "maps/lab_01.tmx",
+        "maps/room01.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
         "maps/garbage_01.tmx",
         "maps/garbage_04.tmx",
         "maps/garbage_03.tmx",
+        "maps/room01.tmx",
+        "maps/lab_01.tmx",
         "maps/garbage_05.tmx",
         "maps/garbage_02.tmx",
         "maps/viskers_house.tmx",
         "tilesets/room01.tsx",
         "tilesets/floor_wood01.tsx",
-        "maps/room01.tmx",
         "tilesets/garbage-cave01.tsx",
-        "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts/db_ch_visker.tsx",
-        "tilesets/spr_visker_01.tsx"
+        "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts/db_ch_visker.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
