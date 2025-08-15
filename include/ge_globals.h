@@ -61,6 +61,8 @@ struct global_data
 	int max_hp[4] = {20, 20, 20, 20};
 	int enemy_hp[4] = {20, 20, 20, 20};
 	int enemy_max_hp[4] = {20, 20, 20, 20};
+	bool progress_cue = false;
+	bool process_stage = 0;
 
 	const music_item *bg_track;
 };

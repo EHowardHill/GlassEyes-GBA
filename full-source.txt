@@ -247,7 +247,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case GARBAGE_04_EXIT_01:
             {
-                if (global_data_ptr->action_iterations[CONVO_GARBAGE_04_SIGN] == 1)
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_04_SIGN] == 0)
                 {
                     global_data_ptr->entry_map = &map_garbage_03;
                     global_data_ptr->entry_position = {2, 8};
@@ -255,8 +255,8 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 }
                 else
                 {
-                    global_data_ptr->entry_map = &map_garbage_03;
-                    global_data_ptr->entry_position = {3, 8};
+                    global_data_ptr->entry_map = &map_garbage_05;
+                    global_data_ptr->entry_position = {4, 45};
                     return 1;
                 }
                 break;
@@ -1359,6 +1359,7 @@ character *character_manager::find_by_index(int index)
 void character_manager::alert()
 {
     vector_2 player_pos = player_ptr->v_sprite.real_position().position;
+    
 
     sprite_ptr alert_box = sprite_items::hearts.create_sprite(player_pos.x, player_pos.y - 48, 0);
     music::stop();
@@ -1706,7 +1707,7 @@ constexpr map map_garbage_05 = {
 	0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -1772,6 +1773,7 @@ ge_sprites.cpp:
 #include "bn_sprite_items_spr_vista_01.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
 #include "bn_sprite_items_spr_visker_01.h"
+#include "bn_sprite_items_spr_visker_wife_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -1982,6 +1984,11 @@ void character::update_sprite_item(int index_)
     case CHAR_VISKER:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_visker_01;
+        break;
+    }
+    case CHAR_VISKER_WIFE:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_visker_wife_01;
         break;
     }
 
@@ -2665,6 +2672,13 @@ void dialogue_box::init(character_manager *ch_man)
             ch_man->alert();
             break;
         }
+        case ACT_PROGRESS:
+        {
+            global_data_ptr->progress_cue = true;
+            global_data_ptr->process_stage = line.index;
+            ch_man->status = NEW_MAP;
+            break;
+        }
         default:
         {
             break;
@@ -2947,16 +2961,32 @@ int main()
         int value = navigate_map();
         core::update();
 
-        if (value == BATTLE)
+        switch (value)
+        {
+        case BATTLE:
         {
             value = battle_map();
-            core::update();
+            break;
+        }
+        case NEW_MAP:
+        {
+            switch (global_data_ptr->process_stage)
+            {
+            case GARBAGE_TO_OFFICE:
+            {
+
+                break;
+            }
+            }
+        }
         }
 
         if (!music::playing())
         {
             global_data_ptr->bg_track->play();
         }
+
+        core::update();
     }
 }
 
@@ -3028,7 +3058,7 @@ constexpr conversation garbage_03 = {
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..like you?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "I..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_DEFAULT, "Human win", "this time.", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, &sprite_items::db_ch_visker, EM_ANNOYED, ACT_WALK, "Human win", "this time.", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
     {0, nullptr, EM_SKIP, ACT_DEFAULT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
@@ -3071,7 +3101,7 @@ constexpr conversation garbage_sign03 = {
 constexpr conversation garbage_04 = {
     {0, &sprite_items::db_ch_visker, EM_SAD, ACT_DEFAULT, "So.. Human, uh..", "Close close to", "garbage exit..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_DEFAULT, ACT_DEFAULT, "Human doesn't", "LOOK like fighter", "though.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Since human will", "got to fight", "a lot..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "Since human is", "gonna fight..", "a lot..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_HAPPY, ACT_DEFAULT, "I fight human.", "First.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_SIDE_EYE, ACT_DEFAULT, "If human wins,", "then good enough", "to go home.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_EXCITED, ACT_DEFAULT, "If *I* win, then", "I get yummy", "human meal.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -3089,7 +3119,7 @@ constexpr conversation garbage_fight_01 = {
 
 constexpr conversation garbage_fight_02 = {
     {0, &sprite_items::db_ch_visker, EM_DISAPPOINTED, ACT_DEFAULT, "Human is good", "at this.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "But Human is not", "ready for", "THIS!", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_SULLEN, ACT_DEFAULT, "But Human is not", "ready for", "NEXT ATTACK.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_fight_03 = {
@@ -3121,13 +3151,13 @@ constexpr conversation garbage_sign05 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_06 = {
-    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Oh boy, it's you again.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Oh boy.", "You again.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker_wife, EM_HAPPY, ACT_DEFAULT, "Huh? Me?", "You not know me,", "human.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Let me through, Visker.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "OI! HUMAN!", "Human don't speak to", "my wife like that!!", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {2, 2}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Let me through.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "OI! HUMAN!", "Human don't speak to", "my wife like that!!", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISKER, nullptr, {5, 2}},
     {0, &sprite_items::db_ch_jeremy, EM_WAT, ACT_DEFAULT, "You're.. Oh, I see.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_visker, EM_ANGRY, ACT_DEFAULT, "I now need to fight", "human again for", "wife's honor.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Ugh.. I'm never getting", "out of here, am I?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DISAPPOINTED, ACT_DEFAULT, "Ugh..", "I'm never getting", "out of here.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_FIGHT, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FOE_VISKERS_02, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
@@ -3507,6 +3537,8 @@ struct global_data
 	int max_hp[4] = {20, 20, 20, 20};
 	int enemy_hp[4] = {20, 20, 20, 20};
 	int enemy_max_hp[4] = {20, 20, 20, 20};
+	bool progress_cue = false;
+	bool process_stage = 0;
 
 	const music_item *bg_track;
 };
@@ -3668,7 +3700,8 @@ enum character_list
     CHAR_DEFAULT,
     CHAR_VISTA,
     CHAR_JEREMY,
-    CHAR_VISKER
+    CHAR_VISKER,
+    CHAR_VISKER_WIFE
 };
 
 enum facing

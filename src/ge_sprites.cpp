@@ -7,6 +7,7 @@
 #include "bn_sprite_items_spr_vista_01.h"
 #include "bn_sprite_items_spr_jeremy_01.h"
 #include "bn_sprite_items_spr_visker_01.h"
+#include "bn_sprite_items_spr_visker_wife_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -217,6 +218,11 @@ void character::update_sprite_item(int index_)
     case CHAR_VISKER:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_visker_01;
+        break;
+    }
+    case CHAR_VISKER_WIFE:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_visker_wife_01;
         break;
     }
 

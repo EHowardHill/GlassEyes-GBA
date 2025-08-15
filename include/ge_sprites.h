@@ -67,7 +67,8 @@ enum character_list
     CHAR_DEFAULT,
     CHAR_VISTA,
     CHAR_JEREMY,
-    CHAR_VISKER
+    CHAR_VISKER,
+    CHAR_VISKER_WIFE
 };
 
 enum facing

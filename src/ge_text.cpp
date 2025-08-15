@@ -363,6 +363,13 @@ void dialogue_box::init(character_manager *ch_man)
             ch_man->alert();
             break;
         }
+        case ACT_PROGRESS:
+        {
+            global_data_ptr->progress_cue = true;
+            global_data_ptr->process_stage = line.index;
+            ch_man->status = NEW_MAP;
+            break;
+        }
         default:
         {
             break;

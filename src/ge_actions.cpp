@@ -246,7 +246,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case GARBAGE_04_EXIT_01:
             {
-                if (global_data_ptr->action_iterations[CONVO_GARBAGE_04_SIGN] == 1)
+                if (global_data_ptr->action_iterations[CONVO_GARBAGE_04_SIGN] == 0)
                 {
                     global_data_ptr->entry_map = &map_garbage_03;
                     global_data_ptr->entry_position = {2, 8};
@@ -254,8 +254,8 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 }
                 else
                 {
-                    global_data_ptr->entry_map = &map_garbage_03;
-                    global_data_ptr->entry_position = {3, 8};
+                    global_data_ptr->entry_map = &map_garbage_05;
+                    global_data_ptr->entry_position = {4, 45};
                     return 1;
                 }
                 break;

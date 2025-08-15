@@ -99,15 +99,31 @@ int main()
         int value = navigate_map();
         core::update();
 
-        if (value == BATTLE)
+        switch (value)
+        {
+        case BATTLE:
         {
             value = battle_map();
-            core::update();
+            break;
+        }
+        case NEW_MAP:
+        {
+            switch (global_data_ptr->process_stage)
+            {
+            case GARBAGE_TO_OFFICE:
+            {
+
+                break;
+            }
+            }
+        }
         }
 
         if (!music::playing())
         {
             global_data_ptr->bg_track->play();
         }
+
+        core::update();
     }
 }

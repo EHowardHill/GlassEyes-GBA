@@ -109,6 +109,7 @@ character *character_manager::find_by_index(int index)
 void character_manager::alert()
 {
     vector_2 player_pos = player_ptr->v_sprite.real_position().position;
+    
 
     sprite_ptr alert_box = sprite_items::hearts.create_sprite(player_pos.x, player_pos.y - 48, 0);
     music::stop();

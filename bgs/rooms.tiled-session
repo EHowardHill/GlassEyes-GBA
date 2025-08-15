@@ -20,8 +20,8 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 436.5,
-                "y": 165.5
+                "x": 398,
+                "y": 191
             }
         },
         "maps/garbage_02.tmx": {
@@ -36,24 +36,32 @@
             "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 100.33333333333331,
-                "y": 144
+                "x": 192,
+                "y": 192
             }
         },
         "maps/garbage_04.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 304.66666666666663,
-                "y": 439.99999999999994
+                "x": 512,
+                "y": 384
             }
         },
         "maps/garbage_05.tmx": {
             "scale": 2,
-            "selectedLayer": 2,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 131.75,
-                "y": 33.5
+                "x": 219,
+                "y": 77.25
+            }
+        },
+        "maps/lab_01.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 514,
+                "y": 287.66666666666663
             }
         },
         "maps/room01.tmx": {
@@ -93,12 +101,12 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/concepts",
-    "map.height": 48,
+    "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
+    "map.height": 24,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,
     "map.tileWidth": 32,
-    "map.width": 12,
+    "map.width": 42,
     "openFiles": [
         "maps/garbage_01.tmx",
         "maps/garbage_04.tmx",
@@ -122,8 +130,8 @@
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
-        "height": 64,
-        "width": 64
+        "height": 32,
+        "width": 32
     },
     "tileset.transparentColor": "#000000",
     "tileset.useTransparentColor": true
