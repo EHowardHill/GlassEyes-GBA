@@ -3,15 +3,18 @@
 This is for Gameboy Advance, so the screen resolution is 240x160.
 Character box is 128x128 (-64 to +64 in both x and y)
 */
-#include "ge_bullet.h"
-#include "ge_structs.h"
+
+#include "bn_random.h"
 #include "bn_math.h"
 #include "bn_sprite_ptr.h"
 #include "bn_sprite_items_hearts.h"
 
+#include "ge_globals.h"
+#include "ge_bullet.h"
+#include "ge_structs.h"
+
 using namespace bn;
 
-unsigned int bullet::random_value = 32;
 fixed_point bullet::s_target = fixed_point(0, 0);
 
 static inline unsigned int rng_next(unsigned int v)
@@ -62,9 +65,9 @@ bullet::bullet(fixed_point pos, int anim_type_) : anim_type(anim_type_)
     {
         // Medium - sharp horizontal movements while falling
         vy = fixed(1.5);
-        amplitude = fixed(28);                // Increased for more aggressive movement
-        period = 20 + int(random_value % 12); // Faster zigzag
-        zig_dir = (random_value & 1) ? 1 : -1;
+        amplitude = fixed(28);                                // Increased for more aggressive movement
+        period = 20 + global_data_ptr->bn_random.get_int(12); // Faster zigzag
+        zig_dir = global_data_ptr->bn_random.get_int(1) ? 1 : -1;
         base_x = pos.x();
         break;
     }
@@ -73,7 +76,7 @@ bullet::bullet(fixed_point pos, int anim_type_) : anim_type(anim_type_)
         // Medium - smooth sine-like movement
         vy = fixed(1.3);
         amplitude = fixed(40); // Wide sweeps
-        period = 36 + int(random_value % 20);
+        period = 36 + global_data_ptr->bn_random.get_int(20);
         base_x = pos.x();
         break;
     }
@@ -81,24 +84,24 @@ bullet::bullet(fixed_point pos, int anim_type_) : anim_type(anim_type_)
     {
         // Medium-Hard - starts slow, speeds up significantly
         vy = fixed(0.3);
-        ax = fixed(0.08);                              // Increased acceleration
-        max_speed = fixed(3.5);                        // Higher max speed
-        vx = fixed((int(random_value % 5) - 2) * 0.2); // Slight horizontal drift
+        ax = fixed(0.08);                                                   // Increased acceleration
+        max_speed = fixed(3.5);                                             // Higher max speed
+        vx = fixed((int(global_data_ptr->bn_random.get_int(5)) - 2) * 0.2); // Slight horizontal drift
         break;
     }
     case BULLET_BOUNCE:
     {
         // Hard - fast horizontal bouncing with vertical movement
-        vy = fixed(1.4);                                      // Increased vertical speed
-        vx = ((random_value & 1) ? fixed(2.0) : fixed(-2.0)); // Faster horizontal
-        min_x = fixed(-60);                                   // Keep within character box
+        vy = fixed(1.4);                                                           // Increased vertical speed
+        vx = ((global_data_ptr->bn_random.get_int(1)) ? fixed(2.0) : fixed(-2.0)); // Faster horizontal
+        min_x = fixed(-60);                                                        // Keep within character box
         max_x = fixed(60);
         break;
     }
     case BULLET_HOMING:
     {
         // Hard - aggressive homing toward player
-        vx = fixed(0.8) * ((random_value & 1) ? 1 : -1);
+        vx = fixed(0.8) * ((global_data_ptr->bn_random.get_int(1)) ? 1 : -1);
         vy = fixed(0.8);
         turn_rate = fixed(0.08); // More aggressive turning
         max_speed = fixed(2.8);  // Faster max speed
@@ -298,76 +301,63 @@ void bullet::populate(vector<bullet, bullet_count> *bullets, int anim_type)
         {
         case BULLET_FALL:
         {
-            // Spawn across full width, staggered heights
-            fixed x_pos = (fixed(int(random_value % 120)) - fixed(60));
-            fixed y_pos = fixed(-70 - (b * 20)); // Well-spaced
+            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
+            fixed y_pos = fixed(-70 - (b * 20));
             bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            random_value = rng_next(random_value);
             bullets->push_back(nb);
             break;
         }
         case BULLET_RISE:
         {
-            // Spawn from below, across width
-            fixed x_pos = (fixed(int(random_value % 120)) - fixed(60));
+            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
             fixed y_pos = fixed(70 + (b * 16));
             bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            random_value = rng_next(random_value);
             bullets->push_back(nb);
             break;
         }
         case BULLET_ZIGZAG:
         {
-            // Spawn near top but not too high
-            fixed x_pos = (fixed(int(random_value % 100)) - fixed(50));
+            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
             fixed y_pos = fixed(-65 - (b * 12));
             bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.amplitude = fixed(20 + int(random_value % 20));
-            nb.period = 18 + int((random_value >> 8) % 24);
-            random_value = rng_next(random_value);
+            nb.amplitude = fixed(20 + global_data_ptr->bn_random.get_int(20));
+            nb.period = 18 + global_data_ptr->bn_random.get_int(24);
             bullets->push_back(nb);
             break;
         }
         case BULLET_WAVE:
         {
-            // Spawn across width with varied waves
-            fixed x_pos = (fixed(int(random_value % 100)) - fixed(50));
+            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
             fixed y_pos = fixed(-65 - (b * 14));
             bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.amplitude = fixed(25 + int(random_value % 30));
-            nb.period = 30 + int((random_value >> 8) % 30);
-            random_value = rng_next(random_value);
+            nb.amplitude = fixed(25 + global_data_ptr->bn_random.get_int(30));
+            nb.period = 30 + global_data_ptr->bn_random.get_int(30);
             bullets->push_back(nb);
             break;
         }
         case BULLET_ACCEL:
         {
-            // Spawn in threatening positions
-            fixed x_pos = (fixed(int(random_value % 100)) - fixed(50));
+            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
             fixed y_pos = fixed(-60 - (b * 10));
             bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.vx = fixed((int(random_value & 7) - 3) * 0.15); // -0.45 to +0.45
-            nb.ax = fixed(0.06 + (int((random_value >> 8) % 6)) * 0.015);
-            random_value = rng_next(random_value);
+            nb.vx = fixed((global_data_ptr->bn_random.get_int(7) - 3) * 0.15);
+            nb.ax = fixed(0.06 + global_data_ptr->bn_random.get_int(6) * 0.015);
             bullets->push_back(nb);
             break;
         }
         case BULLET_BOUNCE:
         {
-            // Start from varied positions
-            fixed x_pos = (fixed(int(random_value % 100)) - fixed(50));
+            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
             fixed y_pos = fixed(-55 - (b * 10));
             bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.vx = ((random_value & 1) ? fixed(2.2) : fixed(-2.2));
-            nb.vy = fixed(1.2 + (int(random_value >> 8) % 4) * 0.1);
-            random_value = rng_next(random_value);
+            nb.vx = global_data_ptr->bn_random.get_int(2) ? fixed(2.2) : fixed(-2.2);
+            nb.vy = fixed(1.2 + global_data_ptr->bn_random.get_int(4) * 0.1);
             bullets->push_back(nb);
             break;
         }
         case BULLET_HOMING:
         {
-            // Spawn from edges for more aggressive approach angles
-            int side = random_value % 4;
+            int side = global_data_ptr->bn_random.get_int(4);
             fixed x_pos, y_pos;
             if (side < 2)
             {
@@ -376,45 +366,38 @@ void bullet::populate(vector<bullet, bullet_count> *bullets, int anim_type)
             }
             else
             {
-                x_pos = (fixed(int(random_value % 80)) - fixed(40));
+                x_pos = fixed(global_data_ptr->bn_random.get_int(-40, 40)); // Added semicolon
                 y_pos = fixed(-65 - (b * 6));
             }
             bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.turn_rate = fixed(0.07 + (int((random_value >> 8) % 5)) * 0.015);
-            nb.max_speed = fixed(2.2 + int((random_value >> 12) % 5) * 0.15);
-            random_value = rng_next(random_value);
+            nb.turn_rate = fixed(0.07 + global_data_ptr->bn_random.get_int(5) * 0.015);
+            nb.max_speed = fixed(2.2 + global_data_ptr->bn_random.get_int(5) * 0.15);
             bullets->push_back(nb);
             break;
         }
         case BULLET_ORBIT:
         {
-            // Create orbiting patterns that move down
-            fixed cx = (fixed(int(random_value % 80)) - fixed(40));
+            fixed cx = fixed(global_data_ptr->bn_random.get_int(-40, 40));
             fixed cy = fixed(-60 - (b * 8));
             bullet nb(fixed_point(cx, cy), anim_type);
-            // Distribute around circle
             int angle_step = (b * 360) / bullet_count;
             nb.rel_x = fixed(30) * ((angle_step < 180) ? 1 : -1);
             nb.rel_y = fixed(30) * (((angle_step % 180) < 90) ? 1 : -1);
-            nb.vy = fixed(1.0 + (int(random_value % 4)) * 0.1);
-            random_value = rng_next(random_value);
+            nb.vy = fixed(1.0 + global_data_ptr->bn_random.get_int(4) * 0.1);
             bullets->push_back(nb);
             break;
         }
         case BULLET_SPIRAL:
         {
-            // Create threatening spiral patterns
-            fixed cx = (fixed(int(random_value % 60)) - fixed(30));
+            fixed cx = fixed(global_data_ptr->bn_random.get_int(-30, 30));
             fixed cy = fixed(-55 - (b * 6));
             bullet nb(fixed_point(cx, cy), anim_type);
-            // Start at different angles
             int angle_step = (b * 360) / bullet_count;
-            fixed radius = fixed(40 - (b * 2)); // Varied starting radius
+            fixed radius = fixed(40 - (b * 2));
             nb.rel_x = radius * ((angle_step < 180) ? 1 : -1);
             nb.rel_y = radius * (((angle_step % 180) < 90) ? 1 : -1);
-            nb.radial_drift = fixed(-0.25 - (int(random_value % 3)) * 0.05);
-            nb.vy = fixed(0.8 + (int(random_value >> 8) % 4) * 0.1);
-            random_value = rng_next(random_value);
+            nb.radial_drift = fixed(-0.25 - global_data_ptr->bn_random.get_int(3) * 0.05);
+            nb.vy = fixed(0.8 + global_data_ptr->bn_random.get_int(4) * 0.1);
             bullets->push_back(nb);
             break;
         }

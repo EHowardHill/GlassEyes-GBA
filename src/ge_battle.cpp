@@ -10,6 +10,7 @@
 #include "bn_sound_items.h"
 #include "bn_math.h"
 #include "bn_vector.h"
+#include "bn_random.h"
 
 #include "bn_camera_ptr.h"
 #include "bn_regular_bg_items_bg_battle_grid.h"
@@ -24,7 +25,6 @@
 
 #include "ge_character_manager.h"
 #include "ge_actions.h"
-#include "ge_globals.h"
 #include "ge_battle.h"
 #include "ge_bullet.h"
 
@@ -253,8 +253,8 @@ vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
 
 recv::recv()
 {
-    random_value = (random_value + 17) / 3 + ticker;
-    bullet::populate(&bullets, random_value % global_data_ptr->enemy_allowed_moveset);
+    int random_bullet_type = global_data_ptr->bn_random.get_int(0, global_data_ptr->enemy_allowed_moveset);
+    bullet::populate(&bullets, random_bullet_type);
 }
 
 void recv::update()
@@ -293,6 +293,15 @@ void recv::update()
 
     ticker++;
 }
+
+enum BATTLE_ANIM_TYPE
+{
+    INTRO,
+    IDLE,
+    ATTACK,
+    RECV,
+    DEFEND
+};
 
 int battle_map()
 {
@@ -394,22 +403,59 @@ int battle_map()
     optional<status_bar> obj_status_bar;
     optional<attack> obj_attack;
 
+    int player_state = INTRO;
+    int enemy_state = INTRO;
+
     while (true)
     {
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
-        if (player_ticker < (11 * 5))
+        switch (player_state)
         {
-            player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
-            player_ticker++;
+        case INTRO:
+        {
+            if (player_ticker < (11 * 5))
+            {
+                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
+                player_ticker++;
+            }
+            else
+            {
+                player_state = IDLE;
+            }
+            break;
+        }
         }
 
         player01.set_y(player_pos.y + y_delta);
 
-        if (enemy_ticker < (7 * 5))
+        switch (enemy_state)
         {
-            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
+        case INTRO:
+        {
+            if (enemy_ticker < (7 * 5))
+            {
+                enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
+                enemy_ticker++;
+            }
+            else
+            {
+                enemy_state = IDLE;
+            }
+            break;
+        }
+        case IDLE:
+        {
+            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 4) + 6);
             enemy_ticker++;
+            break;
+        }
+        case ATTACK:
+        {
+            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
+            enemy_ticker++;
+            break;
+        }
         }
 
         enemy01.set_y(enemy_pos.y + y_delta);
@@ -476,6 +522,8 @@ int battle_map()
         }
         case stage_recv:
         {
+            enemy_state = ATTACK;
+
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 music::stop();
@@ -498,6 +546,15 @@ int battle_map()
         }
         case stage_status:
         {
+            enemy_state = IDLE;
+
+            if (global_data_ptr->hp[0] <= 0)
+            {
+                music::stop();
+                text::toasts.clear();
+                return CONTINUE;
+            }
+
             if (!obj_status_bar.has_value())
             {
                 obj_status_bar.emplace();

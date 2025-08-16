@@ -26,6 +26,7 @@
 #include "bn_sprite_items_jeremy_battle_intro.h"
 #include "bn_sprite_items_visker_battle_intro.h"
 
+#include "ge_globals.h"
 #include "ge_text.h"
 #include "ge_bullet.h"
 

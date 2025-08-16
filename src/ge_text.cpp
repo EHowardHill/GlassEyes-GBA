@@ -21,6 +21,8 @@
 #include "bn_sprite_items_db_ch_jeremy.h"
 #include "bn_sprite_items_db_ch_vista.h"
 #include "bn_sprite_items_db_ch_visker.h"
+#include "bn_sprite_items_db_ch_visker_wife.h"
+#include "bn_sprite_items_db_ch_ginger.h"
 
 using namespace bn;
 
@@ -134,7 +136,7 @@ void text::update(const bn::sprite_item *portrait = nullptr)
 
     if (index % 2 == 0)
     {
-        if (portrait == &sprite_items::db_ch_vista)
+        if (portrait == &sprite_items::db_ch_vista || portrait == &sprite_items::db_ch_ginger)
         {
             sound_items::snd_dialogue_vista.play(0.7);
         }
@@ -218,10 +220,8 @@ void text::render()
             {
                 letters.push_back(new_letter);
                 current_x += spacing;
-                index++;
             }
-
-            BN_LOG(reference.size());
+            index++;
         }
 
     } while (index < reference.size());
@@ -246,7 +246,6 @@ void text::set_position(int x, int y)
 
 dialogue_box::dialogue_box()
 {
-    portrait = sprite_items::db_ch_jeremy.create_sprite(0, 0);
     box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
     pointer = sprite_items::spr_font_01.create_sprite(-52, 32, 73);
     ticker = 0;

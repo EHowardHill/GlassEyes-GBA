@@ -195,8 +195,8 @@ lab_04
 				I might be able to	understand what	these books mean.							
 													
 lab_05													
-		EM_SKIP	ACT_MUSIC_GINGER										
 	db_ch_jeremy	EM_DEFAULT		..									
+		EM_SKIP	ACT_MUSIC_GINGER										
 	db_ch_ginger	EM_HAPPY		Oh! You're awake!	Thank goodness.								
 	db_ch_ginger	EM_EMBARRASSED		"You're not, like,"	"super injured,"	are you?							
 	db_ch_jeremy	EM_DEFAULT		Did you put	lime juice on my	cuts?							
@@ -235,5 +235,5 @@ lab_07
 	db_ch_ginger	EM_DEFAULT		This place was	probably abandoned	for a year or two.							
 													
 lab_08													
-	db_ch_jeremy	EM_ANGRY		Damn..	They emptied out	the lockers.							
+	db_ch_jeremy	EM_ANGRY		Ugh!	They emptied out	the lockers.							
 	db_ch_jeremy	EM_DEFAULT		All I have to defend	myself is a stick.								

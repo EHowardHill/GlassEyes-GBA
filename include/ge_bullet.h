@@ -62,8 +62,6 @@ struct bullet
 
     // Set by your game each frame before update() if you use HOMING
     static bn::fixed_point s_target;
-
-    static unsigned int random_value;
 };
 
 #endif
