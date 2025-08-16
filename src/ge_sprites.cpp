@@ -285,20 +285,21 @@ void character::update(map_manager *current_map, bool db_inactive)
             }
         }
 
-        if (db_inactive || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
-        {
-            v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
-            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+        v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
+        v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
 
-            if (v_sprite_ptr::camera.x < bound_1.x)
-                v_sprite_ptr::camera.x = bound_1.x;
-            if (v_sprite_ptr::camera.y < bound_1.y)
-                v_sprite_ptr::camera.y = bound_1.y;
-            if (v_sprite_ptr::camera.x > bound_2.x)
-                v_sprite_ptr::camera.x = bound_2.x;
-            if (v_sprite_ptr::camera.y > bound_2.y)
-                v_sprite_ptr::camera.y = bound_2.y;
-        }
+        if (v_sprite_ptr::camera.x < bound_1.x)
+            v_sprite_ptr::camera.x = bound_1.x;
+
+        if (v_sprite_ptr::camera.x > bound_2.x)
+            v_sprite_ptr::camera.x = bound_2.x;
+
+        /*
+        if (v_sprite_ptr::camera.y < bound_1.y)
+            v_sprite_ptr::camera.y = bound_1.y;
+        if (v_sprite_ptr::camera.y > bound_2.y)
+            v_sprite_ptr::camera.y = bound_2.y;
+        */
     }
     else
     {

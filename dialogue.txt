@@ -9,6 +9,7 @@ test_convo
 	db_ch_vista	EM_SULLEN		"Hmm,"	What could this be?								
 	db_ch_vista	EM_HAPPY		"""Dear Vista,"	I don't know if you	"remember me.."""							
 	db_ch_vista	EM_EMBARRASSED		Let me think..									
+			ACT_PROGRESS							CUTSCENE_TO_GARBAGE			
 													
 garbage_01													
 		EM_SKIP	ACT_MUSIC_VISKER										

@@ -1482,7 +1482,7 @@ character *character_manager::add_character(int index, vector_2 position, bool i
         return nullptr;
 
     is_npc = true;
-    if (index == CHAR_JEREMY)
+    if (index == CHAR_JEREMY || index == CHAR_VISTA)
     {
         is_npc = false;
     }
@@ -2327,20 +2327,21 @@ void character::update(map_manager *current_map, bool db_inactive)
             }
         }
 
-        if (db_inactive || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
-        {
-            v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
-            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+        v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
+        v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
 
-            if (v_sprite_ptr::camera.x < bound_1.x)
-                v_sprite_ptr::camera.x = bound_1.x;
-            if (v_sprite_ptr::camera.y < bound_1.y)
-                v_sprite_ptr::camera.y = bound_1.y;
-            if (v_sprite_ptr::camera.x > bound_2.x)
-                v_sprite_ptr::camera.x = bound_2.x;
-            if (v_sprite_ptr::camera.y > bound_2.y)
-                v_sprite_ptr::camera.y = bound_2.y;
-        }
+        if (v_sprite_ptr::camera.x < bound_1.x)
+            v_sprite_ptr::camera.x = bound_1.x;
+
+        if (v_sprite_ptr::camera.x > bound_2.x)
+            v_sprite_ptr::camera.x = bound_2.x;
+
+        /*
+        if (v_sprite_ptr::camera.y < bound_1.y)
+            v_sprite_ptr::camera.y = bound_1.y;
+        if (v_sprite_ptr::camera.y > bound_2.y)
+            v_sprite_ptr::camera.y = bound_2.y;
+        */
     }
     else
     {
@@ -3255,7 +3256,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = CUTSCENE_TO_GARBAGE;
+    global_data_ptr->process_stage = CUTSCENE_01;
 
     int value = NEW_CHAPTER;
 
@@ -3272,6 +3273,12 @@ int main()
         {
             switch (global_data_ptr->process_stage)
             {
+            case CUTSCENE_01:
+            {
+                global_data_ptr->entry_map = &map_room01;
+                global_data_ptr->entry_position = {9, 2};
+                break;
+            }
             case CUTSCENE_TO_GARBAGE:
             {
                 global_data_ptr->entry_map = &map_garbage_01;
@@ -3572,8 +3579,8 @@ constexpr conversation lab_04 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation lab_05 = {
-    {0, nullptr, EM_SKIP, ACT_MUSIC_GINGER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_SKIP, ACT_MUSIC_GINGER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Oh! You're awake!", "Thank goodness.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_ginger, EM_EMBARRASSED, ACT_DEFAULT, "You're not, like,", "super injured,", "are you?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Did you put", "lime juice on my", "cuts?", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -3615,7 +3622,7 @@ constexpr conversation lab_07 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation lab_08 = {
-    {0, &sprite_items::db_ch_jeremy, EM_ANGRY, ACT_DEFAULT, "Damn..", "They emptied out", "the lockers.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_ANGRY, ACT_DEFAULT, "Ugh!", "They emptied out", "the lockers.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "All I have to defend", "myself is a stick.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 

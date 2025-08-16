@@ -26,7 +26,7 @@ character *character_manager::add_character(int index, vector_2 position, bool i
         return nullptr;
 
     is_npc = true;
-    if (index == CHAR_JEREMY)
+    if (index == CHAR_JEREMY || index == CHAR_VISTA)
     {
         is_npc = false;
     }

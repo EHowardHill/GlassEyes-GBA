@@ -84,7 +84,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = CUTSCENE_TO_GARBAGE;
+    global_data_ptr->process_stage = CUTSCENE_01;
 
     int value = NEW_CHAPTER;
 
@@ -101,6 +101,12 @@ int main()
         {
             switch (global_data_ptr->process_stage)
             {
+            case CUTSCENE_01:
+            {
+                global_data_ptr->entry_map = &map_room01;
+                global_data_ptr->entry_position = {9, 2};
+                break;
+            }
             case CUTSCENE_TO_GARBAGE:
             {
                 global_data_ptr->entry_map = &map_garbage_01;

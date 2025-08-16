@@ -20,7 +20,7 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 384.5,
+                "x": 398,
                 "y": 191
             }
         },
@@ -36,40 +36,40 @@
             "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 306,
-                "y": 191.99999999999997
+                "x": 192,
+                "y": 192
             }
         },
         "maps/garbage_04.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 842.6666666666666,
-                "y": 383.99999999999994
+                "x": 512,
+                "y": 384
             }
         },
         "maps/garbage_05.tmx": {
             "scale": 2,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 343,
-                "y": 77
+                "x": 552.5,
+                "y": 120.75
             }
         },
         "maps/lab_01.tmx": {
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 550,
-                "y": 287.3333333333333
+                "x": 492.66666666666663,
+                "y": 272
             }
         },
         "maps/room01.tmx": {
             "scale": 2.1634765625,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 205.68746050374648,
-                "y": 127.57244741355962
+                "x": 187.66091902139567,
+                "y": 128.03466642592758
             }
         },
         "maps/viskers_house.tmx": {
