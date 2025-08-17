@@ -41,7 +41,7 @@ void attack_bar::update()
 {
     if (unit.has_value())
     {
-        unit.value().set_x(unit.value().x() - 0.5);
+        unit.value().set_x(unit.value().x() - 1.2);
 
         if (keypad::a_pressed())
         {
@@ -425,6 +425,9 @@ int battle_map()
             }
             break;
         }
+        default: {
+            break;
+        }
         }
 
         player01.set_y(player_pos.y + y_delta);
@@ -454,6 +457,9 @@ int battle_map()
         {
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
             enemy_ticker++;
+            break;
+        }
+        default: {
             break;
         }
         }

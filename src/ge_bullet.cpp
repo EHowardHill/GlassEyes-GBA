@@ -39,7 +39,7 @@ static inline fixed tri_wave(int t, int period, fixed amp)
 
 bullet::bullet(fixed_point pos, int anim_type_) : anim_type(anim_type_)
 {
-    item = sprite_items::hearts.create_sprite(pos.x(), pos.y(), 0);
+    item = sprite_items::hearts.create_sprite(pos.x(), pos.y(), 4);
 
     // basic defaults
     vx = 0;

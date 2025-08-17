@@ -419,6 +419,9 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case TO_LAB_OUTSIDE:
             {
+                ch_man->db.emplace();
+                ch_man->db->load(&leaving_lab);
+                ch_man->db->init(ch_man);
                 break;
             }
             default:
@@ -480,7 +483,7 @@ void attack_bar::update()
 {
     if (unit.has_value())
     {
-        unit.value().set_x(unit.value().x() - 0.5);
+        unit.value().set_x(unit.value().x() - 1.2);
 
         if (keypad::a_pressed())
         {
@@ -864,6 +867,9 @@ int battle_map()
             }
             break;
         }
+        default: {
+            break;
+        }
         }
 
         player01.set_y(player_pos.y + y_delta);
@@ -893,6 +899,9 @@ int battle_map()
         {
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
             enemy_ticker++;
+            break;
+        }
+        default: {
             break;
         }
         }
@@ -1085,7 +1094,7 @@ static inline fixed tri_wave(int t, int period, fixed amp)
 
 bullet::bullet(fixed_point pos, int anim_type_) : anim_type(anim_type_)
 {
-    item = sprite_items::hearts.create_sprite(pos.x(), pos.y(), 0);
+    item = sprite_items::hearts.create_sprite(pos.x(), pos.y(), 4);
 
     // basic defaults
     vx = 0;
@@ -2328,7 +2337,18 @@ void character::update(map_manager *current_map, bool db_inactive)
         }
 
         v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
-        v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+
+        if (!db_inactive && index != CHAR_VISTA)
+        {
+            if (v_sprite.bounds.position.y > v_sprite_ptr::camera.y)
+            {
+                v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+            }
+        }
+        else
+        {
+            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+        }
 
         if (v_sprite_ptr::camera.x < bound_1.x)
             v_sprite_ptr::camera.x = bound_1.x;
@@ -2734,7 +2754,7 @@ void text::init(const char *value)
     index = 0;
 }
 
-void text::update(const bn::sprite_item *portrait = nullptr)
+void text::update(const bn::sprite_item *portrait = nullptr, bool typewriter = false)
 {
     if (index >= reference.size() || is_ended())
     {
@@ -2754,6 +2774,10 @@ void text::update(const bn::sprite_item *portrait = nullptr)
         else if (portrait == &sprite_items::db_ch_visker)
         {
             sound_items::snd_dialogue_visker.play(0.4);
+        }
+        else if (typewriter)
+        {
+            sound_items::snd_dialogue_typewriter.play(0.5);
         }
         else
         {
@@ -3250,6 +3274,164 @@ int navigate_map()
     return loop_value + char_mgr.status;
 }
 
+enum TYPEWRITER_SCENES
+{
+    TYPEWRITER_INTRO,
+    TYPEWRITER_CREDITS,
+    TYPEWRITER_INTRO2,
+    TYPEWRITER_INTRO3,
+    TYPEWRITER_TITLE,
+    TYPEWRITER_GARBAGE,
+    TYPEWRITER_MSG,
+    TYPEWRITER_BUFFER
+};
+
+enum TYPEWRITER_TYPE
+{
+    TYPE_TEXT,
+    TYPE_IMG
+};
+
+#include "bn_regular_bg_items_scene_cabin01.h"
+#include "bn_regular_bg_items_scene_title01.h"
+
+void typewriter(int scene)
+{
+    optional<regular_bg_ptr> frame;
+    text lines[3];
+    conversation *current_conversation;
+    int index = 0;
+    int ticker = 0;
+    int type = TYPE_IMG;
+
+    switch (scene)
+    {
+    case TYPEWRITER_INTRO:
+    {
+        frame = regular_bg_items::scene_cabin01.create_bg(0, 0);
+        current_conversation = &intro_01;
+        music_items::intro.play(1);
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_TITLE:
+    {
+        frame = regular_bg_items::scene_title01.create_bg(0, 0);
+        sound_items::snd_intro.play();
+        music::stop();
+        break;
+    }
+    case TYPEWRITER_INTRO2:
+    {
+        music::stop();
+        current_conversation = &intro_02;
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_INTRO3:
+    {
+        current_conversation = &intro_03;
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_GARBAGE:
+    {
+        music::stop();
+        sound_items::sfx_drag.play();
+        break;
+    }
+    case TYPEWRITER_MSG:
+    {
+        music_items::shop.play();
+        current_conversation = &final_msg;
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_BUFFER:
+    {
+        break;
+    }
+    default:
+    {
+        type = TYPE_IMG;
+        music::stop();
+        break;
+    }
+    }
+
+    if (type == TYPE_TEXT)
+    {
+        // Initialize with first dialogue
+        lines[0] = {(*current_conversation)[index].raw_text[0], {-71 + 16, 36}};
+        lines[1] = {(*current_conversation)[index].raw_text[1], {-71 + 16, 36 + 16}};
+        lines[2] = {(*current_conversation)[index].raw_text[2], {-71 + 16, 36 + 32}};
+
+        while ((*current_conversation)[index].action != ACT_END)
+        {
+            if (keypad::a_pressed())
+            {
+                index++;
+
+                // Check if we've reached the end
+                if ((*current_conversation)[index].action == ACT_END)
+                    break;
+
+                BN_LOG((*current_conversation)[index].raw_text[0]);
+
+                // Clear existing letters
+                lines[0].letters.clear();
+                lines[1].letters.clear();
+                lines[2].letters.clear();
+
+                // Reset indices for new text
+                lines[0].index = 0;
+                lines[1].index = 0;
+                lines[2].index = 0;
+
+                // Reinitialize with new text
+                lines[0].init((*current_conversation)[index].raw_text[0]);
+                lines[1].init((*current_conversation)[index].raw_text[1]);
+                lines[2].init((*current_conversation)[index].raw_text[2]);
+            }
+
+            if (ticker % 5 == 0)
+            {
+                if (lines[0].is_ended())
+                {
+                    if (lines[1].is_ended())
+                    {
+                        lines[2].update(nullptr, true);
+                    }
+                    else
+                    {
+                        lines[1].update(nullptr, true);
+                    }
+                }
+                else
+                {
+                    lines[0].update(nullptr, true);
+                }
+            }
+
+            ticker++;
+            core::update();
+        }
+    }
+    else if (type == TYPE_IMG)
+    {
+        int wait = 96;
+        if (frame.has_value())
+        {
+            wait = 192;
+        }
+
+        for (int t = 0; t < wait; t++)
+        {
+            core::update();
+        }
+    }
+}
+
 int main()
 {
     core::init();
@@ -3275,12 +3457,20 @@ int main()
             {
             case CUTSCENE_01:
             {
+                typewriter(TYPEWRITER_INTRO);
                 global_data_ptr->entry_map = &map_room01;
                 global_data_ptr->entry_position = {9, 2};
                 break;
             }
             case CUTSCENE_TO_GARBAGE:
             {
+                typewriter(TYPEWRITER_INTRO2);
+                typewriter(TYPEWRITER_BUFFER);
+                typewriter(TYPEWRITER_INTRO3);
+                typewriter(TYPEWRITER_BUFFER);
+                typewriter(TYPEWRITER_TITLE);
+                typewriter(TYPEWRITER_BUFFER);
+
                 global_data_ptr->entry_map = &map_garbage_01;
                 global_data_ptr->entry_position = {9, 5};
                 global_data_ptr->bg_track = &music_items::bg_garbage;
@@ -3288,12 +3478,7 @@ int main()
             }
             case GARBAGE_TO_BLACK:
             {
-                music::stop();
-                sound_items::sfx_knock.play();
-                for (int t = 0; t < 96; t++)
-                {
-                    core::update();
-                }
+                typewriter(TYPEWRITER_GARBAGE);
                 global_data_ptr->entry_map = &map_lab_01;
                 global_data_ptr->entry_position = {4, 5};
                 global_data_ptr->bg_track = &music_items::bg_office;
@@ -3304,6 +3489,15 @@ int main()
                 global_data_ptr->entry_map = &map_lab_01;
                 global_data_ptr->entry_position = {4, 5};
                 global_data_ptr->bg_track = &music_items::bg_office;
+                break;
+            }
+            case FINAL_MSG:
+            {
+                typewriter(TYPEWRITER_BUFFER);
+                typewriter(TYPEWRITER_MSG);
+                while (true) {
+                    core::update();
+                }
                 break;
             }
             default:
@@ -3351,6 +3545,14 @@ using namespace bn;
 #include "bn_sprite_items_db_ch_visker_wife.h"
 #include "bn_sprite_items_db_ch_ginger.h"
 
+constexpr conversation intro_01 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Deep within the", "woods of the", "old world,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "There once", "lay a cabin.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Forgotten by", "the man who", "built it,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Nearly forgotten", "by the woman", "who lived within,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "The last of her", "kind, a Marelon,", "named Vista.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_WALK, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "In her cabin,", "most days were", "just the same.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -3359,7 +3561,18 @@ constexpr conversation test_convo = {
     {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_WALK, "Yes?", "Who is it?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_pickup, {1, 3}},
     {0, &sprite_items::db_ch_vista, EM_SULLEN, ACT_DEFAULT, "Hmm,", "What could this be?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_HAPPY, ACT_DEFAULT, "\"Dear Vista,", "I don't know if you", "remember me..\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_vista, EM_EMBARRASSED, ACT_DEFAULT, "Let me think..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_DEFAULT, "\"I was your", "daughter, years", "and years ago.\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_DEFAULT, "I don't..", "remember..", "a daughter..\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CUTSCENE_TO_GARBAGE, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation intro_02 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "\"I know it's hard,", "I know it's so hard,", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "But I need you", "to remember..\"", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation intro_03 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Cinemint", "presents", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_01 = {
@@ -3579,6 +3792,7 @@ constexpr conversation lab_04 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation lab_05 = {
+    {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_SKIP, ACT_MUSIC_GINGER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Oh! You're awake!", "Thank goodness.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -3623,7 +3837,28 @@ constexpr conversation lab_07 = {
 
 constexpr conversation lab_08 = {
     {0, &sprite_items::db_ch_jeremy, EM_ANGRY, ACT_DEFAULT, "Ugh!", "They emptied out", "the lockers.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "All I have to defend", "myself is a stick.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation leaving_lab = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "So are you going", "to be following me?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Do you not want", "me to?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..", "I don't know", "what I want.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Look.", "Today was going", "to be my first", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "day of college.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Oh?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I guess I should", "be grateful for", "being alive.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Let's go to", "Canterbury,", "just..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I would", "appreciate some", "space.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SAD, ACT_DEFAULT, "Right.", "", "Sorry.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Alright..", "", "Here goes nothing.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FINAL_MSG, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation final_msg = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Thanks for", "trying out the", "demo so far!", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "I've only been", "working on this", "for a month,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "so I'm sure I'll", "make lots of", "progress.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Discord / X:", "", "\"@cinemint\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);
@@ -4166,7 +4401,8 @@ enum character_list
     CHAR_JEREMY,
     CHAR_VISKER,
     CHAR_VISKER_WIFE,
-    CHAR_GINGER
+    CHAR_GINGER,
+    CHAR_TYPEWRITER
 };
 
 enum facing
@@ -4266,6 +4502,7 @@ enum progress {
     CUTSCENE_TO_GARBAGE,
     GARBAGE_TO_BLACK,
     BLACK_TO_LAB,
+    FINAL_MSG
 };
 
 enum foes {
@@ -4363,7 +4600,7 @@ struct text
 
     void init(const char *value);
     void init(const string<20> &value);
-    void update(const sprite_item * portrait);
+    void update(const sprite_item * portrait, bool typewriter);
     void render();
     void set_position(int x, int y);
     bool is_ended();

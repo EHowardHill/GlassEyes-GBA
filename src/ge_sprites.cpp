@@ -286,7 +286,18 @@ void character::update(map_manager *current_map, bool db_inactive)
         }
 
         v_sprite_ptr::camera.x = v_sprite.bounds.position.x;
-        v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+
+        if (!db_inactive && index != CHAR_VISTA)
+        {
+            if (v_sprite.bounds.position.y > v_sprite_ptr::camera.y)
+            {
+                v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+            }
+        }
+        else
+        {
+            v_sprite_ptr::camera.y = v_sprite.bounds.position.y;
+        }
 
         if (v_sprite_ptr::camera.x < bound_1.x)
             v_sprite_ptr::camera.x = bound_1.x;

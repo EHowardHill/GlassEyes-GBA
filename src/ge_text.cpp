@@ -127,7 +127,7 @@ void text::init(const char *value)
     index = 0;
 }
 
-void text::update(const bn::sprite_item *portrait = nullptr)
+void text::update(const bn::sprite_item *portrait = nullptr, bool typewriter = false)
 {
     if (index >= reference.size() || is_ended())
     {
@@ -147,6 +147,10 @@ void text::update(const bn::sprite_item *portrait = nullptr)
         else if (portrait == &sprite_items::db_ch_visker)
         {
             sound_items::snd_dialogue_visker.play(0.4);
+        }
+        else if (typewriter)
+        {
+            sound_items::snd_dialogue_typewriter.play(0.5);
         }
         else
         {

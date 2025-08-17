@@ -1,15 +1,30 @@
 Name / ID	Portrait	Emotion	Action	Line1	Line2	Line3	Shake	Size	Speed	Index	Anim	Navigate	Size
 													
+intro_01													
+				Deep within the	woods of the	"old world,"							
+				There once	lay a cabin.								
+				Forgotten by	the man who 	"built it,"							
+				Nearly forgotten	by the woman	"who lived within,"							
+				The last of her	"kind, a Marelon,"	named Vista.							
+													
 test_convo													
 		EM_SKIP	ACT_WALK							CHAR_VISTA	&vista_reminisce	"{2, 6}"	
 				"In her cabin,"	most days were	just the same.							
-				She read her book	and cared for her	sawdust doll.							
+				She read her books	and cared for her	sawdust doll.							
 			ACT_SFX_KNOCK	"But today,"	there was a knock	at the door.				CHAR_VISTA			
 	db_ch_vista	EM_DEFAULT	ACT_WALK	Yes?	Who is it?					CHAR_VISTA	&vista_pickup	"{1, 3}"	
 	db_ch_vista	EM_SULLEN		"Hmm,"	What could this be?								
 	db_ch_vista	EM_HAPPY		"""Dear Vista,"	I don't know if you	"remember me.."""							
-	db_ch_vista	EM_EMBARRASSED		Let me think..									
+	db_ch_vista	EM_DEFAULT		"""I was your"	"daughter, years"	"and years ago."""							
+	db_ch_vista	EM_DEFAULT		I don't..	remember..	"a daughter.."""							
 			ACT_PROGRESS							CUTSCENE_TO_GARBAGE			
+													
+intro_02													
+				"""I know it's hard,"	"I know it's so hard,"								
+				But I need you	"to remember.."""								
+													
+intro_03													
+				      Cinemint      	      presents      								
 													
 garbage_01													
 		EM_SKIP	ACT_MUSIC_VISKER										
@@ -196,6 +211,7 @@ lab_04
 				I might be able to	understand what	these books mean.							
 													
 lab_05													
+		EM_SKIP	ACT_MUSIC_RESET										
 	db_ch_jeremy	EM_DEFAULT		..									
 		EM_SKIP	ACT_MUSIC_GINGER										
 	db_ch_ginger	EM_HAPPY		Oh! You're awake!	Thank goodness.								
@@ -237,4 +253,23 @@ lab_07
 													
 lab_08													
 	db_ch_jeremy	EM_ANGRY		Ugh!	They emptied out	the lockers.							
-	db_ch_jeremy	EM_DEFAULT		All I have to defend	myself is a stick.								
+													
+leaving_lab													
+	db_ch_jeremy	EM_DEFAULT		So are you going	to be following me?								
+	db_ch_ginger	EM_DEFAULT		Do you not want	me to?								
+	db_ch_jeremy	EM_DEFAULT		..	I don't know	what I want.							
+	db_ch_jeremy	EM_DEFAULT		Look.	Today was going	to be my first							
+	db_ch_jeremy	EM_DEFAULT		day of college.									
+	db_ch_ginger	EM_DEFAULT		Oh?									
+	db_ch_jeremy	EM_DEFAULT		I guess I should	be grateful for	being alive.							
+	db_ch_jeremy	EM_DEFAULT		Let's go to	"Canterbury,"	just..							
+	db_ch_jeremy	EM_DEFAULT		I would	appreciate some	space.							
+	db_ch_ginger	EM_SAD		Right.		Sorry.							
+	db_ch_jeremy	EM_DEFAULT		Alright..		Here goes nothing.							
+			ACT_PROGRESS							FINAL_MSG			
+													
+final_msg													
+				Thanks for	trying out the	demo so far!							
+				I've only been	working on this	"for a month,"							
+				so I'm sure I'll	make lots of	progress.							
+				Discord / X:		"""@cinemint"""							

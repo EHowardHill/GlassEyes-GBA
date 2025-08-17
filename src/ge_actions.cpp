@@ -418,6 +418,9 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case TO_LAB_OUTSIDE:
             {
+                ch_man->db.emplace();
+                ch_man->db->load(&leaving_lab);
+                ch_man->db->init(ch_man);
                 break;
             }
             default:

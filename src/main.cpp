@@ -78,6 +78,164 @@ int navigate_map()
     return loop_value + char_mgr.status;
 }
 
+enum TYPEWRITER_SCENES
+{
+    TYPEWRITER_INTRO,
+    TYPEWRITER_CREDITS,
+    TYPEWRITER_INTRO2,
+    TYPEWRITER_INTRO3,
+    TYPEWRITER_TITLE,
+    TYPEWRITER_GARBAGE,
+    TYPEWRITER_MSG,
+    TYPEWRITER_BUFFER
+};
+
+enum TYPEWRITER_TYPE
+{
+    TYPE_TEXT,
+    TYPE_IMG
+};
+
+#include "bn_regular_bg_items_scene_cabin01.h"
+#include "bn_regular_bg_items_scene_title01.h"
+
+void typewriter(int scene)
+{
+    optional<regular_bg_ptr> frame;
+    text lines[3];
+    conversation *current_conversation;
+    int index = 0;
+    int ticker = 0;
+    int type = TYPE_IMG;
+
+    switch (scene)
+    {
+    case TYPEWRITER_INTRO:
+    {
+        frame = regular_bg_items::scene_cabin01.create_bg(0, 0);
+        current_conversation = &intro_01;
+        music_items::intro.play(1);
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_TITLE:
+    {
+        frame = regular_bg_items::scene_title01.create_bg(0, 0);
+        sound_items::snd_intro.play();
+        music::stop();
+        break;
+    }
+    case TYPEWRITER_INTRO2:
+    {
+        music::stop();
+        current_conversation = &intro_02;
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_INTRO3:
+    {
+        current_conversation = &intro_03;
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_GARBAGE:
+    {
+        music::stop();
+        sound_items::sfx_drag.play();
+        break;
+    }
+    case TYPEWRITER_MSG:
+    {
+        music_items::shop.play();
+        current_conversation = &final_msg;
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_BUFFER:
+    {
+        break;
+    }
+    default:
+    {
+        type = TYPE_IMG;
+        music::stop();
+        break;
+    }
+    }
+
+    if (type == TYPE_TEXT)
+    {
+        // Initialize with first dialogue
+        lines[0] = {(*current_conversation)[index].raw_text[0], {-71 + 16, 36}};
+        lines[1] = {(*current_conversation)[index].raw_text[1], {-71 + 16, 36 + 16}};
+        lines[2] = {(*current_conversation)[index].raw_text[2], {-71 + 16, 36 + 32}};
+
+        while ((*current_conversation)[index].action != ACT_END)
+        {
+            if (keypad::a_pressed())
+            {
+                index++;
+
+                // Check if we've reached the end
+                if ((*current_conversation)[index].action == ACT_END)
+                    break;
+
+                BN_LOG((*current_conversation)[index].raw_text[0]);
+
+                // Clear existing letters
+                lines[0].letters.clear();
+                lines[1].letters.clear();
+                lines[2].letters.clear();
+
+                // Reset indices for new text
+                lines[0].index = 0;
+                lines[1].index = 0;
+                lines[2].index = 0;
+
+                // Reinitialize with new text
+                lines[0].init((*current_conversation)[index].raw_text[0]);
+                lines[1].init((*current_conversation)[index].raw_text[1]);
+                lines[2].init((*current_conversation)[index].raw_text[2]);
+            }
+
+            if (ticker % 5 == 0)
+            {
+                if (lines[0].is_ended())
+                {
+                    if (lines[1].is_ended())
+                    {
+                        lines[2].update(nullptr, true);
+                    }
+                    else
+                    {
+                        lines[1].update(nullptr, true);
+                    }
+                }
+                else
+                {
+                    lines[0].update(nullptr, true);
+                }
+            }
+
+            ticker++;
+            core::update();
+        }
+    }
+    else if (type == TYPE_IMG)
+    {
+        int wait = 96;
+        if (frame.has_value())
+        {
+            wait = 192;
+        }
+
+        for (int t = 0; t < wait; t++)
+        {
+            core::update();
+        }
+    }
+}
+
 int main()
 {
     core::init();
@@ -103,12 +261,20 @@ int main()
             {
             case CUTSCENE_01:
             {
+                typewriter(TYPEWRITER_INTRO);
                 global_data_ptr->entry_map = &map_room01;
                 global_data_ptr->entry_position = {9, 2};
                 break;
             }
             case CUTSCENE_TO_GARBAGE:
             {
+                typewriter(TYPEWRITER_INTRO2);
+                typewriter(TYPEWRITER_BUFFER);
+                typewriter(TYPEWRITER_INTRO3);
+                typewriter(TYPEWRITER_BUFFER);
+                typewriter(TYPEWRITER_TITLE);
+                typewriter(TYPEWRITER_BUFFER);
+
                 global_data_ptr->entry_map = &map_garbage_01;
                 global_data_ptr->entry_position = {9, 5};
                 global_data_ptr->bg_track = &music_items::bg_garbage;
@@ -116,12 +282,7 @@ int main()
             }
             case GARBAGE_TO_BLACK:
             {
-                music::stop();
-                sound_items::sfx_knock.play();
-                for (int t = 0; t < 96; t++)
-                {
-                    core::update();
-                }
+                typewriter(TYPEWRITER_GARBAGE);
                 global_data_ptr->entry_map = &map_lab_01;
                 global_data_ptr->entry_position = {4, 5};
                 global_data_ptr->bg_track = &music_items::bg_office;
@@ -132,6 +293,15 @@ int main()
                 global_data_ptr->entry_map = &map_lab_01;
                 global_data_ptr->entry_position = {4, 5};
                 global_data_ptr->bg_track = &music_items::bg_office;
+                break;
+            }
+            case FINAL_MSG:
+            {
+                typewriter(TYPEWRITER_BUFFER);
+                typewriter(TYPEWRITER_MSG);
+                while (true) {
+                    core::update();
+                }
                 break;
             }
             default:

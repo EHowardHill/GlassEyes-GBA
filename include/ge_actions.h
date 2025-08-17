@@ -14,16 +14,34 @@ using namespace bn;
 #include "bn_sprite_items_db_ch_visker_wife.h"
 #include "bn_sprite_items_db_ch_ginger.h"
 
+constexpr conversation intro_01 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Deep within the", "woods of the", "old world,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "There once", "lay a cabin.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Forgotten by", "the man who", "built it,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Nearly forgotten", "by the woman", "who lived within,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "The last of her", "kind, a Marelon,", "named Vista.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_WALK, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "In her cabin,", "most days were", "just the same.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her book", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her books", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_SFX_KNOCK, "But today,", "there was a knock", "at the door.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_WALK, "Yes?", "Who is it?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_pickup, {1, 3}},
     {0, &sprite_items::db_ch_vista, EM_SULLEN, ACT_DEFAULT, "Hmm,", "What could this be?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_HAPPY, ACT_DEFAULT, "\"Dear Vista,", "I don't know if you", "remember me..\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_vista, EM_EMBARRASSED, ACT_DEFAULT, "Let me think..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_DEFAULT, "\"I was your", "daughter, years", "and years ago.\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_DEFAULT, "I don't..", "remember..", "a daughter..\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CUTSCENE_TO_GARBAGE, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation intro_02 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "\"I know it's hard,", "I know it's so hard,", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "But I need you", "to remember..\"", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation intro_03 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Cinemint", "presents", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation garbage_01 = {
@@ -243,6 +261,7 @@ constexpr conversation lab_04 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation lab_05 = {
+    {0, nullptr, EM_SKIP, ACT_MUSIC_RESET, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_SKIP, ACT_MUSIC_GINGER, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Oh! You're awake!", "Thank goodness.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -287,7 +306,28 @@ constexpr conversation lab_07 = {
 
 constexpr conversation lab_08 = {
     {0, &sprite_items::db_ch_jeremy, EM_ANGRY, ACT_DEFAULT, "Ugh!", "They emptied out", "the lockers.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "All I have to defend", "myself is a stick.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation leaving_lab = {
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "So are you going", "to be following me?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Do you not want", "me to?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..", "I don't know", "what I want.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Look.", "Today was going", "to be my first", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "day of college.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Oh?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I guess I should", "be grateful for", "being alive.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Let's go to", "Canterbury,", "just..", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I would", "appreciate some", "space.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SAD, ACT_DEFAULT, "Right.", "", "Sorry.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Alright..", "", "Here goes nothing.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FINAL_MSG, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation final_msg = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Thanks for", "trying out the", "demo so far!", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "I've only been", "working on this", "for a month,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "so I'm sure I'll", "make lots of", "progress.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Discord / X:", "", "\"@cinemint\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 int action_listener(map_manager *man, character_manager *ch_man);

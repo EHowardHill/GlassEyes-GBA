@@ -22,6 +22,7 @@ enum progress {
     CUTSCENE_TO_GARBAGE,
     GARBAGE_TO_BLACK,
     BLACK_TO_LAB,
+    FINAL_MSG
 };
 
 enum foes {
@@ -119,7 +120,7 @@ struct text
 
     void init(const char *value);
     void init(const string<20> &value);
-    void update(const sprite_item * portrait);
+    void update(const sprite_item * portrait, bool typewriter);
     void render();
     void set_position(int x, int y);
     bool is_ended();
