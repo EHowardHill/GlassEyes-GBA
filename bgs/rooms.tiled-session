@@ -3,11 +3,11 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/garbage_05.tmx",
+    "activeFile": "maps/garbage_01.tmx",
     "expandedProjectPaths": [
+        ".",
         "maps",
-        "tilesets",
-        "."
+        "tilesets"
     ],
     "exportAsImage.includeBackgroundColor": true,
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -17,11 +17,11 @@
             "scaleInEditor": 1
         },
         "maps/garbage_01.tmx": {
-            "scale": 1,
-            "selectedLayer": 3,
+            "scale": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 398,
-                "y": 191
+                "x": 180,
+                "y": 117.5
             }
         },
         "maps/garbage_02.tmx": {
@@ -120,12 +120,12 @@
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
-        "maps/garbage_01.tmx",
-        "maps/garbage_04.tmx",
-        "maps/garbage_03.tmx",
         "maps/room01.tmx",
         "maps/lab_01.tmx",
         "maps/garbage_05.tmx",
+        "maps/garbage_03.tmx",
+        "maps/garbage_04.tmx",
+        "maps/garbage_01.tmx",
         "maps/garbage_02.tmx",
         "maps/viskers_house.tmx",
         "tilesets/room01.tsx",
