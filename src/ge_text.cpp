@@ -193,10 +193,22 @@ void text::update(const bn::sprite_item *portrait = nullptr, bool typewriter = f
 
 void text::render()
 {
-    do
+    // Clear any existing letters first
+    letters.clear();
+    current_x = 0;
+
+    // Check if reference is empty before processing
+    if (reference.empty())
+    {
+        index = 0;
+        return;
+    }
+
+    index = 0;
+    while (index < reference.size())
     {
         int current_size = SIZE_DEFAULT;
-        int spacing = 8; // Default portrait spacing
+        int spacing = 8; // Default spacing
 
         // Adjust spacing based on size
         if (current_size == SIZE_LARGE)
@@ -227,8 +239,7 @@ void text::render()
             }
             index++;
         }
-
-    } while (index < reference.size());
+    }
 }
 
 bool text::is_ended()

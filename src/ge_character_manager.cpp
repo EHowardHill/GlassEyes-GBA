@@ -147,6 +147,18 @@ void character_manager::update(map_manager *current_map = nullptr)
             db.value().index++;
             db.value().init(this);
         }
+        else if (keypad::b_pressed())
+        {
+            db.value().index++;
+            db.value().init(this);
+            // Only render lines that have been properly initialized
+            if (!db.value().lines[0].reference.empty())
+                db.value().lines[0].render();
+            if (!db.value().lines[1].reference.empty())
+                db.value().lines[1].render();
+            if (!db.value().lines[2].reference.empty())
+                db.value().lines[2].render();
+        }
 
         if (db.value().is_ended())
         {

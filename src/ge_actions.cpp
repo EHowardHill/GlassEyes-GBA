@@ -186,12 +186,6 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     ch_man->db->load(&garbage_02);
                     ch_man->db->init(ch_man);
                 }
-                else if (global_data_ptr->action_iterations[CONVO_GARBAGE_2] > 1)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&garbage_02b);
-                    ch_man->db->init(ch_man);
-                }
                 break;
             }
             case CONVO_GARBAGE_3:

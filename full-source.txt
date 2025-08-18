@@ -187,12 +187,6 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     ch_man->db->load(&garbage_02);
                     ch_man->db->init(ch_man);
                 }
-                else if (global_data_ptr->action_iterations[CONVO_GARBAGE_2] > 1)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&garbage_02b);
-                    ch_man->db->init(ch_man);
-                }
                 break;
             }
             case CONVO_GARBAGE_3:
@@ -1612,6 +1606,18 @@ void character_manager::update(map_manager *current_map = nullptr)
             db.value().index++;
             db.value().init(this);
         }
+        else if (keypad::b_pressed())
+        {
+            db.value().index++;
+            db.value().init(this);
+            // Only render lines that have been properly initialized
+            if (!db.value().lines[0].reference.empty())
+                db.value().lines[0].render();
+            if (!db.value().lines[1].reference.empty())
+                db.value().lines[1].render();
+            if (!db.value().lines[2].reference.empty())
+                db.value().lines[2].render();
+        }
 
         if (db.value().is_ended())
         {
@@ -2428,6 +2434,12 @@ void character::update(map_manager *current_map, bool db_inactive)
         face = DIR_LEFT;
     }
 
+    if (keypad::b_held())
+    {
+        delta.x = delta.x * 2;
+        delta.y = delta.y * 2;
+    }
+
     // Pixel-perfect collision detection
     // Check future position for each axis separately
     bound future_bounds_x = v_sprite.bounds;
@@ -2820,10 +2832,22 @@ void text::update(const bn::sprite_item *portrait = nullptr, bool typewriter = f
 
 void text::render()
 {
-    do
+    // Clear any existing letters first
+    letters.clear();
+    current_x = 0;
+
+    // Check if reference is empty before processing
+    if (reference.empty())
+    {
+        index = 0;
+        return;
+    }
+
+    index = 0;
+    while (index < reference.size())
     {
         int current_size = SIZE_DEFAULT;
-        int spacing = 8; // Default portrait spacing
+        int spacing = 8; // Default spacing
 
         // Adjust spacing based on size
         if (current_size == SIZE_LARGE)
@@ -2854,8 +2878,7 @@ void text::render()
             }
             index++;
         }
-
-    } while (index < reference.size());
+    }
 }
 
 bool text::is_ended()
@@ -3556,7 +3579,7 @@ constexpr conversation intro_01 = {
 constexpr conversation test_convo = {
     {0, nullptr, EM_SKIP, ACT_WALK, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_reminisce, {2, 6}},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "In her cabin,", "most days were", "just the same.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her book", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She read her books", "and cared for her", "sawdust doll.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_SFX_KNOCK, "But today,", "there was a knock", "at the door.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_vista, EM_DEFAULT, ACT_WALK, "Yes?", "Who is it?", "", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_VISTA, &vista_pickup, {1, 3}},
     {0, &sprite_items::db_ch_vista, EM_SULLEN, ACT_DEFAULT, "Hmm,", "What could this be?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},

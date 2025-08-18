@@ -377,6 +377,12 @@ void character::update(map_manager *current_map, bool db_inactive)
         face = DIR_LEFT;
     }
 
+    if (keypad::b_held())
+    {
+        delta.x = delta.x * 2;
+        delta.y = delta.y * 2;
+    }
+
     // Pixel-perfect collision detection
     // Check future position for each axis separately
     bound future_bounds_x = v_sprite.bounds;
