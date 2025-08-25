@@ -178,7 +178,7 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
     }
 }
 
-character::character(int index_, vector_2 start_, bool npc_) : index(index_), npc(npc_)
+character::character(int index_, vector_2 start_, int type_) : index(index_), type(type_)
 {
     start.x = (start_.x * 32) + 16;
     start.y = (start_.y * 32) + 16;
@@ -190,7 +190,7 @@ character::character(int index_, vector_2 start_, bool npc_) : index(index_), np
     update_sprite_item(index_);
     current_animation = &anim_stand;
 
-    if (!npc_ || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
+    if (type == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
     {
         v_sprite_ptr::camera.x = start.x;
         v_sprite_ptr::camera.y = start.y;
@@ -245,7 +245,7 @@ void character::update(map_manager *current_map, bool db_inactive)
 {
     vector_2 delta = {0, 0};
 
-    if (!npc)
+    if (type == CH_TYPE_PLAYER)
     {
         if (db_inactive)
         {
@@ -541,16 +541,12 @@ void character::update(map_manager *current_map, bool db_inactive)
     ticker++;
 }
 
-void character::add(list<character, 64> *characters, int character_id, vector_2 location, bool npc)
+void character::add(list<character, 64> *characters, int character_id, vector_2 location, int character_type = CH_TYPE_NPC)
 {
     if (character_id == CHAR_JEREMY)
     {
-        npc = false;
-    }
-    else
-    {
-        npc = true;
+        character_type = CH_TYPE_PLAYER;
     }
 
-    characters->emplace_back(character_id, location, npc);
+    characters->emplace_back(character_id, location, character_type);
 }

@@ -20,19 +20,18 @@ character_manager::character_manager() : player_ptr(nullptr)
 {
 }
 
-character *character_manager::add_character(int index, vector_2 position, bool is_npc)
+character *character_manager::add_character(int index, vector_2 position, int type = CH_TYPE_NPC)
 {
     if (characters.size() >= 64)
         return nullptr;
 
-    is_npc = true;
     if (index == CHAR_JEREMY || index == CHAR_VISTA)
     {
-        is_npc = false;
+        type = CH_TYPE_PLAYER;
     }
 
     // Create new character
-    characters.push_back(make_unique<character>(index, position, is_npc));
+    characters.push_back(make_unique<character>(index, position, type));
     character *new_char = characters.back().get();
 
     if (global_data_ptr->process_stage != GARBAGE_TO_BLACK)
@@ -44,7 +43,7 @@ character *character_manager::add_character(int index, vector_2 position, bool i
     }
 
     // Track player
-    if (!is_npc && !player_ptr)
+    if (type == CH_TYPE_PLAYER && !player_ptr)
     {
         player_ptr = new_char;
     }
@@ -73,7 +72,7 @@ void character_manager::clear_npcs()
     auto it = characters.begin();
     while (it != characters.end())
     {
-        if ((*it)->npc)
+        if ((*it)->type == CH_TYPE_NPC)
         {
             it = characters.erase(it);
         }

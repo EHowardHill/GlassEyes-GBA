@@ -1,3 +1,5 @@
+// ge_battle.h
+
 #ifndef GE_BATTLE_H
 #define GE_BATTLE_H
 
@@ -39,7 +41,8 @@ enum BATTLE_STAGE
     stage_talking,
     stage_recv,
     stage_status,
-    stage_attack
+    stage_attack,
+    stage_act  // Add new stage for ACT
 };
 
 enum BULLET_STYLE
@@ -64,9 +67,20 @@ enum BATTLE_RESULT
     RESULT_UP,
     RESULT_DOWN,
     RESULT_SPARE,
+    RESULT_ACT,  // Add new result type for ACT actions
     RESULT_LAST_WIN,
     RESULT_LAST_LOSE,
     RESULT_SIZE
+};
+
+// Structure to hold action data
+struct battle_action
+{
+    const char* name;
+    conversation* convo;
+    bool used;
+    
+    battle_action(const char* n, conversation* c) : name(n), convo(c), used(false) {}
 };
 
 struct attack_unit_dissolve
@@ -106,6 +120,20 @@ struct status_bar_items
     void update();
 };
 
+// New struct for ACT menu
+struct status_bar_act
+{
+    optional<text> icon_labels[4];
+    int index = 0;
+    int action_count = 0;
+    battle_action* actions[4];  // Pointers to available actions
+
+    status_bar_act();
+    void init(vector<battle_action, 4>& available_actions);
+    void update_labels();
+    void update();
+};
+
 struct status_bar_menu
 {
     optional<sprite_ptr> battle_icons[5];
@@ -128,6 +156,7 @@ struct status_bar
     static int selected_menu;
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
+    optional<status_bar_act> sb_act;  // Add ACT menu
 
     status_bar();
     void update();

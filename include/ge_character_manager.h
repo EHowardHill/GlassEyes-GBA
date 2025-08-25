@@ -19,7 +19,7 @@ struct character_manager
 
     character_manager();
 
-    character *add_character(int index, vector_2 position, bool is_npc = true);
+    character *add_character(int index, vector_2 position, int type);
     bool remove_character(character *ch);
     void clear_npcs();
     character *get_player() { return player_ptr; }

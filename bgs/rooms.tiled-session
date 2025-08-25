@@ -6,8 +6,8 @@
     "activeFile": "maps/forest_01.tmx",
     "expandedProjectPaths": [
         "tilesets",
-        ".",
-        "maps"
+        "maps",
+        "."
     ],
     "exportAsImage.includeBackgroundColor": true,
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -18,10 +18,10 @@
         },
         "maps/forest_01.tmx": {
             "scale": 1.5,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 3796,
-                "y": 171
+                "x": 192,
+                "y": 229
             }
         },
         "maps/garbage_01.tmx": {
@@ -68,8 +68,8 @@
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 272.66666666666663,
-                "y": 363.66666666666663
+                "x": 495.99999999999994,
+                "y": 272
             }
         },
         "maps/room01.tmx": {

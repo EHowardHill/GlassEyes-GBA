@@ -1,3 +1,5 @@
+// ge_battle.cpp
+
 #include "bn_core.h"
 #include "bn_log.h"
 #include "bn_regular_bg_item.h"
@@ -97,6 +99,102 @@ status_bar_items::status_bar_items()
 
 void status_bar_items::update()
 {
+    if (keypad::b_pressed())
+    {
+        sound_items::snd_alert.play();
+        status_bar::selected_menu = STATUS_BAR_NONE;
+    }
+}
+
+status_bar_act::status_bar_act()
+{
+    // Initialize with empty state
+    action_count = 0;
+}
+
+void status_bar_act::init(vector<battle_action, 4> &available_actions)
+{
+    action_count = 0;
+
+    // Populate actions array with available (unused) actions
+    for (int i = 0; i < available_actions.size() && action_count < 4; i++)
+    {
+        if (!available_actions[i].used)
+        {
+            actions[action_count] = &available_actions[i];
+            action_count++;
+        }
+    }
+
+    update_labels();
+}
+
+void status_bar_act::update_labels()
+{
+    // Clear all labels first
+    for (int i = 0; i < 4; i++)
+    {
+        icon_labels[i].reset();
+    }
+
+    if (action_count == 0)
+    {
+        // Show "No Actions" if there are no available actions
+        icon_labels[0] = {"* No Actions", {-22, -12}};
+        icon_labels[0].value().render();
+    }
+    else
+    {
+        // Show available actions
+        for (int i = 0; i < action_count; i++)
+        {
+            string<32> label_text = "* ";
+            label_text.append(actions[i]->name);
+
+            // Highlight current selection
+            if (i == index)
+            {
+                label_text = "> ";
+                label_text.append(actions[i]->name);
+            }
+
+            icon_labels[i] = {label_text, {-22, -12 + (18 * i)}};
+            icon_labels[i].value().render();
+        }
+    }
+}
+
+void status_bar_act::update()
+{
+    if (action_count > 0)
+    {
+        if (keypad::up_pressed())
+        {
+            if (index > 0)
+            {
+                index--;
+                sound_items::snd_dialogue_generic.play();
+                update_labels();
+            }
+        }
+        else if (keypad::down_pressed())
+        {
+            if (index < action_count - 1)
+            {
+                index++;
+                sound_items::snd_dialogue_generic.play();
+                update_labels();
+            }
+        }
+        else if (keypad::a_pressed())
+        {
+            // Mark action as used and trigger it
+            actions[index]->used = true;
+            sound_items::snd_alert.play();
+            status_bar::selected_menu = STATUS_BAR_ACT | (index << 8); // Encode action index
+        }
+    }
+
     if (keypad::b_pressed())
     {
         sound_items::snd_alert.play();
@@ -213,6 +311,12 @@ void status_bar::update()
                 sb_menu.reset();
                 sb_items.emplace();
             }
+            else if (selected_menu == STATUS_BAR_ACT)
+            {
+                sb_menu.reset();
+                sb_act.emplace();
+                // Initialize ACT menu with available actions (handled in battle_map)
+            }
         }
     }
     else if (sb_items.has_value())
@@ -225,7 +329,21 @@ void status_bar::update()
             sb_menu.emplace();
         }
     }
-};
+    else if (sb_act.has_value())
+    {
+        sb_act.value().update();
+
+        if (selected_menu == STATUS_BAR_NONE)
+        {
+            sb_act.reset();
+            sb_menu.emplace();
+        }
+        else if (selected_menu & STATUS_BAR_ACT)
+        {
+            // Action was selected, transition handled in battle_map
+        }
+    }
+}
 
 vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed)
 {
@@ -316,6 +434,8 @@ int battle_map()
     int enemy_ticker = 0;
 
     vector<conversation *, 32> convos[RESULT_SIZE];
+    vector<battle_action, 4> battle_actions;
+    conversation *pending_act_conversation = nullptr;
 
     switch (global_data_ptr->battle_foe)
     {
@@ -329,6 +449,10 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_02);
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
+
+        battle_actions.emplace_back("Check", &garbage_fight_01);    // Example action
+        battle_actions.emplace_back("Talk", &garbage_fight_02);     // Example action
+        battle_actions.emplace_back("Threaten", &garbage_fight_03); // Example action
         break;
     }
     case FOE_VISKERS_02:
@@ -425,7 +549,8 @@ int battle_map()
             }
             break;
         }
-        default: {
+        default:
+        {
             break;
         }
         }
@@ -459,7 +584,8 @@ int battle_map()
             enemy_ticker++;
             break;
         }
-        default: {
+        default:
+        {
             break;
         }
         }
@@ -575,6 +701,26 @@ int battle_map()
                     obj_status_bar.reset();
                     stage = stage_attack;
                 }
+                else if (status_bar::selected_menu == STATUS_BAR_ACT)
+                {
+                    // Initialize ACT menu with available actions
+                    if (obj_status_bar.value().sb_act.has_value())
+                    {
+                        obj_status_bar.value().sb_act.value().init(battle_actions);
+                    }
+                }
+                else if (status_bar::selected_menu & STATUS_BAR_ACT)
+                {
+                    // An action was selected
+                    int action_index = (status_bar::selected_menu >> 8) & 0xFF;
+                    if (obj_status_bar.value().sb_act.has_value())
+                    {
+                        pending_act_conversation = obj_status_bar.value().sb_act.value().actions[action_index]->convo;
+                    }
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+                    stage = stage_act;
+                }
             }
 
             break;
@@ -594,6 +740,19 @@ int battle_map()
                     stage = stage_talking;
                     result = RESULT_UP;
                 }
+            }
+            break;
+        }
+        case stage_act:
+        {
+            if (pending_act_conversation && !char_mgr.db.has_value())
+            {
+                char_mgr.db.emplace();
+                char_mgr.db->load(pending_act_conversation);
+                char_mgr.db->init(&char_mgr);
+                pending_act_conversation = nullptr;
+                stage = stage_talking;
+                result = RESULT_ACT;
             }
             break;
         }

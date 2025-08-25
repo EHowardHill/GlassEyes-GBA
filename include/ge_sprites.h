@@ -81,6 +81,12 @@ enum facing
     DIR_RIGHT
 };
 
+enum character_type
+{
+    CH_TYPE_PLAYER,
+    CH_TYPE_NPC
+};
+
 struct character
 {
     int index = CHAR_VISTA;
@@ -93,18 +99,18 @@ struct character
     int frame = 0;
     int face = DIR_DOWN;
 
-    bool npc = true;
+    int type = CH_TYPE_NPC;
     vector_2 move_to = {0, 0};
     bool is_follow = false;
     int follow_id = CHAR_JEREMY;
 
-    character(int index_, vector_2 start_, bool npc_);
+    character(int index_, vector_2 start_, int character_type);
 
     void update(map_manager *current_map, bool character_box_ended);
     void update_sprite_item(int index_);
     bool is_tall() const; // Helper to determine if character is tall
 
-    static void add(list<character, 64> *characters, int character_id, vector_2 location, bool npc);
+    static void add(list<character, 64> *characters, int character_id, vector_2 location, int character_type);
     static character *find(list<character, 64> &characters, int index);
 };
 
