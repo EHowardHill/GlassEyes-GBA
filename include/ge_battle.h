@@ -42,7 +42,7 @@ enum BATTLE_STAGE
     stage_recv,
     stage_status,
     stage_attack,
-    stage_act  // Add new stage for ACT
+    stage_act // Add new stage for ACT
 };
 
 enum BULLET_STYLE
@@ -67,7 +67,7 @@ enum BATTLE_RESULT
     RESULT_UP,
     RESULT_DOWN,
     RESULT_SPARE,
-    RESULT_ACT,  // Add new result type for ACT actions
+    RESULT_ACT, // Add new result type for ACT actions
     RESULT_LAST_WIN,
     RESULT_LAST_LOSE,
     RESULT_SIZE
@@ -76,11 +76,11 @@ enum BATTLE_RESULT
 // Structure to hold action data
 struct battle_action
 {
-    const char* name;
-    conversation* convo;
+    const char *name;
+    conversation *convo;
     bool used;
-    
-    battle_action(const char* n, conversation* c) : name(n), convo(c), used(false) {}
+
+    battle_action(const char *n, conversation *c) : name(n), convo(c), used(false) {}
 };
 
 struct attack_unit_dissolve
@@ -126,10 +126,10 @@ struct status_bar_act
     optional<text> icon_labels[4];
     int index = 0;
     int action_count = 0;
-    battle_action* actions[4];  // Pointers to available actions
+    battle_action *actions[4]; // Pointers to available actions
 
     status_bar_act();
-    void init(vector<battle_action, 4>& available_actions);
+    void init(vector<battle_action, 4> &available_actions);
     void update_labels();
     void update();
 };
@@ -154,8 +154,8 @@ struct status_bar
     regular_bg_ptr action_bg = regular_bg_items::bg_battle_action.create_bg(0, 0);
 
     static int selected_menu;
-    static vector<battle_action, 4>* available_actions_ptr;  // Pointer to the available actions
-    
+    static vector<battle_action, 4> *available_actions_ptr; // Pointer to the available actions
+
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
     optional<status_bar_act> sb_act;

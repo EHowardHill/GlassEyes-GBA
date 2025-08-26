@@ -245,7 +245,7 @@ void attack::update()
 }
 
 int status_bar::selected_menu = STATUS_BAR_NONE;
-vector<battle_action, 4>* status_bar::available_actions_ptr = nullptr;
+vector<battle_action, 4> *status_bar::available_actions_ptr = nullptr;
 
 status_bar_items::status_bar_items()
 {
@@ -647,7 +647,7 @@ int battle_map()
     int y_delta = 0;
     bool conversation_in_progress = false;
     bool should_transition_to_recv = false;
-    conversation* act_conversation = nullptr;
+    conversation *act_conversation = nullptr;
 
     optional<recv> obj_recv;
     optional<status_bar> obj_status_bar;
@@ -863,7 +863,7 @@ int battle_map()
                 {
                     // Extract the action index
                     int action_index = (status_bar::selected_menu >> 8) & 0xFF;
-                    
+
                     // Find the selected action
                     int current_index = 0;
                     for (int i = 0; i < available_actions.size(); i++)
@@ -880,7 +880,7 @@ int battle_map()
                             current_index++;
                         }
                     }
-                    
+
                     status_bar::selected_menu = STATUS_BAR_NONE;
                     obj_status_bar.reset();
                     stage = stage_talking;
