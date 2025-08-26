@@ -45,14 +45,14 @@ int navigate_map()
 
             if (current_map.current_map->characters[tile] != 0)
             {
-                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y}, false);
+                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y});
             }
         }
     }
 
     if (global_data_ptr->entry_map != &map_room01)
     {
-        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, true);
+        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position);
     }
 
     int loop_value = 0;

@@ -156,7 +156,7 @@ struct status_bar
     static int selected_menu;
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
-    optional<status_bar_act> sb_act;  // Add ACT menu
+    optional<status_bar_act> sb_act;
 
     status_bar();
     void update();

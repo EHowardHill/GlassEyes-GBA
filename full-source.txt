@@ -434,7 +434,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
 }
 
 ge_battle.cpp: 
-// ge_battle.cpp
+// ge_battle.cpp - Fixed version with proper battle dialogue handling
 
 #include "bn_core.h"
 #include "bn_log.h"
@@ -461,12 +461,154 @@ ge_battle.cpp:
 #include "bn_sprite_items_battle_chars.h"
 #include "bn_sprite_items_battle_squares.h"
 
+#include "bn_regular_bg_items_bg_dialogue_box.h"
+
 #include "ge_character_manager.h"
 #include "ge_actions.h"
 #include "ge_battle.h"
 #include "ge_bullet.h"
 
 using namespace bn;
+
+// Simple battle dialogue handler without character_manager dependency
+class battle_dialogue
+{
+public:
+    conversation *active_conversation = nullptr;
+    int index = 0;
+    int size = 0;
+    text lines[3];
+    optional<sprite_ptr> portrait;
+    optional<regular_bg_ptr> box;
+    int ticker = 0;
+
+    battle_dialogue()
+    {
+        box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
+        lines[0].start = {-40, 32};
+        lines[1].start = {-40, 48};
+        lines[2].start = {-40, 64};
+    }
+
+    void load(conversation *new_conversation)
+    {
+        active_conversation = new_conversation;
+        index = 0;
+        size = 0;
+
+        // Count dialogue lines
+        for (int i = 0; i < 64; i++)
+        {
+            if ((*active_conversation)[i].action == ACT_END)
+            {
+                break;
+            }
+            size++;
+        }
+
+        // Initialize first dialogue
+        if (size > 0)
+        {
+            init_current();
+        }
+    }
+
+    void init_current()
+    {
+        if (!active_conversation || index >= size)
+        {
+            return;
+        }
+
+        const dialogue_line &line = (*active_conversation)[index];
+
+        // Set portrait if exists
+        if (line.portrait != nullptr)
+        {
+            portrait = line.portrait->create_sprite(-84, 56, line.emotion);
+        }
+        else
+        {
+            portrait.reset();
+        }
+
+        // Initialize text lines
+        for (int t = 0; t < 3; t++)
+        {
+            lines[t].init(line.raw_text[t]);
+            lines[t].size = line.size;
+        }
+    }
+
+    void update()
+    {
+        if (!active_conversation || index >= size)
+        {
+            return;
+        }
+
+        auto &l = (*active_conversation)[index];
+
+        // Update portrait animation
+        if (portrait.has_value() && l.portrait != nullptr)
+        {
+            portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2) + (ticker % 12 < 6 ? 1 : 0));
+        }
+
+        // Update text display
+        if (ticker % 3 == 0)
+        {
+            for (int t = 0; t < 3; t++)
+            {
+                if (!lines[t].is_ended())
+                {
+                    lines[t].update(l.portrait, false);
+                    break;
+                }
+            }
+        }
+
+        // Update letter effects
+        for (int t = 0; t < 3; t++)
+        {
+            for (auto &letter_ : lines[t].letters)
+            {
+                letter_.update(l.shake, l.size);
+            }
+        }
+
+        ticker++;
+    }
+
+    bool advance()
+    {
+        if (!active_conversation || index >= size - 1)
+        {
+            return false;
+        }
+
+        index++;
+        ticker = 0;
+        init_current();
+        return true;
+    }
+
+    bool is_ended()
+    {
+        if (!active_conversation)
+        {
+            return true;
+        }
+        return index >= size || (*active_conversation)[index].action == ACT_END;
+    }
+
+    bool lines_complete()
+    {
+        return lines[0].is_ended() && lines[1].is_ended() && lines[2].is_ended();
+    }
+};
+
+// ... [Keep all the existing attack_bar, attack, status_bar_items, status_bar_act, status_bar_menu, status_bar implementations as they were]
 
 attack_bar::attack_bar(int y, int index)
 {
@@ -519,10 +661,6 @@ void attack::update()
         if (!bar.is_ended)
             is_ended = false;
     }
-    if (is_ended)
-    {
-        // status_bar::selected_menu = STATUS_BAR_NONE;
-    }
 }
 
 int status_bar::selected_menu = STATUS_BAR_NONE;
@@ -544,7 +682,6 @@ void status_bar_items::update()
 
 status_bar_act::status_bar_act()
 {
-    // Initialize with empty state
     action_count = 0;
 }
 
@@ -552,7 +689,6 @@ void status_bar_act::init(vector<battle_action, 4> &available_actions)
 {
     action_count = 0;
 
-    // Populate actions array with available (unused) actions
     for (int i = 0; i < available_actions.size() && action_count < 4; i++)
     {
         if (!available_actions[i].used)
@@ -567,7 +703,6 @@ void status_bar_act::init(vector<battle_action, 4> &available_actions)
 
 void status_bar_act::update_labels()
 {
-    // Clear all labels first
     for (int i = 0; i < 4; i++)
     {
         icon_labels[i].reset();
@@ -575,19 +710,16 @@ void status_bar_act::update_labels()
 
     if (action_count == 0)
     {
-        // Show "No Actions" if there are no available actions
         icon_labels[0] = {"* No Actions", {-22, -12}};
         icon_labels[0].value().render();
     }
     else
     {
-        // Show available actions
         for (int i = 0; i < action_count; i++)
         {
             string<32> label_text = "* ";
             label_text.append(actions[i]->name);
 
-            // Highlight current selection
             if (i == index)
             {
                 label_text = "> ";
@@ -624,10 +756,9 @@ void status_bar_act::update()
         }
         else if (keypad::a_pressed())
         {
-            // Mark action as used and trigger it
             actions[index]->used = true;
             sound_items::snd_alert.play();
-            status_bar::selected_menu = STATUS_BAR_ACT | (index << 8); // Encode action index
+            status_bar::selected_menu = STATUS_BAR_ACT | (index << 8);
         }
     }
 
@@ -658,34 +789,23 @@ void status_bar_menu::update_label()
     switch (index + 1)
     {
     case STATUS_BAR_ATTACK:
-    {
         label = "ATTACK";
         break;
-    }
     case STATUS_BAR_ACT:
-    {
         label = "ACT";
         break;
-    }
     case STATUS_BAR_ITEM:
-    {
         label = "ITEM";
         break;
-    }
     case STATUS_BAR_SPARE:
-    {
         label = "SPARE";
         break;
-    }
     case STATUS_BAR_DEFEND:
-    {
         label = "DEFEND";
         break;
-    }
     default:
-    {
+        label = "ATTACK";
         break;
-    }
     }
     icon_label = {label, {0, -12 + (18 * index)}};
     icon_label.value().render();
@@ -750,8 +870,6 @@ void status_bar::update()
             else if (selected_menu == STATUS_BAR_ACT)
             {
                 sb_menu.reset();
-                sb_act.emplace();
-                // Initialize ACT menu with available actions (handled in battle_map)
             }
         }
     }
@@ -773,10 +891,6 @@ void status_bar::update()
         {
             sb_act.reset();
             sb_menu.emplace();
-        }
-        else if (selected_menu & STATUS_BAR_ACT)
-        {
-            // Action was selected, transition handled in battle_map
         }
     }
 }
@@ -859,19 +973,27 @@ enum BATTLE_ANIM_TYPE
 
 int battle_map()
 {
+    int error_line = 10;
+    BN_LOG(error_line++);
+
     music::stop();
     music_items::boss.play();
+    BN_LOG(error_line++);
 
     int stage = stage_talking;
     int result = RESULT_FIRST;
-    character_manager char_mgr;
+
+    // Use our battle dialogue system instead of character_manager
+    battle_dialogue battle_dlg;
+
+    BN_LOG(error_line++);
 
     int player_ticker = 0;
     int enemy_ticker = 0;
+    BN_LOG(error_line++);
 
     vector<conversation *, 32> convos[RESULT_SIZE];
-    vector<battle_action, 4> battle_actions;
-    conversation *pending_act_conversation = nullptr;
+    BN_LOG(error_line++);
 
     switch (global_data_ptr->battle_foe)
     {
@@ -885,10 +1007,6 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_02);
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
-
-        battle_actions.emplace_back("Check", &garbage_fight_01);    // Example action
-        battle_actions.emplace_back("Talk", &garbage_fight_02);     // Example action
-        battle_actions.emplace_back("Threaten", &garbage_fight_03); // Example action
         break;
     }
     case FOE_VISKERS_02:
@@ -901,44 +1019,14 @@ int battle_map()
         break;
     }
     default:
-    {
         break;
     }
-    }
+
+    BN_LOG(error_line++);
 
     sound_items::snd_fight_start.play();
-    {
-        sprite_ptr heart = sprite_items::hearts.create_sprite(
-            global_data_ptr->entry_position_raw.x,
-            global_data_ptr->entry_position_raw.y - 32,
-            1);
-        heart.set_z_order(-1);
 
-        {
-            sprite_ptr character[2] = {
-                sprite_items::spr_jeremy_01.create_sprite(
-                    global_data_ptr->entry_position_raw.x,
-                    global_data_ptr->entry_position_raw.y - 32,
-                    global_data_ptr->entry_direction * 2),
-                sprite_items::spr_jeremy_01.create_sprite(
-                    global_data_ptr->entry_position_raw.x,
-                    global_data_ptr->entry_position_raw.y,
-                    (global_data_ptr->entry_direction * 2) + 1)};
-
-            for (int t = 0; t < 12; t++)
-            {
-                heart.set_visible(t % 4 >= 2);
-                core::update();
-            }
-        }
-
-        while (abs(heart.x()) <= 1 && abs(heart.y()) <= 1)
-        {
-            vector_2 new_pos = moveTowards({heart.x().integer(), heart.y().integer()}, {0, 0}, 2);
-            heart.set_position(new_pos.x, new_pos.y);
-            core::update();
-        }
-    }
+    BN_LOG(error_line++);
 
     auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
 
@@ -968,12 +1056,14 @@ int battle_map()
 
     while (true)
     {
+        error_line = 0;
+        BN_LOG(error_line++);
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
+        // Player animation states
         switch (player_state)
         {
         case INTRO:
-        {
             if (player_ticker < (11 * 5))
             {
                 player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
@@ -982,21 +1072,33 @@ int battle_map()
             else
             {
                 player_state = IDLE;
+                player_ticker = 0;
+            }
+            break;
+
+        case RECV:
+            if (player_ticker < (4 * 5))
+            {
+                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), (player_ticker / 5) + 11);
+                player_ticker++;
+            }
+            else
+            {
+                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), 11);
+                player_ticker = 11 * 5;
+                player_state = IDLE;
             }
             break;
         }
-        default:
-        {
-            break;
-        }
-        }
+
+        BN_LOG(error_line++);
 
         player01.set_y(player_pos.y + y_delta);
 
+        // Enemy animation states
         switch (enemy_state)
         {
         case INTRO:
-        {
             if (enemy_ticker < (7 * 5))
             {
                 enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
@@ -1007,28 +1109,24 @@ int battle_map()
                 enemy_state = IDLE;
             }
             break;
-        }
+
         case IDLE:
-        {
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 4) + 6);
             enemy_ticker++;
             break;
-        }
+
         case ATTACK:
-        {
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
             enemy_ticker++;
             break;
         }
-        default:
-        {
-            break;
-        }
-        }
+
+        BN_LOG(error_line++);
 
         enemy01.set_y(enemy_pos.y + y_delta);
 
-        if (char_mgr.db.has_value())
+        // Handle dialogue box Y offset
+        if (!battle_dlg.is_ended())
         {
             if (y_delta > -32)
             {
@@ -1043,10 +1141,15 @@ int battle_map()
             }
         }
 
+        BN_LOG(error_line++);
+
+        // Stage management
         switch (stage)
         {
         case stage_talking:
         {
+            BN_LOG("> talking");
+
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 result = RESULT_LAST_WIN;
@@ -1056,29 +1159,15 @@ int battle_map()
                 result = RESULT_LAST_LOSE;
             }
 
-            if (conversation_in_progress)
-            {
-                if (!char_mgr.db.has_value())
-                {
-                    conversation_in_progress = false;
-                    should_transition_to_recv = true;
-                }
-            }
-            else if (should_transition_to_recv)
-            {
-                stage = stage_recv;
-                should_transition_to_recv = false;
-            }
-            else if (!char_mgr.db.has_value())
-            {
-                auto convo = &convos[result];
+            BN_LOG(error_line++);
 
-                if (convo->size() > 0)
+            if (battle_dlg.is_ended())
+            {
+                // Load the appropriate conversation
+                auto convo = &convos[result];
+                if (convo->size() > 0 && !conversation_in_progress)
                 {
-                    char_mgr.db.emplace();
-                    char_mgr.db->load(convo->at(0));
-                    char_mgr.db->init(&char_mgr);
-                    convo->erase(convo->begin());
+                    battle_dlg.load(convo->at(0));
                     conversation_in_progress = true;
                 }
                 else
@@ -1086,8 +1175,31 @@ int battle_map()
                     should_transition_to_recv = true;
                 }
             }
+            else
+            {
+                // Update dialogue
+                battle_dlg.update();
+
+                // Handle input
+                if (keypad::a_pressed() && battle_dlg.lines_complete())
+                {
+                    if (!battle_dlg.advance())
+                    {
+                        // Dialogue finished
+                        conversation_in_progress = false;
+                        should_transition_to_recv = true;
+                    }
+                }
+            }
+
+            if (should_transition_to_recv)
+            {
+                stage = stage_recv;
+                should_transition_to_recv = false;
+            }
             break;
         }
+
         case stage_recv:
         {
             enemy_state = ATTACK;
@@ -1112,6 +1224,7 @@ int battle_map()
             }
             break;
         }
+
         case stage_status:
         {
             enemy_state = IDLE;
@@ -1137,30 +1250,10 @@ int battle_map()
                     obj_status_bar.reset();
                     stage = stage_attack;
                 }
-                else if (status_bar::selected_menu == STATUS_BAR_ACT)
-                {
-                    // Initialize ACT menu with available actions
-                    if (obj_status_bar.value().sb_act.has_value())
-                    {
-                        obj_status_bar.value().sb_act.value().init(battle_actions);
-                    }
-                }
-                else if (status_bar::selected_menu & STATUS_BAR_ACT)
-                {
-                    // An action was selected
-                    int action_index = (status_bar::selected_menu >> 8) & 0xFF;
-                    if (obj_status_bar.value().sb_act.has_value())
-                    {
-                        pending_act_conversation = obj_status_bar.value().sb_act.value().actions[action_index]->convo;
-                    }
-                    status_bar::selected_menu = STATUS_BAR_NONE;
-                    obj_status_bar.reset();
-                    stage = stage_act;
-                }
             }
-
             break;
         }
+
         case stage_attack:
         {
             if (!obj_attack.has_value())
@@ -1179,31 +1272,14 @@ int battle_map()
             }
             break;
         }
-        case stage_act:
-        {
-            if (pending_act_conversation && !char_mgr.db.has_value())
-            {
-                char_mgr.db.emplace();
-                char_mgr.db->load(pending_act_conversation);
-                char_mgr.db->init(&char_mgr);
-                pending_act_conversation = nullptr;
-                stage = stage_talking;
-                result = RESULT_ACT;
-            }
-            break;
-        }
-        default:
-        {
-            break;
-        }
         }
 
+        BN_LOG(error_line++);
+
         text::update_toasts();
-        char_mgr.update(nullptr);
         core::update();
     }
 }
-
 
 ge_bullet.cpp: 
 // ge_bullet.cpp
@@ -1638,18 +1714,13 @@ character_manager::character_manager() : player_ptr(nullptr)
 {
 }
 
-character *character_manager::add_character(int index, vector_2 position, int type = CH_TYPE_NPC)
+character *character_manager::add_character(int index, vector_2 position)
 {
     if (characters.size() >= 64)
         return nullptr;
 
-    if (index == CHAR_JEREMY || index == CHAR_VISTA)
-    {
-        type = CH_TYPE_PLAYER;
-    }
-
     // Create new character
-    characters.push_back(make_unique<character>(index, position, type));
+    characters.push_back(make_unique<character>(index, position));
     character *new_char = characters.back().get();
 
     if (global_data_ptr->process_stage != GARBAGE_TO_BLACK)
@@ -1661,7 +1732,7 @@ character *character_manager::add_character(int index, vector_2 position, int ty
     }
 
     // Track player
-    if (type == CH_TYPE_PLAYER && !player_ptr)
+    if (new_char->type() == CH_TYPE_PLAYER && !player_ptr)
     {
         player_ptr = new_char;
     }
@@ -1690,7 +1761,7 @@ void character_manager::clear_npcs()
     auto it = characters.begin();
     while (it != characters.end())
     {
-        if ((*it)->type == CH_TYPE_NPC)
+        if ((*it)->type() == CH_TYPE_NPC)
         {
             it = characters.erase(it);
         }
@@ -1789,6 +1860,8 @@ void character_manager::update(map_manager *current_map = nullptr)
         if (ch)
         {
             ch->update(current_map, db_inactive);
+
+            BN_LOG(ch->index, " is ", ch->type());
 
             if (ch->is_follow)
             {
@@ -2421,7 +2494,7 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
     }
 }
 
-character::character(int index_, vector_2 start_, int type_) : index(index_), type(type_)
+character::character(int index_, vector_2 start_) : index(index_)
 {
     start.x = (start_.x * 32) + 16;
     start.y = (start_.y * 32) + 16;
@@ -2433,7 +2506,7 @@ character::character(int index_, vector_2 start_, int type_) : index(index_), ty
     update_sprite_item(index_);
     current_animation = &anim_stand;
 
-    if (type == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
+    if (type() == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
     {
         v_sprite_ptr::camera.x = start.x;
         v_sprite_ptr::camera.y = start.y;
@@ -2488,7 +2561,7 @@ void character::update(map_manager *current_map, bool db_inactive)
 {
     vector_2 delta = {0, 0};
 
-    if (type == CH_TYPE_PLAYER)
+    if (type() == CH_TYPE_PLAYER)
     {
         if (db_inactive)
         {
@@ -2784,14 +2857,9 @@ void character::update(map_manager *current_map, bool db_inactive)
     ticker++;
 }
 
-void character::add(list<character, 64> *characters, int character_id, vector_2 location, int character_type = CH_TYPE_NPC)
+void character::add(list<character, 64> *characters, int character_id, vector_2 location)
 {
-    if (character_id == CHAR_JEREMY)
-    {
-        character_type = CH_TYPE_PLAYER;
-    }
-
-    characters->emplace_back(character_id, location, character_type);
+    characters->emplace_back(character_id, location);
 }
 
 ge_structs.cpp: 
@@ -3135,7 +3203,7 @@ void dialogue_box::init(character_manager *ch_man)
 
         if (line.action == ACT_SPAWN)
         {
-            ch_man->add_character(line.index, line.navigate, true);
+            ch_man->add_character(line.index, line.navigate);
         }
 
         auto ch = ch_man->find_by_index(line.index);
@@ -3446,14 +3514,14 @@ int navigate_map()
 
             if (current_map.current_map->characters[tile] != 0)
             {
-                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y}, false);
+                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y});
             }
         }
     }
 
     if (global_data_ptr->entry_map != &map_room01)
     {
-        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, true);
+        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position);
     }
 
     int loop_value = 0;
@@ -4250,7 +4318,7 @@ struct status_bar
     static int selected_menu;
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
-    optional<status_bar_act> sb_act;  // Add ACT menu
+    optional<status_bar_act> sb_act;
 
     status_bar();
     void update();
@@ -4371,7 +4439,7 @@ struct character_manager
 
     character_manager();
 
-    character *add_character(int index, vector_2 position, int type);
+    character *add_character(int index, vector_2 position);
     bool remove_character(character *ch);
     void clear_npcs();
     character *get_player() { return player_ptr; }
@@ -4666,19 +4734,37 @@ struct character
     int frame = 0;
     int face = DIR_DOWN;
 
-    int type = CH_TYPE_NPC;
     vector_2 move_to = {0, 0};
     bool is_follow = false;
     int follow_id = CHAR_JEREMY;
 
-    character(int index_, vector_2 start_, int character_type);
+    character(int index_, vector_2 start_);
 
     void update(map_manager *current_map, bool character_box_ended);
     void update_sprite_item(int index_);
     bool is_tall() const; // Helper to determine if character is tall
 
-    static void add(list<character, 64> *characters, int character_id, vector_2 location, int character_type);
+    static void add(list<character, 64> *characters, int character_id, vector_2 location);
     static character *find(list<character, 64> &characters, int index);
+
+    int type()
+    {
+        switch (index)
+        {
+        case CHAR_VISTA:
+        {
+            return CH_TYPE_PLAYER;
+        }
+        case CHAR_JEREMY:
+        {
+            return CH_TYPE_PLAYER;
+        }
+        default:
+        {
+            return CH_TYPE_NPC;
+        }
+        }
+    }
 };
 
 #endif // GE_SPRITES_H

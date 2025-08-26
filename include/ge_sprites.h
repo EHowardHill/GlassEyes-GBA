@@ -99,19 +99,37 @@ struct character
     int frame = 0;
     int face = DIR_DOWN;
 
-    int type = CH_TYPE_NPC;
     vector_2 move_to = {0, 0};
     bool is_follow = false;
     int follow_id = CHAR_JEREMY;
 
-    character(int index_, vector_2 start_, int character_type);
+    character(int index_, vector_2 start_);
 
     void update(map_manager *current_map, bool character_box_ended);
     void update_sprite_item(int index_);
     bool is_tall() const; // Helper to determine if character is tall
 
-    static void add(list<character, 64> *characters, int character_id, vector_2 location, int character_type);
+    static void add(list<character, 64> *characters, int character_id, vector_2 location);
     static character *find(list<character, 64> &characters, int index);
+
+    int type()
+    {
+        switch (index)
+        {
+        case CHAR_VISTA:
+        {
+            return CH_TYPE_PLAYER;
+        }
+        case CHAR_JEREMY:
+        {
+            return CH_TYPE_PLAYER;
+        }
+        default:
+        {
+            return CH_TYPE_NPC;
+        }
+        }
+    }
 };
 
 #endif // GE_SPRITES_H

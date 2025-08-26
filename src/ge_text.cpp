@@ -314,7 +314,7 @@ void dialogue_box::init(character_manager *ch_man)
 
         if (line.action == ACT_SPAWN)
         {
-            ch_man->add_character(line.index, line.navigate, true);
+            ch_man->add_character(line.index, line.navigate);
         }
 
         auto ch = ch_man->find_by_index(line.index);

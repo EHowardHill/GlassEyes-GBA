@@ -1,4 +1,4 @@
-// ge_battle.cpp
+// ge_battle.cpp - Fixed version with proper battle dialogue handling
 
 #include "bn_core.h"
 #include "bn_log.h"
@@ -25,12 +25,154 @@
 #include "bn_sprite_items_battle_chars.h"
 #include "bn_sprite_items_battle_squares.h"
 
+#include "bn_regular_bg_items_bg_dialogue_box.h"
+
 #include "ge_character_manager.h"
 #include "ge_actions.h"
 #include "ge_battle.h"
 #include "ge_bullet.h"
 
 using namespace bn;
+
+// Simple battle dialogue handler without character_manager dependency
+class battle_dialogue
+{
+public:
+    conversation *active_conversation = nullptr;
+    int index = 0;
+    int size = 0;
+    text lines[3];
+    optional<sprite_ptr> portrait;
+    optional<regular_bg_ptr> box;
+    int ticker = 0;
+
+    battle_dialogue()
+    {
+        box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
+        lines[0].start = {-40, 32};
+        lines[1].start = {-40, 48};
+        lines[2].start = {-40, 64};
+    }
+
+    void load(conversation *new_conversation)
+    {
+        active_conversation = new_conversation;
+        index = 0;
+        size = 0;
+
+        // Count dialogue lines
+        for (int i = 0; i < 64; i++)
+        {
+            if ((*active_conversation)[i].action == ACT_END)
+            {
+                break;
+            }
+            size++;
+        }
+
+        // Initialize first dialogue
+        if (size > 0)
+        {
+            init_current();
+        }
+    }
+
+    void init_current()
+    {
+        if (!active_conversation || index >= size)
+        {
+            return;
+        }
+
+        const dialogue_line &line = (*active_conversation)[index];
+
+        // Set portrait if exists
+        if (line.portrait != nullptr)
+        {
+            portrait = line.portrait->create_sprite(-84, 56, line.emotion);
+        }
+        else
+        {
+            portrait.reset();
+        }
+
+        // Initialize text lines
+        for (int t = 0; t < 3; t++)
+        {
+            lines[t].init(line.raw_text[t]);
+            lines[t].size = line.size;
+        }
+    }
+
+    void update()
+    {
+        if (!active_conversation || index >= size)
+        {
+            return;
+        }
+
+        auto &l = (*active_conversation)[index];
+
+        // Update portrait animation
+        if (portrait.has_value() && l.portrait != nullptr)
+        {
+            portrait.value().set_tiles(l.portrait->tiles_item(), (l.emotion * 2) + (ticker % 12 < 6 ? 1 : 0));
+        }
+
+        // Update text display
+        if (ticker % 3 == 0)
+        {
+            for (int t = 0; t < 3; t++)
+            {
+                if (!lines[t].is_ended())
+                {
+                    lines[t].update(l.portrait, false);
+                    break;
+                }
+            }
+        }
+
+        // Update letter effects
+        for (int t = 0; t < 3; t++)
+        {
+            for (auto &letter_ : lines[t].letters)
+            {
+                letter_.update(l.shake, l.size);
+            }
+        }
+
+        ticker++;
+    }
+
+    bool advance()
+    {
+        if (!active_conversation || index >= size - 1)
+        {
+            return false;
+        }
+
+        index++;
+        ticker = 0;
+        init_current();
+        return true;
+    }
+
+    bool is_ended()
+    {
+        if (!active_conversation)
+        {
+            return true;
+        }
+        return index >= size || (*active_conversation)[index].action == ACT_END;
+    }
+
+    bool lines_complete()
+    {
+        return lines[0].is_ended() && lines[1].is_ended() && lines[2].is_ended();
+    }
+};
+
+// ... [Keep all the existing attack_bar, attack, status_bar_items, status_bar_act, status_bar_menu, status_bar implementations as they were]
 
 attack_bar::attack_bar(int y, int index)
 {
@@ -83,10 +225,6 @@ void attack::update()
         if (!bar.is_ended)
             is_ended = false;
     }
-    if (is_ended)
-    {
-        // status_bar::selected_menu = STATUS_BAR_NONE;
-    }
 }
 
 int status_bar::selected_menu = STATUS_BAR_NONE;
@@ -108,7 +246,6 @@ void status_bar_items::update()
 
 status_bar_act::status_bar_act()
 {
-    // Initialize with empty state
     action_count = 0;
 }
 
@@ -116,7 +253,6 @@ void status_bar_act::init(vector<battle_action, 4> &available_actions)
 {
     action_count = 0;
 
-    // Populate actions array with available (unused) actions
     for (int i = 0; i < available_actions.size() && action_count < 4; i++)
     {
         if (!available_actions[i].used)
@@ -131,7 +267,6 @@ void status_bar_act::init(vector<battle_action, 4> &available_actions)
 
 void status_bar_act::update_labels()
 {
-    // Clear all labels first
     for (int i = 0; i < 4; i++)
     {
         icon_labels[i].reset();
@@ -139,19 +274,16 @@ void status_bar_act::update_labels()
 
     if (action_count == 0)
     {
-        // Show "No Actions" if there are no available actions
         icon_labels[0] = {"* No Actions", {-22, -12}};
         icon_labels[0].value().render();
     }
     else
     {
-        // Show available actions
         for (int i = 0; i < action_count; i++)
         {
             string<32> label_text = "* ";
             label_text.append(actions[i]->name);
 
-            // Highlight current selection
             if (i == index)
             {
                 label_text = "> ";
@@ -188,10 +320,9 @@ void status_bar_act::update()
         }
         else if (keypad::a_pressed())
         {
-            // Mark action as used and trigger it
             actions[index]->used = true;
             sound_items::snd_alert.play();
-            status_bar::selected_menu = STATUS_BAR_ACT | (index << 8); // Encode action index
+            status_bar::selected_menu = STATUS_BAR_ACT | (index << 8);
         }
     }
 
@@ -222,34 +353,23 @@ void status_bar_menu::update_label()
     switch (index + 1)
     {
     case STATUS_BAR_ATTACK:
-    {
         label = "ATTACK";
         break;
-    }
     case STATUS_BAR_ACT:
-    {
         label = "ACT";
         break;
-    }
     case STATUS_BAR_ITEM:
-    {
         label = "ITEM";
         break;
-    }
     case STATUS_BAR_SPARE:
-    {
         label = "SPARE";
         break;
-    }
     case STATUS_BAR_DEFEND:
-    {
         label = "DEFEND";
         break;
-    }
     default:
-    {
+        label = "ATTACK";
         break;
-    }
     }
     icon_label = {label, {0, -12 + (18 * index)}};
     icon_label.value().render();
@@ -314,8 +434,6 @@ void status_bar::update()
             else if (selected_menu == STATUS_BAR_ACT)
             {
                 sb_menu.reset();
-                sb_act.emplace();
-                // Initialize ACT menu with available actions (handled in battle_map)
             }
         }
     }
@@ -337,10 +455,6 @@ void status_bar::update()
         {
             sb_act.reset();
             sb_menu.emplace();
-        }
-        else if (selected_menu & STATUS_BAR_ACT)
-        {
-            // Action was selected, transition handled in battle_map
         }
     }
 }
@@ -423,19 +537,27 @@ enum BATTLE_ANIM_TYPE
 
 int battle_map()
 {
+    int error_line = 10;
+    BN_LOG(error_line++);
+
     music::stop();
     music_items::boss.play();
+    BN_LOG(error_line++);
 
     int stage = stage_talking;
     int result = RESULT_FIRST;
-    character_manager char_mgr;
+
+    // Use our battle dialogue system instead of character_manager
+    battle_dialogue battle_dlg;
+
+    BN_LOG(error_line++);
 
     int player_ticker = 0;
     int enemy_ticker = 0;
+    BN_LOG(error_line++);
 
     vector<conversation *, 32> convos[RESULT_SIZE];
-    vector<battle_action, 4> battle_actions;
-    conversation *pending_act_conversation = nullptr;
+    BN_LOG(error_line++);
 
     switch (global_data_ptr->battle_foe)
     {
@@ -449,10 +571,6 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_02);
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
-
-        battle_actions.emplace_back("Check", &garbage_fight_01);    // Example action
-        battle_actions.emplace_back("Talk", &garbage_fight_02);     // Example action
-        battle_actions.emplace_back("Threaten", &garbage_fight_03); // Example action
         break;
     }
     case FOE_VISKERS_02:
@@ -465,44 +583,14 @@ int battle_map()
         break;
     }
     default:
-    {
         break;
     }
-    }
+
+    BN_LOG(error_line++);
 
     sound_items::snd_fight_start.play();
-    {
-        sprite_ptr heart = sprite_items::hearts.create_sprite(
-            global_data_ptr->entry_position_raw.x,
-            global_data_ptr->entry_position_raw.y - 32,
-            1);
-        heart.set_z_order(-1);
 
-        {
-            sprite_ptr character[2] = {
-                sprite_items::spr_jeremy_01.create_sprite(
-                    global_data_ptr->entry_position_raw.x,
-                    global_data_ptr->entry_position_raw.y - 32,
-                    global_data_ptr->entry_direction * 2),
-                sprite_items::spr_jeremy_01.create_sprite(
-                    global_data_ptr->entry_position_raw.x,
-                    global_data_ptr->entry_position_raw.y,
-                    (global_data_ptr->entry_direction * 2) + 1)};
-
-            for (int t = 0; t < 12; t++)
-            {
-                heart.set_visible(t % 4 >= 2);
-                core::update();
-            }
-        }
-
-        while (abs(heart.x()) <= 1 && abs(heart.y()) <= 1)
-        {
-            vector_2 new_pos = moveTowards({heart.x().integer(), heart.y().integer()}, {0, 0}, 2);
-            heart.set_position(new_pos.x, new_pos.y);
-            core::update();
-        }
-    }
+    BN_LOG(error_line++);
 
     auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
 
@@ -532,12 +620,14 @@ int battle_map()
 
     while (true)
     {
+        error_line = 0;
+        BN_LOG(error_line++);
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
+        // Player animation states
         switch (player_state)
         {
         case INTRO:
-        {
             if (player_ticker < (11 * 5))
             {
                 player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
@@ -546,21 +636,33 @@ int battle_map()
             else
             {
                 player_state = IDLE;
+                player_ticker = 0;
+            }
+            break;
+
+        case RECV:
+            if (player_ticker < (4 * 5))
+            {
+                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), (player_ticker / 5) + 11);
+                player_ticker++;
+            }
+            else
+            {
+                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), 11);
+                player_ticker = 11 * 5;
+                player_state = IDLE;
             }
             break;
         }
-        default:
-        {
-            break;
-        }
-        }
+
+        BN_LOG(error_line++);
 
         player01.set_y(player_pos.y + y_delta);
 
+        // Enemy animation states
         switch (enemy_state)
         {
         case INTRO:
-        {
             if (enemy_ticker < (7 * 5))
             {
                 enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
@@ -571,28 +673,24 @@ int battle_map()
                 enemy_state = IDLE;
             }
             break;
-        }
+
         case IDLE:
-        {
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 4) + 6);
             enemy_ticker++;
             break;
-        }
+
         case ATTACK:
-        {
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
             enemy_ticker++;
             break;
         }
-        default:
-        {
-            break;
-        }
-        }
+
+        BN_LOG(error_line++);
 
         enemy01.set_y(enemy_pos.y + y_delta);
 
-        if (char_mgr.db.has_value())
+        // Handle dialogue box Y offset
+        if (!battle_dlg.is_ended())
         {
             if (y_delta > -32)
             {
@@ -607,10 +705,15 @@ int battle_map()
             }
         }
 
+        BN_LOG(error_line++);
+
+        // Stage management
         switch (stage)
         {
         case stage_talking:
         {
+            BN_LOG("> talking");
+
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 result = RESULT_LAST_WIN;
@@ -620,29 +723,15 @@ int battle_map()
                 result = RESULT_LAST_LOSE;
             }
 
-            if (conversation_in_progress)
-            {
-                if (!char_mgr.db.has_value())
-                {
-                    conversation_in_progress = false;
-                    should_transition_to_recv = true;
-                }
-            }
-            else if (should_transition_to_recv)
-            {
-                stage = stage_recv;
-                should_transition_to_recv = false;
-            }
-            else if (!char_mgr.db.has_value())
-            {
-                auto convo = &convos[result];
+            BN_LOG(error_line++);
 
-                if (convo->size() > 0)
+            if (battle_dlg.is_ended())
+            {
+                // Load the appropriate conversation
+                auto convo = &convos[result];
+                if (convo->size() > 0 && !conversation_in_progress)
                 {
-                    char_mgr.db.emplace();
-                    char_mgr.db->load(convo->at(0));
-                    char_mgr.db->init(&char_mgr);
-                    convo->erase(convo->begin());
+                    battle_dlg.load(convo->at(0));
                     conversation_in_progress = true;
                 }
                 else
@@ -650,8 +739,31 @@ int battle_map()
                     should_transition_to_recv = true;
                 }
             }
+            else
+            {
+                // Update dialogue
+                battle_dlg.update();
+
+                // Handle input
+                if (keypad::a_pressed() && battle_dlg.lines_complete())
+                {
+                    if (!battle_dlg.advance())
+                    {
+                        // Dialogue finished
+                        conversation_in_progress = false;
+                        should_transition_to_recv = true;
+                    }
+                }
+            }
+
+            if (should_transition_to_recv)
+            {
+                stage = stage_recv;
+                should_transition_to_recv = false;
+            }
             break;
         }
+
         case stage_recv:
         {
             enemy_state = ATTACK;
@@ -676,6 +788,7 @@ int battle_map()
             }
             break;
         }
+
         case stage_status:
         {
             enemy_state = IDLE;
@@ -701,30 +814,10 @@ int battle_map()
                     obj_status_bar.reset();
                     stage = stage_attack;
                 }
-                else if (status_bar::selected_menu == STATUS_BAR_ACT)
-                {
-                    // Initialize ACT menu with available actions
-                    if (obj_status_bar.value().sb_act.has_value())
-                    {
-                        obj_status_bar.value().sb_act.value().init(battle_actions);
-                    }
-                }
-                else if (status_bar::selected_menu & STATUS_BAR_ACT)
-                {
-                    // An action was selected
-                    int action_index = (status_bar::selected_menu >> 8) & 0xFF;
-                    if (obj_status_bar.value().sb_act.has_value())
-                    {
-                        pending_act_conversation = obj_status_bar.value().sb_act.value().actions[action_index]->convo;
-                    }
-                    status_bar::selected_menu = STATUS_BAR_NONE;
-                    obj_status_bar.reset();
-                    stage = stage_act;
-                }
             }
-
             break;
         }
+
         case stage_attack:
         {
             if (!obj_attack.has_value())
@@ -743,27 +836,11 @@ int battle_map()
             }
             break;
         }
-        case stage_act:
-        {
-            if (pending_act_conversation && !char_mgr.db.has_value())
-            {
-                char_mgr.db.emplace();
-                char_mgr.db->load(pending_act_conversation);
-                char_mgr.db->init(&char_mgr);
-                pending_act_conversation = nullptr;
-                stage = stage_talking;
-                result = RESULT_ACT;
-            }
-            break;
-        }
-        default:
-        {
-            break;
-        }
         }
 
+        BN_LOG(error_line++);
+
         text::update_toasts();
-        char_mgr.update(nullptr);
         core::update();
     }
 }

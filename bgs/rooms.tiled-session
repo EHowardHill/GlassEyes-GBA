@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/forest_01.tmx",
+    "activeFile": "maps/lab_01.tmx",
     "expandedProjectPaths": [
         "tilesets",
         "maps",
@@ -20,8 +20,8 @@
             "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 192,
-                "y": 229
+                "x": 462,
+                "y": 287.66666666666663
             }
         },
         "maps/garbage_01.tmx": {
@@ -68,8 +68,8 @@
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 495.99999999999994,
-                "y": 272
+                "x": 496,
+                "y": 272.3333333333333
             }
         },
         "maps/room01.tmx": {
@@ -114,22 +114,32 @@
         "tilesets/spr_visker_01.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "tilesets/underground01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tilesets/underground02.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
     "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
-    "map.height": 12,
+    "map.height": 32,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,
     "map.tileWidth": 32,
-    "map.width": 170,
+    "map.width": 64,
     "openFiles": [
         "maps/forest_01.tmx",
         "maps/lab_01.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
-        "maps/lab_01.tmx",
         "maps/forest_01.tmx",
+        "maps/lab_01.tmx",
+        "tilesets/underground02.tsx",
+        "tilesets/underground01.tsx",
         "maps/garbage_05.tmx",
         "tilesets/forest01.tsx",
         "maps/room01.tmx",
@@ -137,9 +147,7 @@
         "maps/garbage_04.tmx",
         "maps/garbage_01.tmx",
         "maps/garbage_02.tmx",
-        "maps/viskers_house.tmx",
-        "tilesets/room01.tsx",
-        "tilesets/floor_wood01.tsx"
+        "maps/viskers_house.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
@@ -147,5 +155,5 @@
         "width": 32
     },
     "tileset.transparentColor": "#000000",
-    "tileset.useTransparentColor": true
+    "tileset.useTransparentColor": false
 }
