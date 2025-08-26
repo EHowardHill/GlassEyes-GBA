@@ -1,4 +1,4 @@
-// ge_battle.cpp - Fixed version with proper battle dialogue handling
+// ge_battle.cpp - Fixed version with proper ACT menu handling
 
 #include "bn_core.h"
 #include "bn_log.h"
@@ -171,6 +171,25 @@ public:
     {
         return lines[0].is_ended() && lines[1].is_ended() && lines[2].is_ended();
     }
+
+    void clear()
+    {
+        box.reset();
+        portrait.reset();
+        active_conversation = nullptr;
+        ticker = 0;
+        index = 0;
+        size = 0;
+        lines[0].letters.clear();
+        lines[1].letters.clear();
+        lines[2].letters.clear();
+        lines[0].index = 0;
+        lines[1].index = 0;
+        lines[2].index = 0;
+        lines[0].size = 0;
+        lines[1].size = 0;
+        lines[2].size = 0;
+    }
 };
 
 attack_bar::attack_bar(int y, int index)
@@ -188,7 +207,6 @@ void attack_bar::update()
 
         if (keypad::a_pressed())
         {
-
             int distance = abs(unit.value().x().integer() - recv_bar.value().x().integer());
             if (distance < 5)
             {
@@ -227,6 +245,7 @@ void attack::update()
 }
 
 int status_bar::selected_menu = STATUS_BAR_NONE;
+vector<battle_action, 4>* status_bar::available_actions_ptr = nullptr;
 
 status_bar_items::status_bar_items()
 {
@@ -319,9 +338,12 @@ void status_bar_act::update()
         }
         else if (keypad::a_pressed())
         {
-            actions[index]->used = true;
-            sound_items::snd_alert.play();
-            status_bar::selected_menu = STATUS_BAR_ACT | (index << 8);
+            if (actions[index] != nullptr && actions[index]->convo != nullptr)
+            {
+                sound_items::snd_alert.play();
+                // Store the selected action index and mark it as selected
+                status_bar::selected_menu = STATUS_BAR_ACT | (index << 8);
+            }
         }
     }
 
@@ -432,7 +454,18 @@ void status_bar::update()
             }
             else if (selected_menu == STATUS_BAR_ACT)
             {
+                // Create the ACT submenu
                 sb_menu.reset();
+                sb_act.emplace();
+                if (available_actions_ptr != nullptr)
+                {
+                    sb_act.value().init(*available_actions_ptr);
+                }
+            }
+            else if (selected_menu == STATUS_BAR_ATTACK)
+            {
+                // Keep the existing behavior for other menu items
+                // Don't reset selected_menu here - let the battle_map handle it
             }
         }
     }
@@ -450,8 +483,15 @@ void status_bar::update()
     {
         sb_act.value().update();
 
-        if (selected_menu == STATUS_BAR_NONE)
+        // Check if an action was selected (selected_menu will have the action index encoded)
+        if ((selected_menu & 0xFF) == STATUS_BAR_ACT && selected_menu != STATUS_BAR_ACT)
         {
+            // An action was selected - battle_map will handle the transition
+            sb_act.reset();
+        }
+        else if (selected_menu == STATUS_BAR_NONE)
+        {
+            // User pressed B to go back
             sb_act.reset();
             sb_menu.emplace();
         }
@@ -550,6 +590,7 @@ int battle_map()
     int enemy_ticker = 0;
 
     vector<conversation *, 32> convos[RESULT_SIZE];
+    vector<battle_action, 4> available_actions;
 
     switch (global_data_ptr->battle_foe)
     {
@@ -563,6 +604,11 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_02);
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
+
+        available_actions.push_back(battle_action("Compliment", &garbage_fight_act_01));
+        available_actions.push_back(battle_action("Joke", &garbage_fight_act_02));
+        available_actions.push_back(battle_action("Sarcasm", &garbage_fight_act_03));
+        available_actions.push_back(battle_action("Threaten", &garbage_fight_act_04));
         break;
     }
     case FOE_VISKERS_02:
@@ -578,9 +624,10 @@ int battle_map()
         break;
     }
 
+    // Store pointer to available_actions for the status bar
+    status_bar::available_actions_ptr = &available_actions;
 
     sound_items::snd_fight_start.play();
-
 
     auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
 
@@ -600,6 +647,7 @@ int battle_map()
     int y_delta = 0;
     bool conversation_in_progress = false;
     bool should_transition_to_recv = false;
+    conversation* act_conversation = nullptr;
 
     optional<recv> obj_recv;
     optional<status_bar> obj_status_bar;
@@ -644,7 +692,6 @@ int battle_map()
             break;
         }
 
-
         player01.set_y(player_pos.y + y_delta);
 
         // Enemy animation states
@@ -673,7 +720,6 @@ int battle_map()
             break;
         }
 
-
         enemy01.set_y(enemy_pos.y + y_delta);
 
         // Handle dialogue box Y offset
@@ -692,7 +738,6 @@ int battle_map()
             }
         }
 
-
         // Stage management
         switch (stage)
         {
@@ -709,15 +754,28 @@ int battle_map()
                 result = RESULT_LAST_LOSE;
             }
 
-
             if (battle_dlg.is_ended())
             {
-                // Load the appropriate conversation
-                auto convo = &convos[result];
-                if (convo->size() > 0 && !conversation_in_progress)
+                // Check if we have an ACT conversation to load
+                if (act_conversation != nullptr)
                 {
-                    battle_dlg.load(convo->at(0));
+                    battle_dlg.load(act_conversation);
+                    act_conversation = nullptr;
                     conversation_in_progress = true;
+                }
+                // Otherwise load from regular conversation array
+                else if (result < RESULT_SIZE)
+                {
+                    auto convo = &convos[result];
+                    if (convo->size() > 0 && !conversation_in_progress)
+                    {
+                        battle_dlg.load(convo->at(0));
+                        conversation_in_progress = true;
+                    }
+                    else
+                    {
+                        should_transition_to_recv = true;
+                    }
                 }
                 else
                 {
@@ -737,21 +795,7 @@ int battle_map()
                         // Dialogue finished
                         conversation_in_progress = false;
                         should_transition_to_recv = true;
-                        battle_dlg.box.reset();
-                        battle_dlg.portrait.reset();
-                        battle_dlg.active_conversation = nullptr;
-                        battle_dlg.ticker = 0;
-                        battle_dlg.index = 0;
-                        battle_dlg.size = 0;
-                        battle_dlg.lines[0].letters.clear();
-                        battle_dlg.lines[1].letters.clear();    
-                        battle_dlg.lines[2].letters.clear();
-                        battle_dlg.lines[0].index = 0;
-                        battle_dlg.lines[1].index = 0;
-                        battle_dlg.lines[2].index = 0;
-                        battle_dlg.lines[0].size = 0;
-                        battle_dlg.lines[1].size = 0;
-                        battle_dlg.lines[2].size = 0;
+                        battle_dlg.clear();
                     }
                 }
             }
@@ -814,6 +858,34 @@ int battle_map()
                     obj_status_bar.reset();
                     stage = stage_attack;
                 }
+                // Handle ACT action selection
+                else if ((status_bar::selected_menu & 0xFF) == STATUS_BAR_ACT && status_bar::selected_menu != STATUS_BAR_ACT)
+                {
+                    // Extract the action index
+                    int action_index = (status_bar::selected_menu >> 8) & 0xFF;
+                    
+                    // Find the selected action
+                    int current_index = 0;
+                    for (int i = 0; i < available_actions.size(); i++)
+                    {
+                        if (!available_actions[i].used)
+                        {
+                            if (current_index == action_index)
+                            {
+                                // Mark action as used and load its conversation
+                                available_actions[i].used = true;
+                                act_conversation = available_actions[i].convo;
+                                break;
+                            }
+                            current_index++;
+                        }
+                    }
+                    
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+                    stage = stage_talking;
+                    result = RESULT_ACT;
+                }
             }
             break;
         }
@@ -837,7 +909,6 @@ int battle_map()
             break;
         }
         }
-
 
         text::update_toasts();
         core::update();

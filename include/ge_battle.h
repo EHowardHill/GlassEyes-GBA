@@ -154,6 +154,8 @@ struct status_bar
     regular_bg_ptr action_bg = regular_bg_items::bg_battle_action.create_bg(0, 0);
 
     static int selected_menu;
+    static vector<battle_action, 4>* available_actions_ptr;  // Pointer to the available actions
+    
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
     optional<status_bar_act> sb_act;
