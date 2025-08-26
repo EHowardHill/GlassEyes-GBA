@@ -576,8 +576,6 @@ enum BATTLE_ANIM_TYPE
 
 int battle_map()
 {
-    int error_line = 10;
-
     music::stop();
     music_items::boss.play();
 
@@ -605,10 +603,10 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
 
-        available_actions.push_back(battle_action("Compliment", &garbage_fight_act_01));
-        available_actions.push_back(battle_action("Joke", &garbage_fight_act_02));
-        available_actions.push_back(battle_action("Sarcasm", &garbage_fight_act_03));
-        available_actions.push_back(battle_action("Threaten", &garbage_fight_act_04));
+        available_actions.emplace_back(battle_action("Compliment", &garbage_fight_01));
+        available_actions.emplace_back(battle_action("Joke", &garbage_fight_01));
+        available_actions.emplace_back(battle_action("Sarcasm", &garbage_fight_01));
+        available_actions.emplace_back(battle_action("Threaten", &garbage_fight_01));
         break;
     }
     case FOE_VISKERS_02:
@@ -658,7 +656,6 @@ int battle_map()
 
     while (true)
     {
-        error_line = 0;
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
         // Player animation states
@@ -690,6 +687,11 @@ int battle_map()
                 player_state = IDLE;
             }
             break;
+
+        default:
+        {
+            break;
+        }
         }
 
         player01.set_y(player_pos.y + y_delta);
@@ -718,6 +720,11 @@ int battle_map()
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
             enemy_ticker++;
             break;
+
+        default:
+        {
+            break;
+        }
         }
 
         enemy01.set_y(enemy_pos.y + y_delta);
@@ -906,6 +913,11 @@ int battle_map()
                     result = RESULT_UP;
                 }
             }
+            break;
+        }
+
+        default:
+        {
             break;
         }
         }
