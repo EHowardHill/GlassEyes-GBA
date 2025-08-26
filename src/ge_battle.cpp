@@ -48,7 +48,6 @@ public:
 
     battle_dialogue()
     {
-        box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
         lines[0].start = {-40, 32};
         lines[1].start = {-40, 48};
         lines[2].start = {-40, 64};
@@ -56,6 +55,8 @@ public:
 
     void load(conversation *new_conversation)
     {
+        box.reset();
+        box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
         active_conversation = new_conversation;
         index = 0;
         size = 0;
@@ -171,8 +172,6 @@ public:
         return lines[0].is_ended() && lines[1].is_ended() && lines[2].is_ended();
     }
 };
-
-// ... [Keep all the existing attack_bar, attack, status_bar_items, status_bar_act, status_bar_menu, status_bar implementations as they were]
 
 attack_bar::attack_bar(int y, int index)
 {
@@ -538,26 +537,19 @@ enum BATTLE_ANIM_TYPE
 int battle_map()
 {
     int error_line = 10;
-    BN_LOG(error_line++);
 
     music::stop();
     music_items::boss.play();
-    BN_LOG(error_line++);
 
     int stage = stage_talking;
     int result = RESULT_FIRST;
 
-    // Use our battle dialogue system instead of character_manager
     battle_dialogue battle_dlg;
-
-    BN_LOG(error_line++);
 
     int player_ticker = 0;
     int enemy_ticker = 0;
-    BN_LOG(error_line++);
 
     vector<conversation *, 32> convos[RESULT_SIZE];
-    BN_LOG(error_line++);
 
     switch (global_data_ptr->battle_foe)
     {
@@ -586,11 +578,9 @@ int battle_map()
         break;
     }
 
-    BN_LOG(error_line++);
 
     sound_items::snd_fight_start.play();
 
-    BN_LOG(error_line++);
 
     auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
 
@@ -621,7 +611,6 @@ int battle_map()
     while (true)
     {
         error_line = 0;
-        BN_LOG(error_line++);
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
         // Player animation states
@@ -655,7 +644,6 @@ int battle_map()
             break;
         }
 
-        BN_LOG(error_line++);
 
         player01.set_y(player_pos.y + y_delta);
 
@@ -685,7 +673,6 @@ int battle_map()
             break;
         }
 
-        BN_LOG(error_line++);
 
         enemy01.set_y(enemy_pos.y + y_delta);
 
@@ -705,7 +692,6 @@ int battle_map()
             }
         }
 
-        BN_LOG(error_line++);
 
         // Stage management
         switch (stage)
@@ -723,7 +709,6 @@ int battle_map()
                 result = RESULT_LAST_LOSE;
             }
 
-            BN_LOG(error_line++);
 
             if (battle_dlg.is_ended())
             {
@@ -752,6 +737,21 @@ int battle_map()
                         // Dialogue finished
                         conversation_in_progress = false;
                         should_transition_to_recv = true;
+                        battle_dlg.box.reset();
+                        battle_dlg.portrait.reset();
+                        battle_dlg.active_conversation = nullptr;
+                        battle_dlg.ticker = 0;
+                        battle_dlg.index = 0;
+                        battle_dlg.size = 0;
+                        battle_dlg.lines[0].letters.clear();
+                        battle_dlg.lines[1].letters.clear();    
+                        battle_dlg.lines[2].letters.clear();
+                        battle_dlg.lines[0].index = 0;
+                        battle_dlg.lines[1].index = 0;
+                        battle_dlg.lines[2].index = 0;
+                        battle_dlg.lines[0].size = 0;
+                        battle_dlg.lines[1].size = 0;
+                        battle_dlg.lines[2].size = 0;
                     }
                 }
             }
@@ -838,7 +838,6 @@ int battle_map()
         }
         }
 
-        BN_LOG(error_line++);
 
         text::update_toasts();
         core::update();
