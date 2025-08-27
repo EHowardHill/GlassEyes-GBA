@@ -34,6 +34,63 @@
 
 using namespace bn;
 
+int status_bar::current_party_size = 1;
+
+static inline bool is_alive(int idx)
+{
+    int ps = status_bar::current_party_size;
+    return idx >= 0 && idx < ps && global_data_ptr->hp[idx] > 0;
+}
+
+static inline bool all_party_down()
+{
+    int ps = status_bar::current_party_size;
+    for (int i = 0; i < ps; ++i)
+    {
+        if (global_data_ptr->hp[i] > 0)
+            return false;
+    }
+    return true;
+}
+
+// Returns next living index strictly AFTER `from` (wraps). Returns -1 if none.
+static int next_living_after(int from)
+{
+    int ps = status_bar::current_party_size;
+    if (ps <= 0 || all_party_down())
+        return -1;
+
+    // Handle the very first pick when from == -1 (start before 0)
+    int start = (from < -1) ? -1 : from;
+
+    for (int step = 1; step <= ps; ++step)
+    {
+        int i = (start + step) % ps;
+        if (is_alive(i))
+            return i;
+    }
+    return -1;
+}
+
+// Picks a random living party member. Returns -1 if nobody is alive.
+static int random_living_index()
+{
+    int ps = status_bar::current_party_size;
+    int alive_idx[4];
+    int cnt = 0;
+
+    for (int i = 0; i < ps; ++i)
+    {
+        if (is_alive(i))
+            alive_idx[cnt++] = i;
+    }
+    if (cnt == 0)
+        return -1;
+
+    int pick = global_data_ptr->bn_random.get_int(0, cnt);
+    return alive_idx[pick];
+}
+
 // Simple battle dialogue handler without character_manager dependency
 class battle_dialogue
 {
@@ -244,8 +301,21 @@ void attack::update()
     }
 }
 
+const char *get_name(int index)
+{
+    switch (index)
+    {
+    case 0:
+        return "JEREMY"; // always present
+    case 1:
+        return "GINGER";
+    default:
+        return "ALLY";
+    }
+}
+
 int status_bar::selected_menu = STATUS_BAR_NONE;
-vector<battle_action, 4> *status_bar::available_actions_ptr = nullptr;
+vector<battle_action, 4> status_bar::available_actions;
 
 status_bar_items::status_bar_items()
 {
@@ -265,17 +335,19 @@ void status_bar_items::update()
 status_bar_act::status_bar_act()
 {
     action_count = 0;
+    index = 0; // Initialize index to 0
 }
 
-void status_bar_act::init(vector<battle_action, 4> &available_actions)
+void status_bar_act::init()
 {
     action_count = 0;
+    index = 0; // Reset index when initializing
 
-    for (int i = 0; i < available_actions.size() && action_count < 4; i++)
+    for (int i = 0; i < status_bar::available_actions.size() && action_count < 4; i++)
     {
-        if (!available_actions[i].used)
+        if (!status_bar::available_actions[i].used)
         {
-            actions[action_count] = &available_actions[i];
+            actions[action_count] = &status_bar::available_actions[i];
             action_count++;
         }
     }
@@ -419,25 +491,27 @@ void status_bar_menu::update()
     }
 }
 
-status_bar::status_bar()
+status_bar::status_bar(int actor_index_)
 {
-    char_img = sprite_items::battle_chars.create_sprite(-42, -42, 0);
+    actor_index = actor_index_;
+    char_img = sprite_items::battle_chars.create_sprite(-42, -42, actor_index);
 
+    // Build "HP:xx/yy" for this actor
     string<20> hp_counter = "HP:";
-    hp_counter.push_back((char)((global_data_ptr->hp[0] / 10) + 48));
-    hp_counter.push_back((char)((global_data_ptr->hp[0] % 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->hp[actor_index] / 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->hp[actor_index] % 10) + 48));
     hp_counter.push_back('/');
-    hp_counter.push_back((char)((global_data_ptr->max_hp[0] / 10) + 48));
-    hp_counter.push_back((char)((global_data_ptr->max_hp[0] % 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->max_hp[actor_index] / 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->max_hp[actor_index] % 10) + 48));
 
-    name = {"JEREMY", {0, -52}};
+    name = {get_name(actor_index), {0, -52}};
     hp = {hp_counter, {0, -36}};
 
     name.value().render();
     hp.value().render();
 
     sb_menu.emplace();
-};
+}
 
 void status_bar::update()
 {
@@ -450,16 +524,17 @@ void status_bar::update()
             if (selected_menu == STATUS_BAR_ITEM)
             {
                 sb_menu.reset();
-                sb_items.emplace();
+                if (!sb_items.has_value())
+                    sb_items.emplace();
+                selected_menu = STATUS_BAR_SIZE;
             }
             else if (selected_menu == STATUS_BAR_ACT)
             {
-                // Create the ACT submenu
-                sb_menu.reset();
-                sb_act.emplace();
-                if (available_actions_ptr != nullptr)
+                sb_menu.reset(); // Hide the menu when entering ACT
+                if (!sb_act.has_value())
                 {
-                    sb_act.value().init(*available_actions_ptr);
+                    sb_act.emplace();
+                    sb_act.value().init();
                 }
             }
             else if (selected_menu == STATUS_BAR_ATTACK)
@@ -473,10 +548,10 @@ void status_bar::update()
     {
         sb_items.value().update();
 
-        if (selected_menu == STATUS_BAR_NONE)
+        if (selected_menu == STATUS_BAR_NONE) // only after B
         {
             sb_items.reset();
-            sb_menu.emplace();
+            sb_menu.emplace(); // return to main menu
         }
     }
     else if (sb_act.has_value())
@@ -528,9 +603,18 @@ recv::recv()
     bullet::populate(&bullets, random_bullet_type);
 }
 
-void recv::update()
+void recv::update(int &g_defense_stacks)
 {
     heart.set_position(eye_pos.x, eye_pos.y);
+
+    if (g_defense_stacks > 0)
+    {
+        heart.set_tiles(sprite_items::hearts.tiles_item(), 3);
+    }
+    else
+    {
+        heart.set_tiles(sprite_items::hearts.tiles_item(), 1);
+    }
 
     for (int t = 0; t < bullets.size(); t++)
     {
@@ -539,12 +623,27 @@ void recv::update()
 
         if (bullet->item.value().visible())
         {
-            if (abs(eye_pos.x - bullet->item.value().x().integer()) + abs(eye_pos.y - bullet->item.value().y().integer()) < 12)
+            if (abs(eye_pos.x - bullet->item.value().x().integer()) +
+                    abs(eye_pos.y - bullet->item.value().y().integer()) <
+                12)
             {
-                sound_items::sfx_damage.play();
-                global_data_ptr->hp[0] -= 2;
-                text::add_toast(-2, {-96, -36});
-                bullet->item.value().set_visible(false);
+                if (g_defense_stacks > 0)
+                {
+                    g_defense_stacks -= 1; // <- actually consumes a stack
+                    bullet->item.value().set_visible(false);
+                    sound_items::snd_alert.play();
+                }
+                else
+                {
+                    int who = random_living_index(); // <- random living target
+                    if (who >= 0)
+                    {
+                        sound_items::sfx_damage.play();
+                        global_data_ptr->hp[who] -= 2;
+                        text::add_toast(-2, {-96, -36}); // toast location can be improved per-actor if you like
+                    }
+                    bullet->item.value().set_visible(false);
+                }
             }
         }
     }
@@ -586,9 +685,16 @@ int battle_map()
 
     int player_ticker = 0;
     int enemy_ticker = 0;
+    int g_defense_stacks = 0;
 
-    vector<conversation *, 32> convos[RESULT_SIZE];
-    vector<battle_action, 4> available_actions;
+    int current_actor = -1;                   // whose turn in the party
+    bool resume_status_after_talking = false; // if we showed ACT dialogue mid-turn
+
+    vector<conversation *, 3> convos[RESULT_SIZE];
+    vector<conversation *, 3> spare_convos;
+
+    // Clear and reset the static available_actions before populating
+    status_bar::available_actions.clear();
 
     switch (global_data_ptr->battle_foe)
     {
@@ -603,10 +709,14 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
 
-        available_actions.emplace_back(battle_action("Compliment", &garbage_fight_01));
-        available_actions.emplace_back(battle_action("Joke", &garbage_fight_01));
-        available_actions.emplace_back(battle_action("Sarcasm", &garbage_fight_01));
-        available_actions.emplace_back(battle_action("Threaten", &garbage_fight_01));
+        // Populate the STATIC status_bar::available_actions
+        status_bar::available_actions.push_back(battle_action("Compliment", &garbage_fight_01));
+        status_bar::available_actions.push_back(battle_action("Joke", &garbage_fight_01));
+        status_bar::available_actions.push_back(battle_action("Sarcasm", &garbage_fight_01));
+
+        spare_convos.push_back(&garbage_fight_02);
+        spare_convos.push_back(&garbage_fight_03);
+        spare_convos.push_back(&garbage_fight_04);
         break;
     }
     case FOE_VISKERS_02:
@@ -616,14 +726,15 @@ int battle_map()
         global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
 
         convos[RESULT_FIRST].push_back(&garbage_fight_05);
+
+        // Add some actions for FOE_VISKERS_02 as well
+        status_bar::available_actions.push_back(battle_action("Analyze", &garbage_fight_05));
+        status_bar::available_actions.push_back(battle_action("Threaten", &garbage_fight_05));
         break;
     }
     default:
         break;
     }
-
-    // Store pointer to available_actions for the status bar
-    status_bar::available_actions_ptr = &available_actions;
 
     sound_items::snd_fight_start.play();
 
@@ -776,7 +887,10 @@ int battle_map()
                     auto convo = &convos[result];
                     if (convo->size() > 0 && !conversation_in_progress)
                     {
-                        battle_dlg.load(convo->at(0));
+                        // Take the first conversation and remove it from the vector immediately
+                        conversation *c = convo->front();
+                        convo->erase(convo->begin()); // <- dequeue
+                        battle_dlg.load(c);
                         conversation_in_progress = true;
                     }
                     else
@@ -809,7 +923,16 @@ int battle_map()
 
             if (should_transition_to_recv)
             {
-                stage = stage_recv;
+                // If we came here from an ACT/SPARE mid-turn, resume status to keep iterating actors
+                if (resume_status_after_talking)
+                {
+                    resume_status_after_talking = false;
+                    stage = stage_status;
+                }
+                else
+                {
+                    stage = stage_recv;
+                }
                 should_transition_to_recv = false;
             }
             break;
@@ -819,7 +942,13 @@ int battle_map()
         {
             enemy_state = ATTACK;
 
-            if (global_data_ptr->enemy_hp[0] <= 0)
+            if (all_party_down())
+            {
+                music::stop();
+                text::toasts.clear();
+                return CONTINUE; // or your loss code
+            }
+            else if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 music::stop();
                 text::toasts.clear();
@@ -830,12 +959,14 @@ int battle_map()
             {
                 obj_recv.emplace();
             }
-            obj_recv.value().update();
+            obj_recv.value().update(g_defense_stacks);
 
             if (obj_recv.value().ticker > 250)
             {
                 obj_recv.reset();
-                stage = stage_status;
+                g_defense_stacks = 0;
+                current_actor = -1;   // reset party cycle
+                stage = stage_status; // back to player menu
             }
             break;
         }
@@ -844,44 +975,56 @@ int battle_map()
         {
             enemy_state = IDLE;
 
-            if (global_data_ptr->hp[0] <= 0)
+            if (all_party_down())
             {
                 music::stop();
                 text::toasts.clear();
-                return CONTINUE;
+                return CONTINUE; // or your "LOSS" code path
             }
 
+            // Advance to next living actor if we don't have an SB open
             if (!obj_status_bar.has_value())
             {
-                obj_status_bar.emplace();
+                int next_idx = next_living_after(current_actor);
+                if (next_idx < 0)
+                {
+                    // Nobody to act -> go to enemy turn
+                    stage = stage_talking;
+                    break;
+                }
+
+                current_actor = next_idx;
+
+                // Create status bar for *this* actor
+                obj_status_bar.emplace(current_actor);
             }
             else
             {
                 obj_status_bar.value().update();
 
+                // ACTION DISPATCH
                 if (status_bar::selected_menu == STATUS_BAR_ATTACK)
                 {
                     status_bar::selected_menu = STATUS_BAR_NONE;
                     obj_status_bar.reset();
-                    stage = stage_attack;
+                    stage = stage_attack; // play minigame
                 }
-                // Handle ACT action selection
                 else if ((status_bar::selected_menu & 0xFF) == STATUS_BAR_ACT && status_bar::selected_menu != STATUS_BAR_ACT)
                 {
-                    // Extract the action index
+                    // Extract which visible ACT item was picked
                     int action_index = (status_bar::selected_menu >> 8) & 0xFF;
 
-                    // Find the selected action
+                    // Find the Nth not-used action
                     int current_index = 0;
-                    for (int i = 0; i < available_actions.size(); i++)
+                    for (int i = 0; i < status_bar::available_actions.size(); i++)
                     {
-                        if (!available_actions[i].used)
+                        if (!status_bar::available_actions[i].used)
                         {
                             if (current_index == action_index)
                             {
-                                // Mark action as used and load its conversation
-                                available_actions[i].used = true;
-                                act_conversation = available_actions[i].convo;
+                                // Mark as used and load its conversation
+                                status_bar::available_actions[i].used = true;
+                                act_conversation = status_bar::available_actions[i].convo;
                                 break;
                             }
                             current_index++;
@@ -890,10 +1033,46 @@ int battle_map()
 
                     status_bar::selected_menu = STATUS_BAR_NONE;
                     obj_status_bar.reset();
+
+                    // Show ACT immediately, but we'll come back to STATUS for next actor afterward
                     stage = stage_talking;
                     result = RESULT_ACT;
+                    resume_status_after_talking = true;
                 }
+                else if (status_bar::selected_menu == STATUS_BAR_SPARE)
+                {
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+
+                    if (spare_convos.size() > 0)
+                    {
+                        // Take the first spare convo and remove it from the vector immediately
+                        conversation *c = spare_convos.front();
+                        spare_convos.erase(spare_convos.begin()); // <- dequeue
+                        act_conversation = c;
+
+                        stage = stage_talking;
+                        result = RESULT_ACT;
+                        resume_status_after_talking = true;
+                    }
+                    // else: nothing left to say — proceed to next actor
+                }
+                else if (status_bar::selected_menu == STATUS_BAR_DEFEND)
+                {
+                    // This actor adds one defend stack to the upcoming enemy turn
+                    g_defense_stacks += 1;
+
+                    text::add_toast(+0, {-96, -36}); // optional "DEFEND!" feedback
+                    sound_items::snd_alert.play();
+
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+
+                    // Proceed to next living actor (stay in stage_status)
+                }
+                // else: still choosing
             }
+
             break;
         }
 
@@ -909,8 +1088,19 @@ int battle_map()
                 if (obj_attack.value().is_ended)
                 {
                     obj_attack.reset();
-                    stage = stage_talking;
-                    result = RESULT_UP;
+
+                    // Advance turn after attack
+                    int next_idx = next_living_after(current_actor);
+                    if (next_idx < 0 || next_idx == 0) // wrapped back around
+                    {
+                        // No one left or cycle finished -> enemy turn
+                        stage = stage_talking;
+                    }
+                    else
+                    {
+                        current_actor = next_idx;
+                        stage = stage_status;
+                    }
                 }
             }
             break;

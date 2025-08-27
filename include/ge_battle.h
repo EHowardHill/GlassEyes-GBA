@@ -129,7 +129,7 @@ struct status_bar_act
     battle_action *actions[4]; // Pointers to available actions
 
     status_bar_act();
-    void init(vector<battle_action, 4> &available_actions);
+    void init();
     void update_labels();
     void update();
 };
@@ -152,15 +152,17 @@ struct status_bar
     optional<text> name;
     optional<text> hp;
     regular_bg_ptr action_bg = regular_bg_items::bg_battle_action.create_bg(0, 0);
+    int actor_index;
 
+    static int current_party_size;
     static int selected_menu;
-    static vector<battle_action, 4> *available_actions_ptr; // Pointer to the available actions
+    static vector<battle_action, 4> available_actions; // Pointer to the available actions
 
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
     optional<status_bar_act> sb_act;
 
-    status_bar();
+    status_bar(int actor_index_ = 0);
     void update();
 };
 
@@ -178,7 +180,7 @@ struct recv
         1);
 
     recv();
-    void update();
+    void update(int &g_defense_stacks);
     void spawn_bullets();
 };
 

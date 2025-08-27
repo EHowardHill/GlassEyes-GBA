@@ -434,7 +434,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
 }
 
 ge_battle.cpp: 
-// ge_battle.cpp - Fixed version with proper battle dialogue handling
+// ge_battle.cpp - Fixed version with proper ACT menu handling
 
 #include "bn_core.h"
 #include "bn_log.h"
@@ -470,6 +470,63 @@ ge_battle.cpp:
 
 using namespace bn;
 
+int status_bar::current_party_size = 1;
+
+static inline bool is_alive(int idx)
+{
+    int ps = status_bar::current_party_size;
+    return idx >= 0 && idx < ps && global_data_ptr->hp[idx] > 0;
+}
+
+static inline bool all_party_down()
+{
+    int ps = status_bar::current_party_size;
+    for (int i = 0; i < ps; ++i)
+    {
+        if (global_data_ptr->hp[i] > 0)
+            return false;
+    }
+    return true;
+}
+
+// Returns next living index strictly AFTER `from` (wraps). Returns -1 if none.
+static int next_living_after(int from)
+{
+    int ps = status_bar::current_party_size;
+    if (ps <= 0 || all_party_down())
+        return -1;
+
+    // Handle the very first pick when from == -1 (start before 0)
+    int start = (from < -1) ? -1 : from;
+
+    for (int step = 1; step <= ps; ++step)
+    {
+        int i = (start + step) % ps;
+        if (is_alive(i))
+            return i;
+    }
+    return -1;
+}
+
+// Picks a random living party member. Returns -1 if nobody is alive.
+static int random_living_index()
+{
+    int ps = status_bar::current_party_size;
+    int alive_idx[4];
+    int cnt = 0;
+
+    for (int i = 0; i < ps; ++i)
+    {
+        if (is_alive(i))
+            alive_idx[cnt++] = i;
+    }
+    if (cnt == 0)
+        return -1;
+
+    int pick = global_data_ptr->bn_random.get_int(0, cnt);
+    return alive_idx[pick];
+}
+
 // Simple battle dialogue handler without character_manager dependency
 class battle_dialogue
 {
@@ -484,7 +541,6 @@ public:
 
     battle_dialogue()
     {
-        box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
         lines[0].start = {-40, 32};
         lines[1].start = {-40, 48};
         lines[2].start = {-40, 64};
@@ -492,6 +548,8 @@ public:
 
     void load(conversation *new_conversation)
     {
+        box.reset();
+        box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
         active_conversation = new_conversation;
         index = 0;
         size = 0;
@@ -606,9 +664,26 @@ public:
     {
         return lines[0].is_ended() && lines[1].is_ended() && lines[2].is_ended();
     }
-};
 
-// ... [Keep all the existing attack_bar, attack, status_bar_items, status_bar_act, status_bar_menu, status_bar implementations as they were]
+    void clear()
+    {
+        box.reset();
+        portrait.reset();
+        active_conversation = nullptr;
+        ticker = 0;
+        index = 0;
+        size = 0;
+        lines[0].letters.clear();
+        lines[1].letters.clear();
+        lines[2].letters.clear();
+        lines[0].index = 0;
+        lines[1].index = 0;
+        lines[2].index = 0;
+        lines[0].size = 0;
+        lines[1].size = 0;
+        lines[2].size = 0;
+    }
+};
 
 attack_bar::attack_bar(int y, int index)
 {
@@ -625,7 +700,6 @@ void attack_bar::update()
 
         if (keypad::a_pressed())
         {
-
             int distance = abs(unit.value().x().integer() - recv_bar.value().x().integer());
             if (distance < 5)
             {
@@ -663,7 +737,21 @@ void attack::update()
     }
 }
 
+const char *get_name(int index)
+{
+    switch (index)
+    {
+    case 0:
+        return "JEREMY"; // always present
+    case 1:
+        return "GINGER";
+    default:
+        return "ALLY";
+    }
+}
+
 int status_bar::selected_menu = STATUS_BAR_NONE;
+vector<battle_action, 4> status_bar::available_actions;
 
 status_bar_items::status_bar_items()
 {
@@ -683,17 +771,19 @@ void status_bar_items::update()
 status_bar_act::status_bar_act()
 {
     action_count = 0;
+    index = 0; // Initialize index to 0
 }
 
-void status_bar_act::init(vector<battle_action, 4> &available_actions)
+void status_bar_act::init()
 {
     action_count = 0;
+    index = 0; // Reset index when initializing
 
-    for (int i = 0; i < available_actions.size() && action_count < 4; i++)
+    for (int i = 0; i < status_bar::available_actions.size() && action_count < 4; i++)
     {
-        if (!available_actions[i].used)
+        if (!status_bar::available_actions[i].used)
         {
-            actions[action_count] = &available_actions[i];
+            actions[action_count] = &status_bar::available_actions[i];
             action_count++;
         }
     }
@@ -756,9 +846,12 @@ void status_bar_act::update()
         }
         else if (keypad::a_pressed())
         {
-            actions[index]->used = true;
-            sound_items::snd_alert.play();
-            status_bar::selected_menu = STATUS_BAR_ACT | (index << 8);
+            if (actions[index] != nullptr && actions[index]->convo != nullptr)
+            {
+                sound_items::snd_alert.play();
+                // Store the selected action index and mark it as selected
+                status_bar::selected_menu = STATUS_BAR_ACT | (index << 8);
+            }
         }
     }
 
@@ -834,25 +927,27 @@ void status_bar_menu::update()
     }
 }
 
-status_bar::status_bar()
+status_bar::status_bar(int actor_index_)
 {
-    char_img = sprite_items::battle_chars.create_sprite(-42, -42, 0);
+    actor_index = actor_index_;
+    char_img = sprite_items::battle_chars.create_sprite(-42, -42, actor_index);
 
+    // Build "HP:xx/yy" for this actor
     string<20> hp_counter = "HP:";
-    hp_counter.push_back((char)((global_data_ptr->hp[0] / 10) + 48));
-    hp_counter.push_back((char)((global_data_ptr->hp[0] % 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->hp[actor_index] / 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->hp[actor_index] % 10) + 48));
     hp_counter.push_back('/');
-    hp_counter.push_back((char)((global_data_ptr->max_hp[0] / 10) + 48));
-    hp_counter.push_back((char)((global_data_ptr->max_hp[0] % 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->max_hp[actor_index] / 10) + 48));
+    hp_counter.push_back((char)((global_data_ptr->max_hp[actor_index] % 10) + 48));
 
-    name = {"JEREMY", {0, -52}};
+    name = {get_name(actor_index), {0, -52}};
     hp = {hp_counter, {0, -36}};
 
     name.value().render();
     hp.value().render();
 
     sb_menu.emplace();
-};
+}
 
 void status_bar::update()
 {
@@ -865,11 +960,23 @@ void status_bar::update()
             if (selected_menu == STATUS_BAR_ITEM)
             {
                 sb_menu.reset();
-                sb_items.emplace();
+                if (!sb_items.has_value())
+                    sb_items.emplace();
+                selected_menu = STATUS_BAR_SIZE;
             }
             else if (selected_menu == STATUS_BAR_ACT)
             {
-                sb_menu.reset();
+                sb_menu.reset(); // Hide the menu when entering ACT
+                if (!sb_act.has_value())
+                {
+                    sb_act.emplace();
+                    sb_act.value().init();
+                }
+            }
+            else if (selected_menu == STATUS_BAR_ATTACK)
+            {
+                // Keep the existing behavior for other menu items
+                // Don't reset selected_menu here - let the battle_map handle it
             }
         }
     }
@@ -877,18 +984,25 @@ void status_bar::update()
     {
         sb_items.value().update();
 
-        if (selected_menu == STATUS_BAR_NONE)
+        if (selected_menu == STATUS_BAR_NONE) // only after B
         {
             sb_items.reset();
-            sb_menu.emplace();
+            sb_menu.emplace(); // return to main menu
         }
     }
     else if (sb_act.has_value())
     {
         sb_act.value().update();
 
-        if (selected_menu == STATUS_BAR_NONE)
+        // Check if an action was selected (selected_menu will have the action index encoded)
+        if ((selected_menu & 0xFF) == STATUS_BAR_ACT && selected_menu != STATUS_BAR_ACT)
         {
+            // An action was selected - battle_map will handle the transition
+            sb_act.reset();
+        }
+        else if (selected_menu == STATUS_BAR_NONE)
+        {
+            // User pressed B to go back
             sb_act.reset();
             sb_menu.emplace();
         }
@@ -925,9 +1039,18 @@ recv::recv()
     bullet::populate(&bullets, random_bullet_type);
 }
 
-void recv::update()
+void recv::update(int &g_defense_stacks)
 {
     heart.set_position(eye_pos.x, eye_pos.y);
+
+    if (g_defense_stacks > 0)
+    {
+        heart.set_tiles(sprite_items::hearts.tiles_item(), 3);
+    }
+    else
+    {
+        heart.set_tiles(sprite_items::hearts.tiles_item(), 1);
+    }
 
     for (int t = 0; t < bullets.size(); t++)
     {
@@ -936,12 +1059,27 @@ void recv::update()
 
         if (bullet->item.value().visible())
         {
-            if (abs(eye_pos.x - bullet->item.value().x().integer()) + abs(eye_pos.y - bullet->item.value().y().integer()) < 12)
+            if (abs(eye_pos.x - bullet->item.value().x().integer()) +
+                    abs(eye_pos.y - bullet->item.value().y().integer()) <
+                12)
             {
-                sound_items::sfx_damage.play();
-                global_data_ptr->hp[0] -= 2;
-                text::add_toast(-2, {-96, -36});
-                bullet->item.value().set_visible(false);
+                if (g_defense_stacks > 0)
+                {
+                    g_defense_stacks -= 1; // <- actually consumes a stack
+                    bullet->item.value().set_visible(false);
+                    sound_items::snd_alert.play();
+                }
+                else
+                {
+                    int who = random_living_index(); // <- random living target
+                    if (who >= 0)
+                    {
+                        sound_items::sfx_damage.play();
+                        global_data_ptr->hp[who] -= 2;
+                        text::add_toast(-2, {-96, -36}); // toast location can be improved per-actor if you like
+                    }
+                    bullet->item.value().set_visible(false);
+                }
             }
         }
     }
@@ -973,27 +1111,26 @@ enum BATTLE_ANIM_TYPE
 
 int battle_map()
 {
-    int error_line = 10;
-    BN_LOG(error_line++);
-
     music::stop();
     music_items::boss.play();
-    BN_LOG(error_line++);
 
     int stage = stage_talking;
     int result = RESULT_FIRST;
 
-    // Use our battle dialogue system instead of character_manager
     battle_dialogue battle_dlg;
-
-    BN_LOG(error_line++);
 
     int player_ticker = 0;
     int enemy_ticker = 0;
-    BN_LOG(error_line++);
+    int g_defense_stacks = 0;
 
-    vector<conversation *, 32> convos[RESULT_SIZE];
-    BN_LOG(error_line++);
+    int current_actor = -1;                   // whose turn in the party
+    bool resume_status_after_talking = false; // if we showed ACT dialogue mid-turn
+
+    vector<conversation *, 3> convos[RESULT_SIZE];
+    vector<conversation *, 3> spare_convos;
+
+    // Clear and reset the static available_actions before populating
+    status_bar::available_actions.clear();
 
     switch (global_data_ptr->battle_foe)
     {
@@ -1007,6 +1144,15 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_02);
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
+
+        // Populate the STATIC status_bar::available_actions
+        status_bar::available_actions.push_back(battle_action("Compliment", &garbage_fight_01));
+        status_bar::available_actions.push_back(battle_action("Joke", &garbage_fight_01));
+        status_bar::available_actions.push_back(battle_action("Sarcasm", &garbage_fight_01));
+
+        spare_convos.push_back(&garbage_fight_02);
+        spare_convos.push_back(&garbage_fight_03);
+        spare_convos.push_back(&garbage_fight_04);
         break;
     }
     case FOE_VISKERS_02:
@@ -1016,17 +1162,17 @@ int battle_map()
         global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
 
         convos[RESULT_FIRST].push_back(&garbage_fight_05);
+
+        // Add some actions for FOE_VISKERS_02 as well
+        status_bar::available_actions.push_back(battle_action("Analyze", &garbage_fight_05));
+        status_bar::available_actions.push_back(battle_action("Threaten", &garbage_fight_05));
         break;
     }
     default:
         break;
     }
 
-    BN_LOG(error_line++);
-
     sound_items::snd_fight_start.play();
-
-    BN_LOG(error_line++);
 
     auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
 
@@ -1046,6 +1192,7 @@ int battle_map()
     int y_delta = 0;
     bool conversation_in_progress = false;
     bool should_transition_to_recv = false;
+    conversation *act_conversation = nullptr;
 
     optional<recv> obj_recv;
     optional<status_bar> obj_status_bar;
@@ -1056,8 +1203,6 @@ int battle_map()
 
     while (true)
     {
-        error_line = 0;
-        BN_LOG(error_line++);
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
         // Player animation states
@@ -1089,9 +1234,12 @@ int battle_map()
                 player_state = IDLE;
             }
             break;
-        }
 
-        BN_LOG(error_line++);
+        default:
+        {
+            break;
+        }
+        }
 
         player01.set_y(player_pos.y + y_delta);
 
@@ -1119,9 +1267,12 @@ int battle_map()
             enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
             enemy_ticker++;
             break;
-        }
 
-        BN_LOG(error_line++);
+        default:
+        {
+            break;
+        }
+        }
 
         enemy01.set_y(enemy_pos.y + y_delta);
 
@@ -1141,8 +1292,6 @@ int battle_map()
             }
         }
 
-        BN_LOG(error_line++);
-
         // Stage management
         switch (stage)
         {
@@ -1159,16 +1308,31 @@ int battle_map()
                 result = RESULT_LAST_LOSE;
             }
 
-            BN_LOG(error_line++);
-
             if (battle_dlg.is_ended())
             {
-                // Load the appropriate conversation
-                auto convo = &convos[result];
-                if (convo->size() > 0 && !conversation_in_progress)
+                // Check if we have an ACT conversation to load
+                if (act_conversation != nullptr)
                 {
-                    battle_dlg.load(convo->at(0));
+                    battle_dlg.load(act_conversation);
+                    act_conversation = nullptr;
                     conversation_in_progress = true;
+                }
+                // Otherwise load from regular conversation array
+                else if (result < RESULT_SIZE)
+                {
+                    auto convo = &convos[result];
+                    if (convo->size() > 0 && !conversation_in_progress)
+                    {
+                        // Take the first conversation and remove it from the vector immediately
+                        conversation *c = convo->front();
+                        convo->erase(convo->begin()); // <- dequeue
+                        battle_dlg.load(c);
+                        conversation_in_progress = true;
+                    }
+                    else
+                    {
+                        should_transition_to_recv = true;
+                    }
                 }
                 else
                 {
@@ -1188,13 +1352,23 @@ int battle_map()
                         // Dialogue finished
                         conversation_in_progress = false;
                         should_transition_to_recv = true;
+                        battle_dlg.clear();
                     }
                 }
             }
 
             if (should_transition_to_recv)
             {
-                stage = stage_recv;
+                // If we came here from an ACT/SPARE mid-turn, resume status to keep iterating actors
+                if (resume_status_after_talking)
+                {
+                    resume_status_after_talking = false;
+                    stage = stage_status;
+                }
+                else
+                {
+                    stage = stage_recv;
+                }
                 should_transition_to_recv = false;
             }
             break;
@@ -1204,7 +1378,13 @@ int battle_map()
         {
             enemy_state = ATTACK;
 
-            if (global_data_ptr->enemy_hp[0] <= 0)
+            if (all_party_down())
+            {
+                music::stop();
+                text::toasts.clear();
+                return CONTINUE; // or your loss code
+            }
+            else if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 music::stop();
                 text::toasts.clear();
@@ -1215,12 +1395,14 @@ int battle_map()
             {
                 obj_recv.emplace();
             }
-            obj_recv.value().update();
+            obj_recv.value().update(g_defense_stacks);
 
             if (obj_recv.value().ticker > 250)
             {
                 obj_recv.reset();
-                stage = stage_status;
+                g_defense_stacks = 0;
+                current_actor = -1;   // reset party cycle
+                stage = stage_status; // back to player menu
             }
             break;
         }
@@ -1229,28 +1411,104 @@ int battle_map()
         {
             enemy_state = IDLE;
 
-            if (global_data_ptr->hp[0] <= 0)
+            if (all_party_down())
             {
                 music::stop();
                 text::toasts.clear();
-                return CONTINUE;
+                return CONTINUE; // or your "LOSS" code path
             }
 
+            // Advance to next living actor if we don't have an SB open
             if (!obj_status_bar.has_value())
             {
-                obj_status_bar.emplace();
+                int next_idx = next_living_after(current_actor);
+                if (next_idx < 0)
+                {
+                    // Nobody to act -> go to enemy turn
+                    stage = stage_talking;
+                    break;
+                }
+
+                current_actor = next_idx;
+
+                // Create status bar for *this* actor
+                obj_status_bar.emplace(current_actor);
             }
             else
             {
                 obj_status_bar.value().update();
 
+                // ACTION DISPATCH
                 if (status_bar::selected_menu == STATUS_BAR_ATTACK)
                 {
                     status_bar::selected_menu = STATUS_BAR_NONE;
                     obj_status_bar.reset();
-                    stage = stage_attack;
+                    stage = stage_attack; // play minigame
                 }
+                else if ((status_bar::selected_menu & 0xFF) == STATUS_BAR_ACT && status_bar::selected_menu != STATUS_BAR_ACT)
+                {
+                    // Extract which visible ACT item was picked
+                    int action_index = (status_bar::selected_menu >> 8) & 0xFF;
+
+                    // Find the Nth not-used action
+                    int current_index = 0;
+                    for (int i = 0; i < status_bar::available_actions.size(); i++)
+                    {
+                        if (!status_bar::available_actions[i].used)
+                        {
+                            if (current_index == action_index)
+                            {
+                                // Mark as used and load its conversation
+                                status_bar::available_actions[i].used = true;
+                                act_conversation = status_bar::available_actions[i].convo;
+                                break;
+                            }
+                            current_index++;
+                        }
+                    }
+
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+
+                    // Show ACT immediately, but we'll come back to STATUS for next actor afterward
+                    stage = stage_talking;
+                    result = RESULT_ACT;
+                    resume_status_after_talking = true;
+                }
+                else if (status_bar::selected_menu == STATUS_BAR_SPARE)
+                {
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+
+                    if (spare_convos.size() > 0)
+                    {
+                        // Take the first spare convo and remove it from the vector immediately
+                        conversation *c = spare_convos.front();
+                        spare_convos.erase(spare_convos.begin()); // <- dequeue
+                        act_conversation = c;
+
+                        stage = stage_talking;
+                        result = RESULT_ACT;
+                        resume_status_after_talking = true;
+                    }
+                    // else: nothing left to say — proceed to next actor
+                }
+                else if (status_bar::selected_menu == STATUS_BAR_DEFEND)
+                {
+                    // This actor adds one defend stack to the upcoming enemy turn
+                    g_defense_stacks += 1;
+
+                    text::add_toast(+0, {-96, -36}); // optional "DEFEND!" feedback
+                    sound_items::snd_alert.play();
+
+                    status_bar::selected_menu = STATUS_BAR_NONE;
+                    obj_status_bar.reset();
+
+                    // Proceed to next living actor (stay in stage_status)
+                }
+                // else: still choosing
             }
+
             break;
         }
 
@@ -1266,15 +1524,29 @@ int battle_map()
                 if (obj_attack.value().is_ended)
                 {
                     obj_attack.reset();
-                    stage = stage_talking;
-                    result = RESULT_UP;
+
+                    // Advance turn after attack
+                    int next_idx = next_living_after(current_actor);
+                    if (next_idx < 0 || next_idx == 0) // wrapped back around
+                    {
+                        // No one left or cycle finished -> enemy turn
+                        stage = stage_talking;
+                    }
+                    else
+                    {
+                        current_actor = next_idx;
+                        stage = stage_status;
+                    }
                 }
             }
             break;
         }
-        }
 
-        BN_LOG(error_line++);
+        default:
+        {
+            break;
+        }
+        }
 
         text::update_toasts();
         core::update();
@@ -1282,412 +1554,214 @@ int battle_map()
 }
 
 ge_bullet.cpp: 
-// ge_bullet.cpp
-/*
-This is for Gameboy Advance, so the screen resolution is 240x160.
-Character box is 128x128 (-64 to +64 in both x and y)
-*/
-
-#include "bn_random.h"
-#include "bn_math.h"
-#include "bn_sprite_ptr.h"
-#include "bn_sprite_items_hearts.h"
-
-#include "ge_globals.h"
+// ge_bullet.cpp - Optimized implementation
 #include "ge_bullet.h"
-#include "ge_structs.h"
+#include "ge_globals.h"
+#include "bn_sprite_items_hearts.h"
+#include "bn_math.h"
 
 using namespace bn;
 
-fixed_point bullet::s_target = fixed_point(0, 0);
+// Pre-computed patterns in ROM (no RAM usage)
+// Order must match BULLET_ANIM_TYPES enum
+const bullet_pattern PATTERNS[BULLET_SIZE] = {
+    // vx    vy   amp  per  acc  flags
+    { 0,  2,   0,   0,   0,  0x00}, // BULLET_FALL
+    { 0, -4,   0,   0,   0,  0x00}, // BULLET_RISE
+    { 0,  24,  28,  20,   0,  0x01}, // BULLET_ZIGZAG - flag 0x01 = use zigzag
+    { 0,  20,  40,  36,   0,  0x02}, // BULLET_WAVE - flag 0x02 = use wave
+    { 0,   5,   0,   0,  10,  0x04}, // BULLET_ACCEL - flag 0x04 = accelerate
+    {32,  22,   0,   0,   0,  0x08}, // BULLET_BOUNCE - flag 0x08 = bounce
+    {12,  12,   0,   0,   0,  0x10}, // BULLET_HOMING - flag 0x10 = home
+    { 0,  19,  30,  64,   0,  0x20}, // BULLET_ORBIT - flag 0x20 = orbit (amp=radius)
+    { 0,  16,  45,  64,  -3,  0x40}, // BULLET_SPIRAL - flag 0x40 = spiral (acc=drift)
+};
 
-static inline unsigned int rng_next(unsigned int v)
+// Simple sine approximation table (64 entries = full period)
+const int8_t SINE_TABLE[64] = {
+    0, 6, 12, 18, 24, 30, 35, 40, 45, 49, 53, 56, 59, 61, 63, 64,
+    64, 64, 63, 61, 59, 56, 53, 49, 45, 40, 35, 30, 24, 18, 12, 6,
+    0, -6, -12, -18, -24, -30, -35, -40, -45, -49, -53, -56, -59, -61, -63, -64,
+    -64, -64, -63, -61, -59, -56, -53, -49, -45, -40, -35, -30, -24, -18, -12, -6
+};
+
+bullet::bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type)
 {
-    // extremely tiny LCG-ish step (good enough for patterns)
-    return (v * 1664525u + 1013904223u);
-}
-
-// fast triangle wave in [-amp, +amp] without trig
-// t: frame ticker, period>0
-static inline fixed tri_wave(int t, int period, fixed amp)
-{
-    if (period <= 0)
-        return fixed(0);
-    int m = t % period;
-    int half = period / 2;
-    int q = (m < half) ? m : (period - m);
-    // scale q in [0, half] to [0, amp], then map to [-amp, +amp]
-    fixed v = amp * fixed(q) / fixed(half > 0 ? half : 1);
-    return (m < half) ? v : -v;
-}
-
-bullet::bullet(fixed_point pos, int anim_type_) : anim_type(anim_type_)
-{
-    item = sprite_items::hearts.create_sprite(pos.x(), pos.y(), 4);
-
-    // basic defaults
-    vx = 0;
-    vy = 1;
-
-    switch (anim_type)
+    compact.x = x_pos;
+    compact.y = y_pos;
+    compact.ticker = 0;
+    compact.type = anim_type;
+    compact.state1 = 0;
+    compact.state2 = 0;
+    
+    // Create sprite at actual position
+    item = sprite_items::hearts.create_sprite(
+        fixed(x_pos) / 4, 
+        fixed(y_pos) / 4, 
+        4
+    );
+    
+    // Initialize type-specific state
+    switch(anim_type)
     {
-    case BULLET_FALL:
-    {
-        // Easiest - simple downward movement
-        vx = 0;
-        vy = fixed(0.8); // Slower for easier dodging
-        break;
-    }
-    case BULLET_RISE:
-    {
-        // Slightly harder - comes from below
-        vx = 0;
-        vy = fixed(-1.2); // Faster than fall for surprise factor
-        break;
-    }
     case BULLET_ZIGZAG:
-    {
-        // Medium - sharp horizontal movements while falling
-        vy = fixed(1.5);
-        amplitude = fixed(28);                                // Increased for more aggressive movement
-        period = 20 + global_data_ptr->bn_random.get_int(12); // Faster zigzag
-        zig_dir = global_data_ptr->bn_random.get_int(1) ? 1 : -1;
-        base_x = pos.x();
+        compact.state1 = (global_data_ptr->bn_random.get_int(2) ? 1 : -1); // direction
         break;
-    }
-    case BULLET_WAVE:
-    {
-        // Medium - smooth sine-like movement
-        vy = fixed(1.3);
-        amplitude = fixed(40); // Wide sweeps
-        period = 36 + global_data_ptr->bn_random.get_int(20);
-        base_x = pos.x();
-        break;
-    }
-    case BULLET_ACCEL:
-    {
-        // Medium-Hard - starts slow, speeds up significantly
-        vy = fixed(0.3);
-        ax = fixed(0.08);                                                   // Increased acceleration
-        max_speed = fixed(3.5);                                             // Higher max speed
-        vx = fixed((int(global_data_ptr->bn_random.get_int(5)) - 2) * 0.2); // Slight horizontal drift
-        break;
-    }
     case BULLET_BOUNCE:
-    {
-        // Hard - fast horizontal bouncing with vertical movement
-        vy = fixed(1.4);                                                           // Increased vertical speed
-        vx = ((global_data_ptr->bn_random.get_int(1)) ? fixed(2.0) : fixed(-2.0)); // Faster horizontal
-        min_x = fixed(-60);                                                        // Keep within character box
-        max_x = fixed(60);
+        compact.state1 = (global_data_ptr->bn_random.get_int(2) ? 1 : -1); // x direction
         break;
-    }
-    case BULLET_HOMING:
-    {
-        // Hard - aggressive homing toward player
-        vx = fixed(0.8) * ((global_data_ptr->bn_random.get_int(1)) ? 1 : -1);
-        vy = fixed(0.8);
-        turn_rate = fixed(0.08); // More aggressive turning
-        max_speed = fixed(2.8);  // Faster max speed
-        break;
-    }
     case BULLET_ORBIT:
-    {
-        // Very Hard - orbiting bullets that descend
-        orbit_cx = pos.x();
-        orbit_cy = pos.y();
-        rel_x = fixed(30); // Orbit radius
-        rel_y = fixed(0);
-        radial_drift = fixed(0);
-        vy = fixed(1.2); // Add downward movement
-        break;
-    }
     case BULLET_SPIRAL:
-    {
-        // Hardest - spiraling inward while descending
-        orbit_cx = pos.x();
-        orbit_cy = pos.y();
-        rel_x = fixed(45); // Start further out
-        rel_y = fixed(0);
-        radial_drift = fixed(-0.35); // Faster spiral inward
-        vy = fixed(1.0);             // Downward movement
+        compact.state1 = global_data_ptr->bn_random.get_int(64); // starting angle
+        compact.state2 = PATTERNS[anim_type].amplitude; // radius
         break;
-    }
     default:
-    {
         break;
-    }
     }
 }
 
 void bullet::update()
 {
-    if (!item.has_value())
-        return;
-
-    fixed x = item.value().x();
-    fixed y = item.value().y();
-
-    switch (anim_type)
+    if (!item.has_value()) return;
+    
+    const bullet_pattern& pattern = PATTERNS[compact.type];
+    
+    // Get current position
+    int16_t x = compact.x;
+    int16_t y = compact.y;
+    
+    // Apply movement based on type
+    uint8_t flags = pattern.flags;
+    
+    if (flags & 0x01) // ZIGZAG
     {
-    case BULLET_FALL:
-    {
-        y += vy;
-        break;
-    }
-    case BULLET_RISE:
-    {
-        y += vy; // vy is negative, so this rises
-        break;
-    }
-    case BULLET_ZIGZAG:
-    {
-        // Sharp zigzag with more aggressive movement
-        x += zig_dir * fixed(3.5); // Increased horizontal speed
-
-        // Check if we've reached the amplitude limit
-        if (bn::abs(x - base_x) >= amplitude)
-        {
-            // Clamp to amplitude and reverse direction
-            x = base_x + zig_dir * amplitude;
-            zig_dir = -zig_dir;
+        // Sharp zigzag movement
+        x += compact.state1 * 14; // Move horizontally
+        
+        // Check bounds and flip direction (using amplitude as bound)
+        int16_t bound = pattern.amplitude * 4; // Convert to our scale
+        if (abs(x) > bound) {
+            x = (x > 0) ? bound : -bound;
+            compact.state1 = -compact.state1;
         }
-
-        y += vy;
-        break;
+        y += pattern.vy_base;
     }
-    case BULLET_WAVE:
+    else if (flags & 0x02) // WAVE
     {
-        // Smooth wave motion
-        x = base_x + tri_wave(ticker, period, amplitude);
-        y += vy;
-        break;
+        // Use sine table for smooth wave
+        uint8_t phase = (compact.ticker * 64) / pattern.period;
+        int8_t sine = SINE_TABLE[phase & 63];
+        x = compact.x + (sine * pattern.amplitude) / 32; // Scale sine to amplitude
+        y += pattern.vy_base;
     }
-    case BULLET_ACCEL:
+    else if (flags & 0x04) // ACCEL
     {
-        // Accelerate with both vertical and horizontal components
-        vy += ax;
-        if (vy > max_speed)
-            vy = max_speed;
-        y += vy;
-        x += vx; // Slight drift adds unpredictability
-        break;
+        // Accelerating bullet
+        int16_t current_vy = pattern.vy_base + (compact.ticker * pattern.accel) / 128;
+        if (current_vy > 56) current_vy = 56; // Max speed cap
+        y += current_vy;
     }
-    case BULLET_BOUNCE:
+    else if (flags & 0x08) // BOUNCE
     {
-        x += vx;
-        y += vy;
-        // Bounce within character box bounds
-        if (x <= min_x)
-        {
-            x = min_x;
-            vx = -vx;
+        // Bouncing movement
+        x += pattern.vx_base * compact.state1;
+        y += pattern.vy_base;
+        
+        // Bounce off walls (character box bounds)
+        if (x < -240 || x > 240) { // -60 to 60 in normal coords
+            compact.state1 = -compact.state1;
+            x = (x < 0) ? -240 : 240;
         }
-        if (x >= max_x)
-        {
-            x = max_x;
-            vx = -vx;
-        }
-        break;
     }
-    case BULLET_HOMING:
+    else if (flags & 0x10) // HOMING
     {
-        // More aggressive homing
-        fixed tx = s_target.x() - x;
-        fixed ty = s_target.y() - y;
-
-        // Improved normalization
-        fixed atx = bn::abs(tx);
-        fixed aty = bn::abs(ty);
-        fixed m = (atx > aty ? atx : aty);
-
-        if (m > fixed(10)) // Only home if not too close
-        {
-            fixed ux = tx / m;
-            fixed uy = ty / m;
-
-            // Stronger steering
-            vx = vx + turn_rate * (ux * 2 - vx);
-            vy = vy + turn_rate * (uy * 2 - vy);
-        }
-
-        // Clamp speed
-        fixed spd_sq = vx * vx + vy * vy;
-        fixed max_sq = max_speed * max_speed;
-        if (spd_sq > max_sq)
-        {
-            fixed scale = max_speed / bn::sqrt(spd_sq);
-            vx = vx * scale;
-            vy = vy * scale;
-        }
-
-        x += vx;
-        y += vy;
-        break;
+        // Simplified homing - just move toward player position
+        // Assume player is at (0, 0) or get from global
+        int16_t dx = -x / 16; // Simple proportional control
+        int16_t dy = -y / 16;
+        
+        // Add to base velocity
+        x += pattern.vx_base + dx;
+        y += pattern.vy_base + dy;
     }
-    case BULLET_ORBIT:
+    else if (flags & 0x20) // ORBIT
     {
-        // Rotate while moving down
-        fixed nx = ROT_C * rel_x - ROT_S * rel_y;
-        fixed ny = ROT_S * rel_x + ROT_C * rel_y;
-
-        rel_x = nx;
-        rel_y = ny;
-
-        // Move the orbit center downward
-        orbit_cy += vy;
-
-        x = orbit_cx + rel_x;
-        y = orbit_cy + rel_y;
-        break;
+        // Use sine/cosine table for circular motion
+        uint8_t angle = compact.state1;
+        int8_t cos_val = SINE_TABLE[(angle + 16) & 63]; // cos is sine shifted by 90°
+        int8_t sin_val = SINE_TABLE[angle & 63];
+        
+        // Update angle for next frame
+        compact.state1 = (angle + 2) & 63; // Rotate ~5.6 degrees per frame
+        
+        // Calculate position from center
+        x = (compact.state2 * cos_val) / 32;
+        y = (compact.state2 * sin_val) / 32 + compact.y + pattern.vy_base;
     }
-    case BULLET_SPIRAL:
+    else if (flags & 0x40) // SPIRAL
     {
-        // Rotate and spiral inward while descending
-        fixed nx = ROT_C * rel_x - ROT_S * rel_y;
-        fixed ny = ROT_S * rel_x + ROT_C * rel_y;
-
-        // Spiral inward
-        if (radial_drift != 0)
-        {
-            fixed mm = bn::max(bn::abs(nx), bn::abs(ny));
-            if (mm > fixed(3)) // Don't collapse completely
-            {
-                nx += radial_drift * (nx / mm);
-                ny += radial_drift * (ny / mm);
-            }
+        // Similar to orbit but with shrinking radius
+        uint8_t angle = compact.state1;
+        int8_t cos_val = SINE_TABLE[(angle + 16) & 63];
+        int8_t sin_val = SINE_TABLE[angle & 63];
+        
+        // Update angle and radius
+        compact.state1 = (angle + 3) & 63; // Faster rotation
+        if (compact.state2 > 8) {
+            compact.state2 += pattern.accel; // accel is negative for inward spiral
         }
-
-        rel_x = nx;
-        rel_y = ny;
-
-        // Move center downward
-        orbit_cy += vy;
-
-        x = orbit_cx + rel_x;
-        y = orbit_cy + rel_y;
-        break;
+        
+        x = (compact.state2 * cos_val) / 32;
+        y = (compact.state2 * sin_val) / 32 + compact.y + pattern.vy_base;
     }
-    default:
-        break;
+    else // FALL, RISE, or default
+    {
+        // Simple linear movement
+        x += pattern.vx_base;
+        y += pattern.vy_base;
     }
-
-    item.value().set_x(x);
-    item.value().set_y(y);
-    ticker++;
+    
+    // Update stored position
+    compact.x = x;
+    compact.y = y;
+    compact.ticker++;
+    
+    // Update sprite position
+    item.value().set_position(fixed(x) / 4, fixed(y) / 4);
 }
 
-void bullet::populate(vector<bullet, bullet_count> *bullets, int anim_type)
+void bullet::populate(bn::vector<bullet, bullet_count>* bullets, int anim_type)
 {
+    bullets->clear();
+    
     for (int b = 0; b < bullet_count; b++)
     {
-        switch (anim_type)
+        // Starting positions in our compact format (x4 scale)
+        int16_t x = (global_data_ptr->bn_random.get_int(-60, 60)) * 4;
+        int16_t y = (-70 - (b * 15)) * 4; // Spread them out vertically
+        
+        // Adjust starting position based on type
+        switch(anim_type)
         {
-        case BULLET_FALL:
-        {
-            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
-            fixed y_pos = fixed(-70 - (b * 20));
-            bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            bullets->push_back(nb);
-            break;
-        }
         case BULLET_RISE:
-        {
-            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
-            fixed y_pos = fixed(70 + (b * 16));
-            bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            bullets->push_back(nb);
+            y = (70 + (b * 16)) * 4;
             break;
-        }
-        case BULLET_ZIGZAG:
-        {
-            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
-            fixed y_pos = fixed(-65 - (b * 12));
-            bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.amplitude = fixed(20 + global_data_ptr->bn_random.get_int(20));
-            nb.period = 18 + global_data_ptr->bn_random.get_int(24);
-            bullets->push_back(nb);
-            break;
-        }
-        case BULLET_WAVE:
-        {
-            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
-            fixed y_pos = fixed(-65 - (b * 14));
-            bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.amplitude = fixed(25 + global_data_ptr->bn_random.get_int(30));
-            nb.period = 30 + global_data_ptr->bn_random.get_int(30);
-            bullets->push_back(nb);
-            break;
-        }
-        case BULLET_ACCEL:
-        {
-            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
-            fixed y_pos = fixed(-60 - (b * 10));
-            bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.vx = fixed((global_data_ptr->bn_random.get_int(7) - 3) * 0.15);
-            nb.ax = fixed(0.06 + global_data_ptr->bn_random.get_int(6) * 0.015);
-            bullets->push_back(nb);
-            break;
-        }
-        case BULLET_BOUNCE:
-        {
-            fixed x_pos = fixed(global_data_ptr->bn_random.get_int(-60, 60));
-            fixed y_pos = fixed(-55 - (b * 10));
-            bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.vx = global_data_ptr->bn_random.get_int(2) ? fixed(2.2) : fixed(-2.2);
-            nb.vy = fixed(1.2 + global_data_ptr->bn_random.get_int(4) * 0.1);
-            bullets->push_back(nb);
-            break;
-        }
         case BULLET_HOMING:
-        {
-            int side = global_data_ptr->bn_random.get_int(4);
-            fixed x_pos, y_pos;
-            if (side < 2)
-            {
-                x_pos = (side == 0) ? fixed(-60) : fixed(60);
-                y_pos = fixed(-50 - (b * 8));
-            }
-            else
-            {
-                x_pos = fixed(global_data_ptr->bn_random.get_int(-40, 40)); // Added semicolon
-                y_pos = fixed(-65 - (b * 6));
-            }
-            bullet nb(fixed_point(x_pos, y_pos), anim_type);
-            nb.turn_rate = fixed(0.07 + global_data_ptr->bn_random.get_int(5) * 0.015);
-            nb.max_speed = fixed(2.2 + global_data_ptr->bn_random.get_int(5) * 0.15);
-            bullets->push_back(nb);
+            // Start from edges
+            if (b % 2) x = (b % 4 < 2) ? -240 : 240;
             break;
-        }
-        case BULLET_ORBIT:
-        {
-            fixed cx = fixed(global_data_ptr->bn_random.get_int(-40, 40));
-            fixed cy = fixed(-60 - (b * 8));
-            bullet nb(fixed_point(cx, cy), anim_type);
-            int angle_step = (b * 360) / bullet_count;
-            nb.rel_x = fixed(30) * ((angle_step < 180) ? 1 : -1);
-            nb.rel_y = fixed(30) * (((angle_step % 180) < 90) ? 1 : -1);
-            nb.vy = fixed(1.0 + global_data_ptr->bn_random.get_int(4) * 0.1);
-            bullets->push_back(nb);
-            break;
-        }
-        case BULLET_SPIRAL:
-        {
-            fixed cx = fixed(global_data_ptr->bn_random.get_int(-30, 30));
-            fixed cy = fixed(-55 - (b * 6));
-            bullet nb(fixed_point(cx, cy), anim_type);
-            int angle_step = (b * 360) / bullet_count;
-            fixed radius = fixed(40 - (b * 2));
-            nb.rel_x = radius * ((angle_step < 180) ? 1 : -1);
-            nb.rel_y = radius * (((angle_step % 180) < 90) ? 1 : -1);
-            nb.radial_drift = fixed(-0.25 - global_data_ptr->bn_random.get_int(3) * 0.05);
-            nb.vy = fixed(0.8 + global_data_ptr->bn_random.get_int(4) * 0.1);
-            bullets->push_back(nb);
-            break;
-        }
         default:
             break;
         }
+        
+        bullet nb(x, y, anim_type);
+        
+        // Add some variation
+        if (anim_type == BULLET_ZIGZAG || anim_type == BULLET_WAVE) {
+            nb.compact.state2 = 15 + global_data_ptr->bn_random.get_int(30); // Vary amplitude
+        }
+        
+        bullets->push_back(nb);
     }
 }
 
@@ -3715,6 +3789,14 @@ int main()
 
     int value = NEW_CHAPTER;
 
+    BN_LOG("-", 1);
+
+    // Test battle before game begins
+    global_data_ptr->battle_foe = FOE_VISKERS_01;
+    value = battle_map();
+    core::update();
+    value = NEW_CHAPTER;
+
     while (true)
     {
         switch (value)
@@ -4204,7 +4286,7 @@ enum BATTLE_STAGE
     stage_recv,
     stage_status,
     stage_attack,
-    stage_act  // Add new stage for ACT
+    stage_act // Add new stage for ACT
 };
 
 enum BULLET_STYLE
@@ -4229,7 +4311,7 @@ enum BATTLE_RESULT
     RESULT_UP,
     RESULT_DOWN,
     RESULT_SPARE,
-    RESULT_ACT,  // Add new result type for ACT actions
+    RESULT_ACT, // Add new result type for ACT actions
     RESULT_LAST_WIN,
     RESULT_LAST_LOSE,
     RESULT_SIZE
@@ -4238,11 +4320,11 @@ enum BATTLE_RESULT
 // Structure to hold action data
 struct battle_action
 {
-    const char* name;
-    conversation* convo;
+    const char *name;
+    conversation *convo;
     bool used;
-    
-    battle_action(const char* n, conversation* c) : name(n), convo(c), used(false) {}
+
+    battle_action(const char *n, conversation *c) : name(n), convo(c), used(false) {}
 };
 
 struct attack_unit_dissolve
@@ -4288,10 +4370,10 @@ struct status_bar_act
     optional<text> icon_labels[4];
     int index = 0;
     int action_count = 0;
-    battle_action* actions[4];  // Pointers to available actions
+    battle_action *actions[4]; // Pointers to available actions
 
     status_bar_act();
-    void init(vector<battle_action, 4>& available_actions);
+    void init();
     void update_labels();
     void update();
 };
@@ -4314,13 +4396,17 @@ struct status_bar
     optional<text> name;
     optional<text> hp;
     regular_bg_ptr action_bg = regular_bg_items::bg_battle_action.create_bg(0, 0);
+    int actor_index;
 
+    static int current_party_size;
     static int selected_menu;
+    static vector<battle_action, 4> available_actions; // Pointer to the available actions
+
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
     optional<status_bar_act> sb_act;
 
-    status_bar();
+    status_bar(int actor_index_ = 0);
     void update();
 };
 
@@ -4338,7 +4424,7 @@ struct recv
         1);
 
     recv();
-    void update();
+    void update(int &g_defense_stacks);
     void spawn_bullets();
 };
 
@@ -4348,8 +4434,7 @@ int battle_map();
 #endif
 
 ge_bullet.h: 
-// ge_bullet.h
-
+// ge_bullet.h - Memory-optimized version
 #ifndef GE_BULLET_H
 #define GE_BULLET_H
 
@@ -4360,7 +4445,7 @@ ge_bullet.h:
 
 #define bullet_count 16
 
-enum BULLET_ANIM_TYPES
+enum BULLET_ANIM_TYPES : uint8_t
 {
     BULLET_FALL,
     BULLET_RISE,
@@ -4374,48 +4459,62 @@ enum BULLET_ANIM_TYPES
     BULLET_SIZE
 };
 
+// Shared pattern data - ONE copy for all bullets of same type
+struct bullet_pattern
+{
+    int8_t vx_base;    // Base velocity * 16 (store as int8)
+    int8_t vy_base;    // Base velocity * 16
+    uint8_t amplitude; // 0-255 range
+    uint8_t period;    // 0-255 frames
+    int8_t accel;      // Acceleration * 128
+    uint8_t flags;     // Bit flags for behavior
+};
+
+// Pre-computed patterns (stored in ROM, no RAM usage)
+extern const bullet_pattern PATTERNS[BULLET_SIZE];
+
+// Compact bullet struct - only 8 bytes + sprite pointer!
 struct bullet
 {
     bn::optional<bn::sprite_ptr> item;
-    int anim_type;
-    int ticker = 0;
-
-    // Motion state (kept simple / fixed-point friendly)
-    bn::fixed vx = 0;
-    bn::fixed vy = 0;
-    bn::fixed ax = 0;         // for ACCEL
-    bn::fixed amplitude = 16; // for ZIGZAG/WAVE
-    int period = 48;          // frames per cycle
-    bn::fixed base_x = 0;     // x anchor for WAVE
-    int zig_dir = 1;          // direction flip for ZIGZAG
-    bn::fixed min_x = -120;   // screen-ish bounds for BOUNCE
-    bn::fixed max_x = 120;
-
-    // Homing
-    bn::fixed turn_rate = bn::fixed(0.04); // radians-ish per frame (tuned)
-    bn::fixed max_speed = bn::fixed(2.0);
-
-    // Orbit/Spiral (center + relative vector we rotate a tiny angle each frame)
-    bn::fixed orbit_cx = 0;
-    bn::fixed orbit_cy = 0;
-    bn::fixed rel_x = 0;
-    bn::fixed rel_y = 0;
-    // Small rotation each frame: cos≈0.999, sin≈0.035 (≈2 degrees)
-    static constexpr bn::fixed ROT_C = bn::fixed(0.999);
-    static constexpr bn::fixed ROT_S = bn::fixed(0.035);
-    bn::fixed radial_drift = 0; // <0 to spiral inward, >0 outward
-
-    bullet(bn::fixed_point pos, int anim_type_);
-
+    
+    // Only 8 bytes of state data using union
+    union {
+        struct {
+            int16_t x;        // Position * 4 (gives us -8192 to 8191 range)
+            int16_t y;        // Position * 4
+            uint8_t ticker;   // 0-255 frames
+            uint8_t type;     // Animation type
+            int8_t state1;    // Generic state (zig direction, orbit angle, etc.)
+            int8_t state2;    // Generic state (speed modifier, radius, etc.)
+        } compact;
+        
+        // Alternative view for patterns that need it
+        struct {
+            int16_t x;
+            int16_t y;
+            uint16_t ticker_and_type; // Combined ticker (lower 8) and type (upper 8)
+            int16_t velocity;          // Combined vx/vy for some patterns
+        } alt;
+    };
+    
+    bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type);
     void update();
-    static void populate(bn::vector<bullet, bullet_count> *bullets, int anim_type);
-
-    // Set by your game each frame before update() if you use HOMING
-    static bn::fixed_point s_target;
+    static void populate(bn::vector<bullet, bullet_count>* bullets, int anim_type);
+    
+    // Helper to get actual position
+    bn::fixed get_x() const { return bn::fixed(compact.x) / 4; }
+    bn::fixed get_y() const { return bn::fixed(compact.y) / 4; }
+    void set_pos(bn::fixed x, bn::fixed y) {
+        compact.x = (x * 4).integer();
+        compact.y = (y * 4).integer();
+    }
 };
 
-#endif
+// Global lookup tables (stored in ROM, shared by all bullets)
+extern const int8_t SINE_TABLE[64];  // Pre-computed sine wave values
 
+#endif
 
 ge_character_manager.h: 
 // ge_character_manager.h
@@ -4476,6 +4575,8 @@ ge_globals.h:
 #include "ge_sprites.h"
 
 using namespace bn;
+
+constexpr int GE_PARTY_SIZE = 4;
 
 enum action_list
 {

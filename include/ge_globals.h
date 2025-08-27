@@ -10,6 +10,8 @@
 
 using namespace bn;
 
+constexpr int GE_PARTY_SIZE = 4;
+
 enum action_list
 {
 	ACT_NONE,

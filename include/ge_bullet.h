@@ -1,5 +1,4 @@
-// ge_bullet.h
-
+// ge_bullet.h - Memory-optimized version
 #ifndef GE_BULLET_H
 #define GE_BULLET_H
 
@@ -10,7 +9,7 @@
 
 #define bullet_count 16
 
-enum BULLET_ANIM_TYPES
+enum BULLET_ANIM_TYPES : uint8_t
 {
     BULLET_FALL,
     BULLET_RISE,
@@ -24,44 +23,59 @@ enum BULLET_ANIM_TYPES
     BULLET_SIZE
 };
 
+// Shared pattern data - ONE copy for all bullets of same type
+struct bullet_pattern
+{
+    int8_t vx_base;    // Base velocity * 16 (store as int8)
+    int8_t vy_base;    // Base velocity * 16
+    uint8_t amplitude; // 0-255 range
+    uint8_t period;    // 0-255 frames
+    int8_t accel;      // Acceleration * 128
+    uint8_t flags;     // Bit flags for behavior
+};
+
+// Pre-computed patterns (stored in ROM, no RAM usage)
+extern const bullet_pattern PATTERNS[BULLET_SIZE];
+
+// Compact bullet struct - only 8 bytes + sprite pointer!
 struct bullet
 {
     bn::optional<bn::sprite_ptr> item;
-    int anim_type;
-    int ticker = 0;
-
-    // Motion state (kept simple / fixed-point friendly)
-    bn::fixed vx = 0;
-    bn::fixed vy = 0;
-    bn::fixed ax = 0;         // for ACCEL
-    bn::fixed amplitude = 16; // for ZIGZAG/WAVE
-    int period = 48;          // frames per cycle
-    bn::fixed base_x = 0;     // x anchor for WAVE
-    int zig_dir = 1;          // direction flip for ZIGZAG
-    bn::fixed min_x = -120;   // screen-ish bounds for BOUNCE
-    bn::fixed max_x = 120;
-
-    // Homing
-    bn::fixed turn_rate = bn::fixed(0.04); // radians-ish per frame (tuned)
-    bn::fixed max_speed = bn::fixed(2.0);
-
-    // Orbit/Spiral (center + relative vector we rotate a tiny angle each frame)
-    bn::fixed orbit_cx = 0;
-    bn::fixed orbit_cy = 0;
-    bn::fixed rel_x = 0;
-    bn::fixed rel_y = 0;
-    // Small rotation each frame: cos≈0.999, sin≈0.035 (≈2 degrees)
-    static constexpr bn::fixed ROT_C = bn::fixed(0.999);
-    static constexpr bn::fixed ROT_S = bn::fixed(0.035);
-    bn::fixed radial_drift = 0; // <0 to spiral inward, >0 outward
-
-    bullet(bn::fixed_point pos, int anim_type_);
-
+    
+    // Only 8 bytes of state data using union
+    union {
+        struct {
+            int16_t x;        // Position * 4 (gives us -8192 to 8191 range)
+            int16_t y;        // Position * 4
+            uint8_t ticker;   // 0-255 frames
+            uint8_t type;     // Animation type
+            int8_t state1;    // Generic state (zig direction, orbit angle, etc.)
+            int8_t state2;    // Generic state (speed modifier, radius, etc.)
+        } compact;
+        
+        // Alternative view for patterns that need it
+        struct {
+            int16_t x;
+            int16_t y;
+            uint16_t ticker_and_type; // Combined ticker (lower 8) and type (upper 8)
+            int16_t velocity;          // Combined vx/vy for some patterns
+        } alt;
+    };
+    
+    bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type);
     void update();
-    static void populate(bn::vector<bullet, bullet_count> *bullets, int anim_type);
-
-    // Set by your game each frame before update() if you use HOMING
-    static bn::fixed_point s_target;
+    static void populate(bn::vector<bullet, bullet_count>* bullets, int anim_type);
+    
+    // Helper to get actual position
+    bn::fixed get_x() const { return bn::fixed(compact.x) / 4; }
+    bn::fixed get_y() const { return bn::fixed(compact.y) / 4; }
+    void set_pos(bn::fixed x, bn::fixed y) {
+        compact.x = (x * 4).integer();
+        compact.y = (y * 4).integer();
+    }
 };
+
+// Global lookup tables (stored in ROM, shared by all bullets)
+extern const int8_t SINE_TABLE[64];  // Pre-computed sine wave values
 
 #endif
