@@ -479,7 +479,7 @@ struct battle_state
     int dlg_ticker = 0;
     text dlg_lines[3] = {{nullptr, {-40, 32}}, {nullptr, {-40, 48}}, {nullptr, {-40, 64}}};
     optional<sprite_ptr> portrait;
-    optional<regular_bg_ptr> dlg_box;
+    optional<regular_bg_ptr> bg_ptr;
 
     // Combat entities
     optional<sprite_ptr> player_sprite;
@@ -549,9 +549,9 @@ static const char *get_name(int i)
 // Dialogue functions
 static void init_dialogue(conversation *conv, battle_state *bs)
 {
-    if (!bs->dlg_box)
+    if (!bs->bg_ptr)
     {
-        bs->dlg_box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
+        bs->bg_ptr = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
     }
 
     bs->active_conv = conv;
@@ -650,7 +650,7 @@ static bool advance_dialogue(battle_state *bs)
 
 static void clear_dialogue(battle_state *bs)
 {
-    bs->dlg_box.reset();
+    bs->bg_ptr.reset();
     bs->portrait.reset();
     bs->active_conv = nullptr;
     bs->dlg_ticker = 0;
@@ -861,6 +861,8 @@ int battle_map()
         // Stage: Recv (enemy turn)
         else if (bs.stage == stage_recv)
         {
+            bs.bg_ptr = regular_bg_items::bg_battle_box.create_bg(0, 0);
+
             if (!bs.heart.has_value())
                 bs.heart = sprite_items::hearts.create_sprite(0, 0, 1);
 
@@ -943,6 +945,7 @@ int battle_map()
         // Stage: Status (player menu)
         else if (bs.stage == stage_status)
         {
+            bs.bg_ptr.reset();
             bs.enemy_state = 1;
             bs.enemy_ticker = 0;
             bs.heart.reset();
