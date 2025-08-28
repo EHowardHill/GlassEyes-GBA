@@ -16,7 +16,8 @@ struct character_manager;
 
 using namespace bn;
 
-enum progress {
+enum progress
+{
     CUTSCENE_01,
     CUTSCENE_02,
     CUTSCENE_TO_GARBAGE,
@@ -25,7 +26,8 @@ enum progress {
     FINAL_MSG
 };
 
-enum foes {
+enum foes
+{
     FOE_VISKERS_01,
     FOE_VISKERS_02
 };
@@ -120,7 +122,7 @@ struct text
 
     void init(const char *value);
     void init(const string<20> &value);
-    void update(const sprite_item * portrait, bool typewriter);
+    void update(const sprite_item *portrait, bool typewriter);
     void render();
     void set_position(int x, int y);
     bool is_ended();
@@ -128,7 +130,8 @@ struct text
 
 char digit_conv(int digit);
 
-struct toast {
+struct toast
+{
     text value;
     int ticker;
 };
@@ -196,6 +199,11 @@ struct dialogue_box
     void init(character_manager *ch_man);
     void update();
     bool is_ended();
+
+    bool is_text_complete();                               // Check if current text is fully displayed
+    void instant_complete_text();                          // Instantly complete current text
+    void handle_a_button_press(character_manager *ch_man); // Handle A button input
+    void advance(character_manager *ch_man);               // Advance to next dialogue
 };
 
 #endif // GE_TEXT_H

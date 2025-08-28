@@ -35,7 +35,7 @@ bool within_bounds(bound me, bound you)
 }
 
 v_sprite_ptr::v_sprite_ptr()
-    : sprite_item_ptr(nullptr), frame(0), tall(false)
+    : sprite_item_ptr(nullptr), frame(0)
 {
     bounds.position = {0, 0};
     bounds.width = 0;
@@ -43,8 +43,8 @@ v_sprite_ptr::v_sprite_ptr()
     manager.push_back(this);
 }
 
-v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position, int width, int height, int frame_, bool tall_)
-    : sprite_item_ptr(sprite_item_ptr_), frame(frame_), tall(tall_)
+v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position, int width, int height, int frame_)
+    : sprite_item_ptr(sprite_item_ptr_), frame(frame_)
 {
     bounds.position = position;
     bounds.width = width;
@@ -55,8 +55,8 @@ v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 positio
 v_sprite_ptr::~v_sprite_ptr()
 {
     // Clear sprites before removing from manager
-    sprite_ptr_raw.reset();
-    sprite_ptr_bottom.reset();
+    sprite_ptr_raw[0].reset();
+    sprite_ptr_raw[1].reset();
 
     // Remove this instance from the manager
     for (auto it = manager.begin(); it != manager.end(); ++it)
@@ -71,7 +71,6 @@ v_sprite_ptr::~v_sprite_ptr()
 
 void v_sprite_ptr::move(vector_2 direction)
 {
-    // Now we add the direction instead of subtracting
     bounds.position.x = bounds.position.x + direction.x;
     bounds.position.y = bounds.position.y + direction.y;
 }
@@ -88,23 +87,16 @@ void v_sprite_ptr::set_frame(int frame_)
 {
     frame = frame_;
 
-    if (sprite_ptr_raw.has_value())
+    if (sprite_ptr_raw[0].has_value())
     {
-        if (tall)
-        {
-            // For tall sprites, top sprite uses frame * 2
-            sprite_ptr_raw.value().set_tiles(sprite_item_ptr->tiles_item(), frame * 2);
+        // Always use tall sprite logic
+        // Top sprite uses frame * 2
+        sprite_ptr_raw[0].value().set_tiles(sprite_item_ptr->tiles_item(), frame * 2);
 
-            // Bottom sprite uses (frame * 2) + 1
-            if (sprite_ptr_bottom.has_value())
-            {
-                sprite_ptr_bottom.value().set_tiles(sprite_item_ptr->tiles_item(), (frame * 2) + 1);
-            }
-        }
-        else
+        // Bottom sprite uses (frame * 2) + 1
+        if (sprite_ptr_raw[1].has_value())
         {
-            // Regular sprites use frame directly
-            sprite_ptr_raw.value().set_tiles(sprite_item_ptr->tiles_item(), frame);
+            sprite_ptr_raw[1].value().set_tiles(sprite_item_ptr->tiles_item(), (frame * 2) + 1);
         }
     }
 }
@@ -121,39 +113,29 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             acceptable.position.y = 0 - (screen_height / 2) + 12;
         }
 
-        if (item->sprite_ptr_raw.has_value())
+        if (item->sprite_ptr_raw[0].has_value())
         {
             // Sprite exists - check if it should be removed or updated
             if (!within_bounds(bounds, acceptable))
             {
                 // Out of bounds - remove sprites
-                item->sprite_ptr_raw.reset();
-                item->sprite_ptr_bottom.reset();
+                item->sprite_ptr_raw[0].reset();
+                item->sprite_ptr_raw[1].reset();
             }
             else
             {
-                item->sprite_ptr_raw.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
+                // Update z-order for both sprites
+                item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
+                item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
 
-                // In bounds - update position and tiles
-                if (item->tall)
+                // Always update both sprites (tall sprites)
+                item->sprite_ptr_raw[0].value().set_position(bounds.position.x, bounds.position.y - 32);
+                item->sprite_ptr_raw[0].value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame * 2);
+
+                if (item->sprite_ptr_raw[1].has_value())
                 {
-                    item->sprite_ptr_bottom.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
-
-                    // For tall sprites, update both sprites
-                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y - 32);
-                    item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame * 2);
-
-                    if (item->sprite_ptr_bottom.has_value())
-                    {
-                        item->sprite_ptr_bottom.value().set_position(bounds.position.x, bounds.position.y);
-                        item->sprite_ptr_bottom.value().set_tiles(item->sprite_item_ptr->tiles_item(), (item->frame * 2) + 1);
-                    }
-                }
-                else
-                {
-                    // Regular sprite - update position and tiles
-                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y);
-                    item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame);
+                    item->sprite_ptr_raw[1].value().set_position(bounds.position.x, bounds.position.y);
+                    item->sprite_ptr_raw[1].value().set_tiles(item->sprite_item_ptr->tiles_item(), (item->frame * 2) + 1);
                 }
             }
         }
@@ -162,17 +144,9 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             // Sprite doesn't exist but is in bounds - create it
             if (item->sprite_item_ptr != nullptr) // Safety check
             {
-                if (item->tall)
-                {
-                    // Create both sprites for tall characters
-                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y - 32, item->frame * 2);
-                    item->sprite_ptr_bottom = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, (item->frame * 2) + 1);
-                }
-                else
-                {
-                    // Create single sprite for regular characters
-                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, item->frame);
-                }
+                // Always create both sprites for tall characters
+                item->sprite_ptr_raw[0] = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y - 32, item->frame * 2);
+                item->sprite_ptr_raw[1] = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, (item->frame * 2) + 1);
             }
         }
     }
@@ -180,29 +154,13 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
 
 character::character(int index_, vector_2 start_) : index(index_)
 {
-    start.x = (start_.x * 32) + 16;
-    start.y = (start_.y * 32) + 16;
-
-    v_sprite.bounds.position = start;
+    v_sprite.bounds.position = {
+        (start_.x * 32) + 16,
+        (start_.y * 32) + 16};
     v_sprite.bounds.width = 28;
     v_sprite.bounds.height = 32;
 
-    update_sprite_item(index_);
-    current_animation = &anim_stand;
-
-    if (type() == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
-    {
-        v_sprite_ptr::camera.x = start.x;
-        v_sprite_ptr::camera.y = start.y;
-    }
-}
-
-void character::update_sprite_item(int index_)
-{
-    index = index_;
-
-    v_sprite.tall = true;
-    switch (index)
+    switch (index_)
     {
     case CHAR_VISTA:
     {
@@ -237,8 +195,15 @@ void character::update_sprite_item(int index_)
     }
 
     // Reset sprites
-    v_sprite.sprite_ptr_raw.reset();
-    v_sprite.sprite_ptr_bottom.reset();
+    v_sprite.sprite_ptr_raw[0].reset();
+    v_sprite.sprite_ptr_raw[1].reset();
+    current_animation = &anim_stand;
+
+    if (type() == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
+    {
+        v_sprite_ptr::camera.x = start_.x;
+        v_sprite_ptr::camera.y = start_.y;
+    }
 }
 
 void character::update(map_manager *current_map, bool db_inactive)
@@ -304,19 +269,12 @@ void character::update(map_manager *current_map, bool db_inactive)
 
         if (v_sprite_ptr::camera.x > bound_2.x)
             v_sprite_ptr::camera.x = bound_2.x;
-
-        /*
-        if (v_sprite_ptr::camera.y < bound_1.y)
-            v_sprite_ptr::camera.y = bound_1.y;
-        if (v_sprite_ptr::camera.y > bound_2.y)
-            v_sprite_ptr::camera.y = bound_2.y;
-        */
     }
     else
     {
         if (!db_inactive)
         {
-            if (v_sprite.sprite_ptr_raw.has_value())
+            if (v_sprite.sprite_ptr_raw[0].has_value())
             {
                 // Calculate where this sprite appears on screen
                 bound screen_pos = v_sprite.real_position();
@@ -437,7 +395,7 @@ void character::update(map_manager *current_map, bool db_inactive)
 
     bool moving = (delta.x != 0 || delta.y != 0);
 
-    // Animation and sprite update code remains the same...
+    // Animation and sprite update code
     bool custom_anim = false;
     if (moving)
     {
@@ -458,9 +416,8 @@ void character::update(map_manager *current_map, bool db_inactive)
     }
 
     // Rest of the update code...
-    if (v_sprite.sprite_ptr_raw.has_value())
+    if (v_sprite.sprite_ptr_raw[0].has_value())
     {
-
         int ticker_speed;
 
         switch (current_animation->speed)
@@ -499,11 +456,9 @@ void character::update(map_manager *current_map, bool db_inactive)
 
         int new_frame = current_animation->frames[frame];
 
-        v_sprite.sprite_ptr_raw.value().set_horizontal_flip(false);
-        if (v_sprite.sprite_ptr_bottom.has_value())
-        {
-            v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(false);
-        }
+        // Always set horizontal flip for both sprites
+        v_sprite.sprite_ptr_raw[0].value().set_horizontal_flip(false);
+        v_sprite.sprite_ptr_raw[1].value().set_horizontal_flip(false);
 
         if (!custom_anim)
         {
@@ -517,11 +472,8 @@ void character::update(map_manager *current_map, bool db_inactive)
                 break;
             case DIR_LEFT:
                 v_sprite.set_frame(new_frame + 3);
-                v_sprite.sprite_ptr_raw.value().set_horizontal_flip(true);
-                if (v_sprite.sprite_ptr_bottom.has_value())
-                {
-                    v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(true);
-                }
+                v_sprite.sprite_ptr_raw[0].value().set_horizontal_flip(true);
+                v_sprite.sprite_ptr_raw[1].value().set_horizontal_flip(true);
                 break;
             case DIR_RIGHT:
                 v_sprite.set_frame(new_frame + 3);
@@ -541,7 +493,7 @@ void character::update(map_manager *current_map, bool db_inactive)
     ticker++;
 }
 
-void character::add(list<character, 64> *characters, int character_id, vector_2 location)
+void character::add(list<character, 32> *characters, int character_id, vector_2 location)
 {
     characters->emplace_back(character_id, location);
 }

@@ -138,8 +138,7 @@ void character_manager::update(map_manager *current_map = nullptr)
 
         if (keypad::a_pressed())
         {
-            db.value().index++;
-            db.value().init(this);
+            db.value().handle_a_button_press(this);
         }
         else if (keypad::b_pressed())
         {

@@ -155,6 +155,7 @@ struct status_bar
     int actor_index;
 
     static int current_party_size;
+    static int current_enemy_size;
     static int selected_menu;
     static vector<battle_action, 4> available_actions; // Pointer to the available actions
 

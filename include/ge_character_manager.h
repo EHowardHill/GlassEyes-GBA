@@ -12,7 +12,7 @@
 
 struct character_manager
 {
-    list<unique_ptr<character>, 64> characters;
+    list<unique_ptr<character>, 32> characters;
     character *player_ptr;
     optional<dialogue_box> db;
     int status = CONTINUE;

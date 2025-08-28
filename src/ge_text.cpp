@@ -470,6 +470,75 @@ bool dialogue_box::is_ended()
     return (*active_conversation)[index].action == ACT_END;
 }
 
+// Add this method to the dialogue_box class to check if current text is fully displayed
+bool dialogue_box::is_text_complete()
+{
+    if (!active_conversation || index >= size)
+    {
+        return true;
+    }
+
+    // Check if all three lines are either ended or empty
+    for (int i = 0; i < 3; i++)
+    {
+        if (!lines[i].reference.empty() && !lines[i].is_ended())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Add this method to instantly complete the current text
+void dialogue_box::instant_complete_text()
+{
+    if (!active_conversation || index >= size)
+    {
+        return;
+    }
+
+    // Instantly render all three lines
+    for (int i = 0; i < 3; i++)
+    {
+        if (!lines[i].reference.empty())
+        {
+            lines[i].render();
+        }
+    }
+}
+
+// Modified method to handle A button press
+// This should be called from your main game loop or input handler
+void dialogue_box::handle_a_button_press(character_manager *ch_man)
+{
+    if (!active_conversation || is_ended())
+    {
+        return;
+    }
+
+    if (is_text_complete())
+    {
+        // Text is fully displayed, advance to next dialogue
+        advance(ch_man);
+    }
+    else
+    {
+        // Text is still being revealed, instantly complete it
+        instant_complete_text();
+    }
+}
+
+// Add this method to advance to the next dialogue line
+void dialogue_box::advance(character_manager *ch_man)
+{
+    index++;
+
+    if (!is_ended())
+    {
+        init(ch_man); // Initialize the next dialogue line
+    }
+}
+
 char digit_conv(int digit)
 {
     return (char)((digit % 10) + 48);

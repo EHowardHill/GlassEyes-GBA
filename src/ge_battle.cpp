@@ -38,14 +38,12 @@ int status_bar::current_party_size = 1;
 
 static inline bool is_alive(int idx)
 {
-    int ps = status_bar::current_party_size;
-    return idx >= 0 && idx < ps && global_data_ptr->hp[idx] > 0;
+    return idx >= 0 && idx < status_bar::current_party_size && global_data_ptr->hp[idx] > 0;
 }
 
 static inline bool all_party_down()
 {
-    int ps = status_bar::current_party_size;
-    for (int i = 0; i < ps; ++i)
+    for (int i = 0; i < status_bar::current_party_size; ++i)
     {
         if (global_data_ptr->hp[i] > 0)
             return false;
@@ -306,11 +304,13 @@ const char *get_name(int index)
     switch (index)
     {
     case 0:
-        return "JEREMY"; // always present
+        return "JEREMY";
     case 1:
         return "GINGER";
-    default:
-        return "ALLY";
+    case 2:
+        return "SEBELLUS";
+    case 3:
+        return "VISTA";
     }
 }
 
@@ -509,7 +509,6 @@ status_bar::status_bar(int actor_index_)
 
     name.value().render();
     hp.value().render();
-
     sb_menu.emplace();
 }
 
@@ -536,11 +535,6 @@ void status_bar::update()
                     sb_act.emplace();
                     sb_act.value().init();
                 }
-            }
-            else if (selected_menu == STATUS_BAR_ATTACK)
-            {
-                // Keep the existing behavior for other menu items
-                // Don't reset selected_menu here - let the battle_map handle it
             }
         }
     }
@@ -673,18 +667,25 @@ enum BATTLE_ANIM_TYPE
     DEFEND
 };
 
+struct entity
+{
+    optional<sprite_ptr> sprite;
+    int state = INTRO;
+    int ticker = 0;
+};
+
 int battle_map()
 {
     music::stop();
     music_items::boss.play();
+    sound_items::snd_fight_start.play();
+    auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
 
     int stage = stage_talking;
     int result = RESULT_FIRST;
 
     battle_dialogue battle_dlg;
 
-    int player_ticker = 0;
-    int enemy_ticker = 0;
     int g_defense_stacks = 0;
 
     int current_actor = -1;                   // whose turn in the party
@@ -695,6 +696,17 @@ int battle_map()
 
     // Clear and reset the static available_actions before populating
     status_bar::available_actions.clear();
+
+    vector_2 player_pos = {-96, 16};
+    vector_2 enemy_pos = {96, 16};
+
+    vector<entity, 4> players;
+    vector<entity, 4> enemies;
+
+    players.push_back({sprite_items::jeremy_battle_intro.create_sprite(
+        player_pos.x,
+        player_pos.y,
+        0)});
 
     switch (global_data_ptr->battle_foe)
     {
@@ -717,6 +729,11 @@ int battle_map()
         spare_convos.push_back(&garbage_fight_02);
         spare_convos.push_back(&garbage_fight_03);
         spare_convos.push_back(&garbage_fight_04);
+
+        enemies.push_back({sprite_items::visker_battle_intro.create_sprite(
+            enemy_pos.x,
+            enemy_pos.y,
+            0)});
         break;
     }
     case FOE_VISKERS_02:
@@ -730,28 +747,16 @@ int battle_map()
         // Add some actions for FOE_VISKERS_02 as well
         status_bar::available_actions.push_back(battle_action("Analyze", &garbage_fight_05));
         status_bar::available_actions.push_back(battle_action("Threaten", &garbage_fight_05));
+
+        enemies.push_back({sprite_items::visker_battle_intro.create_sprite(
+            enemy_pos.x,
+            enemy_pos.y,
+            0)});
         break;
     }
     default:
         break;
     }
-
-    sound_items::snd_fight_start.play();
-
-    auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
-
-    vector_2 player_pos = {-96, 16};
-    vector_2 enemy_pos = {96, 16};
-
-    sprite_ptr player01 = sprite_items::jeremy_battle_intro.create_sprite(
-        player_pos.x,
-        player_pos.y,
-        0);
-
-    sprite_ptr enemy01 = sprite_items::visker_battle_intro.create_sprite(
-        enemy_pos.x,
-        enemy_pos.y,
-        0);
 
     int y_delta = 0;
     bool conversation_in_progress = false;
@@ -762,83 +767,92 @@ int battle_map()
     optional<status_bar> obj_status_bar;
     optional<attack> obj_attack;
 
-    int player_state = INTRO;
-    int enemy_state = INTRO;
-
     while (true)
     {
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
         // Player animation states
-        switch (player_state)
+        int y_offset = player_pos.y.integer() + y_delta;
+        for (auto &p : players)
         {
-        case INTRO:
-            if (player_ticker < (11 * 5))
+            switch (p.state)
             {
-                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
-                player_ticker++;
-            }
-            else
-            {
-                player_state = IDLE;
-                player_ticker = 0;
-            }
-            break;
+            case INTRO:
+                if (p.ticker < (11 * 5))
+                {
+                    p.sprite.value().set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), p.ticker / 5);
+                    p.ticker++;
+                }
+                else
+                {
+                    p.state = IDLE;
+                    p.ticker = 0;
+                }
+                break;
 
-        case RECV:
-            if (player_ticker < (4 * 5))
-            {
-                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), (player_ticker / 5) + 11);
-                player_ticker++;
-            }
-            else
-            {
-                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), 11);
-                player_ticker = 11 * 5;
-                player_state = IDLE;
-            }
-            break;
+            case RECV:
+                if (p.ticker < (4 * 5))
+                {
+                    p.sprite.value().set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), (p.ticker / 5) + 11);
+                    p.ticker++;
+                }
+                else
+                {
+                    p.sprite.value().set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), 11);
+                    p.ticker = 11 * 5;
+                    p.state = IDLE;
+                }
+                break;
 
-        default:
-        {
-            break;
+            default:
+            {
+                break;
+            }
+            }
+
+            p.sprite.value().set_y(y_offset);
+            p.sprite.value().set_z_order(y_offset);
+            y_offset -= 48;
         }
-        }
-
-        player01.set_y(player_pos.y + y_delta);
 
         // Enemy animation states
-        switch (enemy_state)
+        y_offset = enemy_pos.y.integer() + y_delta;
+        for (auto &e : enemies)
         {
-        case INTRO:
-            if (enemy_ticker < (7 * 5))
+            switch (e.state)
             {
-                enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
-                enemy_ticker++;
-            }
-            else
+            case INTRO:
+                if (e.ticker < (7 * 5))
+                {
+                    e.sprite.value().set_tiles(sprite_items::visker_battle_intro.tiles_item(), e.ticker / 5);
+                    e.ticker++;
+                }
+                else
+                {
+                    e.state = IDLE;
+                }
+                break;
+
+            case IDLE:
+                e.sprite.value().set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((e.ticker / 5) % 4) + 6);
+                e.ticker++;
+                break;
+
+            case ATTACK:
+                e.sprite.value().set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((e.ticker / 5) % 6) + 10);
+                e.ticker++;
+                break;
+
+            default:
             {
-                enemy_state = IDLE;
+                break;
             }
-            break;
+            }
 
-        case IDLE:
-            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 4) + 6);
-            enemy_ticker++;
-            break;
-
-        case ATTACK:
-            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
-            enemy_ticker++;
-            break;
-
-        default:
-        {
-            break;
+            e.sprite.value().set_y(y_offset);
+            e.sprite.value().set_z_order(y_offset);
+            y_offset -= 48;
         }
-        }
-
-        enemy01.set_y(enemy_pos.y + y_delta);
 
         // Handle dialogue box Y offset
         if (!battle_dlg.is_ended())
@@ -861,8 +875,6 @@ int battle_map()
         {
         case stage_talking:
         {
-            BN_LOG("> talking");
-
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 result = RESULT_LAST_WIN;
@@ -940,7 +952,11 @@ int battle_map()
 
         case stage_recv:
         {
-            enemy_state = ATTACK;
+            for (auto &e : enemies)
+            {
+                e.state = ATTACK;
+                e.ticker = 0;
+            }
 
             if (all_party_down())
             {
@@ -973,7 +989,11 @@ int battle_map()
 
         case stage_status:
         {
-            enemy_state = IDLE;
+            for (auto &e : enemies)
+            {
+                e.state = IDLE;
+                e.ticker = 0;
+            }
 
             if (all_party_down())
             {

@@ -474,14 +474,12 @@ int status_bar::current_party_size = 1;
 
 static inline bool is_alive(int idx)
 {
-    int ps = status_bar::current_party_size;
-    return idx >= 0 && idx < ps && global_data_ptr->hp[idx] > 0;
+    return idx >= 0 && idx < status_bar::current_party_size && global_data_ptr->hp[idx] > 0;
 }
 
 static inline bool all_party_down()
 {
-    int ps = status_bar::current_party_size;
-    for (int i = 0; i < ps; ++i)
+    for (int i = 0; i < status_bar::current_party_size; ++i)
     {
         if (global_data_ptr->hp[i] > 0)
             return false;
@@ -742,11 +740,13 @@ const char *get_name(int index)
     switch (index)
     {
     case 0:
-        return "JEREMY"; // always present
+        return "JEREMY";
     case 1:
         return "GINGER";
-    default:
-        return "ALLY";
+    case 2:
+        return "SEBELLUS";
+    case 3:
+        return "VISTA";
     }
 }
 
@@ -945,7 +945,6 @@ status_bar::status_bar(int actor_index_)
 
     name.value().render();
     hp.value().render();
-
     sb_menu.emplace();
 }
 
@@ -972,11 +971,6 @@ void status_bar::update()
                     sb_act.emplace();
                     sb_act.value().init();
                 }
-            }
-            else if (selected_menu == STATUS_BAR_ATTACK)
-            {
-                // Keep the existing behavior for other menu items
-                // Don't reset selected_menu here - let the battle_map handle it
             }
         }
     }
@@ -1109,18 +1103,25 @@ enum BATTLE_ANIM_TYPE
     DEFEND
 };
 
+struct entity
+{
+    optional<sprite_ptr> sprite;
+    int state = INTRO;
+    int ticker = 0;
+};
+
 int battle_map()
 {
     music::stop();
     music_items::boss.play();
+    sound_items::snd_fight_start.play();
+    auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
 
     int stage = stage_talking;
     int result = RESULT_FIRST;
 
     battle_dialogue battle_dlg;
 
-    int player_ticker = 0;
-    int enemy_ticker = 0;
     int g_defense_stacks = 0;
 
     int current_actor = -1;                   // whose turn in the party
@@ -1131,6 +1132,17 @@ int battle_map()
 
     // Clear and reset the static available_actions before populating
     status_bar::available_actions.clear();
+
+    vector_2 player_pos = {-96, 16};
+    vector_2 enemy_pos = {96, 16};
+
+    vector<entity, 4> players;
+    vector<entity, 4> enemies;
+
+    players.push_back({sprite_items::jeremy_battle_intro.create_sprite(
+        player_pos.x,
+        player_pos.y,
+        0)});
 
     switch (global_data_ptr->battle_foe)
     {
@@ -1153,6 +1165,11 @@ int battle_map()
         spare_convos.push_back(&garbage_fight_02);
         spare_convos.push_back(&garbage_fight_03);
         spare_convos.push_back(&garbage_fight_04);
+
+        enemies.push_back({sprite_items::visker_battle_intro.create_sprite(
+            enemy_pos.x,
+            enemy_pos.y,
+            0)});
         break;
     }
     case FOE_VISKERS_02:
@@ -1166,28 +1183,16 @@ int battle_map()
         // Add some actions for FOE_VISKERS_02 as well
         status_bar::available_actions.push_back(battle_action("Analyze", &garbage_fight_05));
         status_bar::available_actions.push_back(battle_action("Threaten", &garbage_fight_05));
+
+        enemies.push_back({sprite_items::visker_battle_intro.create_sprite(
+            enemy_pos.x,
+            enemy_pos.y,
+            0)});
         break;
     }
     default:
         break;
     }
-
-    sound_items::snd_fight_start.play();
-
-    auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
-
-    vector_2 player_pos = {-96, 16};
-    vector_2 enemy_pos = {96, 16};
-
-    sprite_ptr player01 = sprite_items::jeremy_battle_intro.create_sprite(
-        player_pos.x,
-        player_pos.y,
-        0);
-
-    sprite_ptr enemy01 = sprite_items::visker_battle_intro.create_sprite(
-        enemy_pos.x,
-        enemy_pos.y,
-        0);
 
     int y_delta = 0;
     bool conversation_in_progress = false;
@@ -1198,83 +1203,92 @@ int battle_map()
     optional<status_bar> obj_status_bar;
     optional<attack> obj_attack;
 
-    int player_state = INTRO;
-    int enemy_state = INTRO;
-
     while (true)
     {
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
         // Player animation states
-        switch (player_state)
+        int y_offset = player_pos.y.integer() + y_delta;
+        for (auto &p : players)
         {
-        case INTRO:
-            if (player_ticker < (11 * 5))
+            switch (p.state)
             {
-                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), player_ticker / 5);
-                player_ticker++;
-            }
-            else
-            {
-                player_state = IDLE;
-                player_ticker = 0;
-            }
-            break;
+            case INTRO:
+                if (p.ticker < (11 * 5))
+                {
+                    p.sprite.value().set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), p.ticker / 5);
+                    p.ticker++;
+                }
+                else
+                {
+                    p.state = IDLE;
+                    p.ticker = 0;
+                }
+                break;
 
-        case RECV:
-            if (player_ticker < (4 * 5))
-            {
-                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), (player_ticker / 5) + 11);
-                player_ticker++;
-            }
-            else
-            {
-                player01.set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), 11);
-                player_ticker = 11 * 5;
-                player_state = IDLE;
-            }
-            break;
+            case RECV:
+                if (p.ticker < (4 * 5))
+                {
+                    p.sprite.value().set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), (p.ticker / 5) + 11);
+                    p.ticker++;
+                }
+                else
+                {
+                    p.sprite.value().set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), 11);
+                    p.ticker = 11 * 5;
+                    p.state = IDLE;
+                }
+                break;
 
-        default:
-        {
-            break;
+            default:
+            {
+                break;
+            }
+            }
+
+            p.sprite.value().set_y(y_offset);
+            p.sprite.value().set_z_order(y_offset);
+            y_offset -= 48;
         }
-        }
-
-        player01.set_y(player_pos.y + y_delta);
 
         // Enemy animation states
-        switch (enemy_state)
+        y_offset = enemy_pos.y.integer() + y_delta;
+        for (auto &e : enemies)
         {
-        case INTRO:
-            if (enemy_ticker < (7 * 5))
+            switch (e.state)
             {
-                enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), enemy_ticker / 5);
-                enemy_ticker++;
-            }
-            else
+            case INTRO:
+                if (e.ticker < (7 * 5))
+                {
+                    e.sprite.value().set_tiles(sprite_items::visker_battle_intro.tiles_item(), e.ticker / 5);
+                    e.ticker++;
+                }
+                else
+                {
+                    e.state = IDLE;
+                }
+                break;
+
+            case IDLE:
+                e.sprite.value().set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((e.ticker / 5) % 4) + 6);
+                e.ticker++;
+                break;
+
+            case ATTACK:
+                e.sprite.value().set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((e.ticker / 5) % 6) + 10);
+                e.ticker++;
+                break;
+
+            default:
             {
-                enemy_state = IDLE;
+                break;
             }
-            break;
+            }
 
-        case IDLE:
-            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 4) + 6);
-            enemy_ticker++;
-            break;
-
-        case ATTACK:
-            enemy01.set_tiles(sprite_items::visker_battle_intro.tiles_item(), ((enemy_ticker / 5) % 6) + 10);
-            enemy_ticker++;
-            break;
-
-        default:
-        {
-            break;
+            e.sprite.value().set_y(y_offset);
+            e.sprite.value().set_z_order(y_offset);
+            y_offset -= 48;
         }
-        }
-
-        enemy01.set_y(enemy_pos.y + y_delta);
 
         // Handle dialogue box Y offset
         if (!battle_dlg.is_ended())
@@ -1297,8 +1311,6 @@ int battle_map()
         {
         case stage_talking:
         {
-            BN_LOG("> talking");
-
             if (global_data_ptr->enemy_hp[0] <= 0)
             {
                 result = RESULT_LAST_WIN;
@@ -1376,7 +1388,11 @@ int battle_map()
 
         case stage_recv:
         {
-            enemy_state = ATTACK;
+            for (auto &e : enemies)
+            {
+                e.state = ATTACK;
+                e.ticker = 0;
+            }
 
             if (all_party_down())
             {
@@ -1409,7 +1425,11 @@ int battle_map()
 
         case stage_status:
         {
-            enemy_state = IDLE;
+            for (auto &e : enemies)
+            {
+                e.state = IDLE;
+                e.ticker = 0;
+            }
 
             if (all_party_down())
             {
@@ -1906,8 +1926,7 @@ void character_manager::update(map_manager *current_map = nullptr)
 
         if (keypad::a_pressed())
         {
-            db.value().index++;
-            db.value().init(this);
+            db.value().handle_a_button_press(this);
         }
         else if (keypad::b_pressed())
         {
@@ -2425,7 +2444,7 @@ bool within_bounds(bound me, bound you)
 }
 
 v_sprite_ptr::v_sprite_ptr()
-    : sprite_item_ptr(nullptr), frame(0), tall(false)
+    : sprite_item_ptr(nullptr), frame(0)
 {
     bounds.position = {0, 0};
     bounds.width = 0;
@@ -2433,8 +2452,8 @@ v_sprite_ptr::v_sprite_ptr()
     manager.push_back(this);
 }
 
-v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position, int width, int height, int frame_, bool tall_)
-    : sprite_item_ptr(sprite_item_ptr_), frame(frame_), tall(tall_)
+v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position, int width, int height, int frame_)
+    : sprite_item_ptr(sprite_item_ptr_), frame(frame_)
 {
     bounds.position = position;
     bounds.width = width;
@@ -2445,8 +2464,8 @@ v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 positio
 v_sprite_ptr::~v_sprite_ptr()
 {
     // Clear sprites before removing from manager
-    sprite_ptr_raw.reset();
-    sprite_ptr_bottom.reset();
+    sprite_ptr_raw[0].reset();
+    sprite_ptr_raw[1].reset();
 
     // Remove this instance from the manager
     for (auto it = manager.begin(); it != manager.end(); ++it)
@@ -2461,7 +2480,6 @@ v_sprite_ptr::~v_sprite_ptr()
 
 void v_sprite_ptr::move(vector_2 direction)
 {
-    // Now we add the direction instead of subtracting
     bounds.position.x = bounds.position.x + direction.x;
     bounds.position.y = bounds.position.y + direction.y;
 }
@@ -2478,23 +2496,16 @@ void v_sprite_ptr::set_frame(int frame_)
 {
     frame = frame_;
 
-    if (sprite_ptr_raw.has_value())
+    if (sprite_ptr_raw[0].has_value())
     {
-        if (tall)
-        {
-            // For tall sprites, top sprite uses frame * 2
-            sprite_ptr_raw.value().set_tiles(sprite_item_ptr->tiles_item(), frame * 2);
+        // Always use tall sprite logic
+        // Top sprite uses frame * 2
+        sprite_ptr_raw[0].value().set_tiles(sprite_item_ptr->tiles_item(), frame * 2);
 
-            // Bottom sprite uses (frame * 2) + 1
-            if (sprite_ptr_bottom.has_value())
-            {
-                sprite_ptr_bottom.value().set_tiles(sprite_item_ptr->tiles_item(), (frame * 2) + 1);
-            }
-        }
-        else
+        // Bottom sprite uses (frame * 2) + 1
+        if (sprite_ptr_raw[1].has_value())
         {
-            // Regular sprites use frame directly
-            sprite_ptr_raw.value().set_tiles(sprite_item_ptr->tiles_item(), frame);
+            sprite_ptr_raw[1].value().set_tiles(sprite_item_ptr->tiles_item(), (frame * 2) + 1);
         }
     }
 }
@@ -2511,39 +2522,29 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             acceptable.position.y = 0 - (screen_height / 2) + 12;
         }
 
-        if (item->sprite_ptr_raw.has_value())
+        if (item->sprite_ptr_raw[0].has_value())
         {
             // Sprite exists - check if it should be removed or updated
             if (!within_bounds(bounds, acceptable))
             {
                 // Out of bounds - remove sprites
-                item->sprite_ptr_raw.reset();
-                item->sprite_ptr_bottom.reset();
+                item->sprite_ptr_raw[0].reset();
+                item->sprite_ptr_raw[1].reset();
             }
             else
             {
-                item->sprite_ptr_raw.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
+                // Update z-order for both sprites
+                item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
+                item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
 
-                // In bounds - update position and tiles
-                if (item->tall)
+                // Always update both sprites (tall sprites)
+                item->sprite_ptr_raw[0].value().set_position(bounds.position.x, bounds.position.y - 32);
+                item->sprite_ptr_raw[0].value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame * 2);
+
+                if (item->sprite_ptr_raw[1].has_value())
                 {
-                    item->sprite_ptr_bottom.value().set_z_order(10 - item->sprite_ptr_raw.value().y().integer() / 16);
-
-                    // For tall sprites, update both sprites
-                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y - 32);
-                    item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame * 2);
-
-                    if (item->sprite_ptr_bottom.has_value())
-                    {
-                        item->sprite_ptr_bottom.value().set_position(bounds.position.x, bounds.position.y);
-                        item->sprite_ptr_bottom.value().set_tiles(item->sprite_item_ptr->tiles_item(), (item->frame * 2) + 1);
-                    }
-                }
-                else
-                {
-                    // Regular sprite - update position and tiles
-                    item->sprite_ptr_raw.value().set_position(bounds.position.x, bounds.position.y);
-                    item->sprite_ptr_raw.value().set_tiles(item->sprite_item_ptr->tiles_item(), item->frame);
+                    item->sprite_ptr_raw[1].value().set_position(bounds.position.x, bounds.position.y);
+                    item->sprite_ptr_raw[1].value().set_tiles(item->sprite_item_ptr->tiles_item(), (item->frame * 2) + 1);
                 }
             }
         }
@@ -2552,17 +2553,9 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             // Sprite doesn't exist but is in bounds - create it
             if (item->sprite_item_ptr != nullptr) // Safety check
             {
-                if (item->tall)
-                {
-                    // Create both sprites for tall characters
-                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y - 32, item->frame * 2);
-                    item->sprite_ptr_bottom = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, (item->frame * 2) + 1);
-                }
-                else
-                {
-                    // Create single sprite for regular characters
-                    item->sprite_ptr_raw = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, item->frame);
-                }
+                // Always create both sprites for tall characters
+                item->sprite_ptr_raw[0] = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y - 32, item->frame * 2);
+                item->sprite_ptr_raw[1] = item->sprite_item_ptr->create_sprite(bounds.position.x, bounds.position.y, (item->frame * 2) + 1);
             }
         }
     }
@@ -2570,29 +2563,13 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
 
 character::character(int index_, vector_2 start_) : index(index_)
 {
-    start.x = (start_.x * 32) + 16;
-    start.y = (start_.y * 32) + 16;
-
-    v_sprite.bounds.position = start;
+    v_sprite.bounds.position = {
+        (start_.x * 32) + 16,
+        (start_.y * 32) + 16};
     v_sprite.bounds.width = 28;
     v_sprite.bounds.height = 32;
 
-    update_sprite_item(index_);
-    current_animation = &anim_stand;
-
-    if (type() == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
-    {
-        v_sprite_ptr::camera.x = start.x;
-        v_sprite_ptr::camera.y = start.y;
-    }
-}
-
-void character::update_sprite_item(int index_)
-{
-    index = index_;
-
-    v_sprite.tall = true;
-    switch (index)
+    switch (index_)
     {
     case CHAR_VISTA:
     {
@@ -2627,8 +2604,15 @@ void character::update_sprite_item(int index_)
     }
 
     // Reset sprites
-    v_sprite.sprite_ptr_raw.reset();
-    v_sprite.sprite_ptr_bottom.reset();
+    v_sprite.sprite_ptr_raw[0].reset();
+    v_sprite.sprite_ptr_raw[1].reset();
+    current_animation = &anim_stand;
+
+    if (type() == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
+    {
+        v_sprite_ptr::camera.x = start_.x;
+        v_sprite_ptr::camera.y = start_.y;
+    }
 }
 
 void character::update(map_manager *current_map, bool db_inactive)
@@ -2694,19 +2678,12 @@ void character::update(map_manager *current_map, bool db_inactive)
 
         if (v_sprite_ptr::camera.x > bound_2.x)
             v_sprite_ptr::camera.x = bound_2.x;
-
-        /*
-        if (v_sprite_ptr::camera.y < bound_1.y)
-            v_sprite_ptr::camera.y = bound_1.y;
-        if (v_sprite_ptr::camera.y > bound_2.y)
-            v_sprite_ptr::camera.y = bound_2.y;
-        */
     }
     else
     {
         if (!db_inactive)
         {
-            if (v_sprite.sprite_ptr_raw.has_value())
+            if (v_sprite.sprite_ptr_raw[0].has_value())
             {
                 // Calculate where this sprite appears on screen
                 bound screen_pos = v_sprite.real_position();
@@ -2827,7 +2804,7 @@ void character::update(map_manager *current_map, bool db_inactive)
 
     bool moving = (delta.x != 0 || delta.y != 0);
 
-    // Animation and sprite update code remains the same...
+    // Animation and sprite update code
     bool custom_anim = false;
     if (moving)
     {
@@ -2848,9 +2825,8 @@ void character::update(map_manager *current_map, bool db_inactive)
     }
 
     // Rest of the update code...
-    if (v_sprite.sprite_ptr_raw.has_value())
+    if (v_sprite.sprite_ptr_raw[0].has_value())
     {
-
         int ticker_speed;
 
         switch (current_animation->speed)
@@ -2889,11 +2865,9 @@ void character::update(map_manager *current_map, bool db_inactive)
 
         int new_frame = current_animation->frames[frame];
 
-        v_sprite.sprite_ptr_raw.value().set_horizontal_flip(false);
-        if (v_sprite.sprite_ptr_bottom.has_value())
-        {
-            v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(false);
-        }
+        // Always set horizontal flip for both sprites
+        v_sprite.sprite_ptr_raw[0].value().set_horizontal_flip(false);
+        v_sprite.sprite_ptr_raw[1].value().set_horizontal_flip(false);
 
         if (!custom_anim)
         {
@@ -2907,11 +2881,8 @@ void character::update(map_manager *current_map, bool db_inactive)
                 break;
             case DIR_LEFT:
                 v_sprite.set_frame(new_frame + 3);
-                v_sprite.sprite_ptr_raw.value().set_horizontal_flip(true);
-                if (v_sprite.sprite_ptr_bottom.has_value())
-                {
-                    v_sprite.sprite_ptr_bottom.value().set_horizontal_flip(true);
-                }
+                v_sprite.sprite_ptr_raw[0].value().set_horizontal_flip(true);
+                v_sprite.sprite_ptr_raw[1].value().set_horizontal_flip(true);
                 break;
             case DIR_RIGHT:
                 v_sprite.set_frame(new_frame + 3);
@@ -2931,7 +2902,7 @@ void character::update(map_manager *current_map, bool db_inactive)
     ticker++;
 }
 
-void character::add(list<character, 64> *characters, int character_id, vector_2 location)
+void character::add(list<character, 32> *characters, int character_id, vector_2 location)
 {
     characters->emplace_back(character_id, location);
 }
@@ -3431,6 +3402,75 @@ bool dialogue_box::is_ended()
         return true;
     }
     return (*active_conversation)[index].action == ACT_END;
+}
+
+// Add this method to the dialogue_box class to check if current text is fully displayed
+bool dialogue_box::is_text_complete()
+{
+    if (!active_conversation || index >= size)
+    {
+        return true;
+    }
+
+    // Check if all three lines are either ended or empty
+    for (int i = 0; i < 3; i++)
+    {
+        if (!lines[i].reference.empty() && !lines[i].is_ended())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Add this method to instantly complete the current text
+void dialogue_box::instant_complete_text()
+{
+    if (!active_conversation || index >= size)
+    {
+        return;
+    }
+
+    // Instantly render all three lines
+    for (int i = 0; i < 3; i++)
+    {
+        if (!lines[i].reference.empty())
+        {
+            lines[i].render();
+        }
+    }
+}
+
+// Modified method to handle A button press
+// This should be called from your main game loop or input handler
+void dialogue_box::handle_a_button_press(character_manager *ch_man)
+{
+    if (!active_conversation || is_ended())
+    {
+        return;
+    }
+
+    if (is_text_complete())
+    {
+        // Text is fully displayed, advance to next dialogue
+        advance(ch_man);
+    }
+    else
+    {
+        // Text is still being revealed, instantly complete it
+        instant_complete_text();
+    }
+}
+
+// Add this method to advance to the next dialogue line
+void dialogue_box::advance(character_manager *ch_man)
+{
+    index++;
+
+    if (!is_ended())
+    {
+        init(ch_man); // Initialize the next dialogue line
+    }
 }
 
 char digit_conv(int digit)
@@ -4399,6 +4439,7 @@ struct status_bar
     int actor_index;
 
     static int current_party_size;
+    static int current_enemy_size;
     static int selected_menu;
     static vector<battle_action, 4> available_actions; // Pointer to the available actions
 
@@ -4531,7 +4572,7 @@ ge_character_manager.h:
 
 struct character_manager
 {
-    list<unique_ptr<character>, 64> characters;
+    list<unique_ptr<character>, 32> characters;
     character *player_ptr;
     optional<dialogue_box> db;
     int status = CONTINUE;
@@ -4734,8 +4775,6 @@ inline constexpr map map_viskers_house;
 
 
 ge_sprites.h: 
-// ge_sprites.h
-
 #ifndef GE_SPRITES_H
 #define GE_SPRITES_H
 
@@ -4770,14 +4809,12 @@ struct v_sprite_ptr
     static vector_2 camera;
 
     const sprite_item *sprite_item_ptr;
-    optional<sprite_ptr> sprite_ptr_raw;
-    optional<sprite_ptr> sprite_ptr_bottom; // For tall sprites
+    optional<sprite_ptr> sprite_ptr_raw[2];
     bound bounds;
     int frame;
-    bool tall; // Whether this sprite is tall (two blocks)
 
     v_sprite_ptr();
-    v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position = {0, 0}, int width = 32, int height = 32, int frame_ = 0, bool tall_ = false);
+    v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position = {0, 0}, int width = 32, int height = 32, int frame_ = 0);
     ~v_sprite_ptr();
 
     void move(vector_2 direction);
@@ -4789,10 +4826,10 @@ struct v_sprite_ptr
     {
         for (auto *item : manager)
         {
-            if (item->sprite_ptr_raw.has_value())
-                item->sprite_ptr_raw.reset();
-            if (item->sprite_ptr_bottom.has_value())
-                item->sprite_ptr_bottom.reset();
+            if (item->sprite_ptr_raw[0].has_value())
+                item->sprite_ptr_raw[0].reset();
+            if (item->sprite_ptr_raw[1].has_value())
+                item->sprite_ptr_raw[1].reset();
         }
         manager.clear();
     }
@@ -4820,17 +4857,20 @@ enum facing
 enum character_type
 {
     CH_TYPE_PLAYER,
-    CH_TYPE_NPC
+    CH_TYPE_NPC,
+    CH_TYPE_PUSHABLE,
+    CH_TYPE_ITEM,
+    CH_TYPE_DECORATION,
+    CH_TYPE_DECORATION_ABOVE
 };
 
 struct character
 {
-    int index = CHAR_VISTA;
-    vector_2 start;
-
     v_sprite_ptr v_sprite;
     const animation *current_animation;
     const animation *idle_animation;
+
+    int index = CHAR_VISTA;
     int ticker = 0;
     int frame = 0;
     int face = DIR_DOWN;
@@ -4842,28 +4882,19 @@ struct character
     character(int index_, vector_2 start_);
 
     void update(map_manager *current_map, bool character_box_ended);
-    void update_sprite_item(int index_);
-    bool is_tall() const; // Helper to determine if character is tall
 
-    static void add(list<character, 64> *characters, int character_id, vector_2 location);
-    static character *find(list<character, 64> &characters, int index);
+    static void add(list<character, 32> *characters, int character_id, vector_2 location);
 
     int type()
     {
         switch (index)
         {
         case CHAR_VISTA:
-        {
             return CH_TYPE_PLAYER;
-        }
         case CHAR_JEREMY:
-        {
             return CH_TYPE_PLAYER;
-        }
         default:
-        {
             return CH_TYPE_NPC;
-        }
         }
     }
 };
@@ -4924,7 +4955,8 @@ struct character_manager;
 
 using namespace bn;
 
-enum progress {
+enum progress
+{
     CUTSCENE_01,
     CUTSCENE_02,
     CUTSCENE_TO_GARBAGE,
@@ -4933,7 +4965,8 @@ enum progress {
     FINAL_MSG
 };
 
-enum foes {
+enum foes
+{
     FOE_VISKERS_01,
     FOE_VISKERS_02
 };
@@ -5028,7 +5061,7 @@ struct text
 
     void init(const char *value);
     void init(const string<20> &value);
-    void update(const sprite_item * portrait, bool typewriter);
+    void update(const sprite_item *portrait, bool typewriter);
     void render();
     void set_position(int x, int y);
     bool is_ended();
@@ -5036,7 +5069,8 @@ struct text
 
 char digit_conv(int digit);
 
-struct toast {
+struct toast
+{
     text value;
     int ticker;
 };
@@ -5104,6 +5138,11 @@ struct dialogue_box
     void init(character_manager *ch_man);
     void update();
     bool is_ended();
+
+    bool is_text_complete();                               // Check if current text is fully displayed
+    void instant_complete_text();                          // Instantly complete current text
+    void handle_a_button_press(character_manager *ch_man); // Handle A button input
+    void advance(character_manager *ch_man);               // Advance to next dialogue
 };
 
 #endif // GE_TEXT_H

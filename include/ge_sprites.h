@@ -1,5 +1,3 @@
-// ge_sprites.h
-
 #ifndef GE_SPRITES_H
 #define GE_SPRITES_H
 
@@ -34,14 +32,12 @@ struct v_sprite_ptr
     static vector_2 camera;
 
     const sprite_item *sprite_item_ptr;
-    optional<sprite_ptr> sprite_ptr_raw;
-    optional<sprite_ptr> sprite_ptr_bottom; // For tall sprites
+    optional<sprite_ptr> sprite_ptr_raw[2];
     bound bounds;
     int frame;
-    bool tall; // Whether this sprite is tall (two blocks)
 
     v_sprite_ptr();
-    v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position = {0, 0}, int width = 32, int height = 32, int frame_ = 0, bool tall_ = false);
+    v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position = {0, 0}, int width = 32, int height = 32, int frame_ = 0);
     ~v_sprite_ptr();
 
     void move(vector_2 direction);
@@ -53,10 +49,10 @@ struct v_sprite_ptr
     {
         for (auto *item : manager)
         {
-            if (item->sprite_ptr_raw.has_value())
-                item->sprite_ptr_raw.reset();
-            if (item->sprite_ptr_bottom.has_value())
-                item->sprite_ptr_bottom.reset();
+            if (item->sprite_ptr_raw[0].has_value())
+                item->sprite_ptr_raw[0].reset();
+            if (item->sprite_ptr_raw[1].has_value())
+                item->sprite_ptr_raw[1].reset();
         }
         manager.clear();
     }
@@ -84,17 +80,20 @@ enum facing
 enum character_type
 {
     CH_TYPE_PLAYER,
-    CH_TYPE_NPC
+    CH_TYPE_NPC,
+    CH_TYPE_PUSHABLE,
+    CH_TYPE_ITEM,
+    CH_TYPE_DECORATION,
+    CH_TYPE_DECORATION_ABOVE
 };
 
 struct character
 {
-    int index = CHAR_VISTA;
-    vector_2 start;
-
     v_sprite_ptr v_sprite;
     const animation *current_animation;
     const animation *idle_animation;
+
+    int index = CHAR_VISTA;
     int ticker = 0;
     int frame = 0;
     int face = DIR_DOWN;
@@ -106,28 +105,19 @@ struct character
     character(int index_, vector_2 start_);
 
     void update(map_manager *current_map, bool character_box_ended);
-    void update_sprite_item(int index_);
-    bool is_tall() const; // Helper to determine if character is tall
 
-    static void add(list<character, 64> *characters, int character_id, vector_2 location);
-    static character *find(list<character, 64> &characters, int index);
+    static void add(list<character, 32> *characters, int character_id, vector_2 location);
 
     int type()
     {
         switch (index)
         {
         case CHAR_VISTA:
-        {
             return CH_TYPE_PLAYER;
-        }
         case CHAR_JEREMY:
-        {
             return CH_TYPE_PLAYER;
-        }
         default:
-        {
             return CH_TYPE_NPC;
-        }
         }
     }
 };
