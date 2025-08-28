@@ -95,6 +95,14 @@ void letter::update(bool shake, int size)
     }
 }
 
+text::text()
+{
+}
+
+text::text(vector_2 start_) : start(start_)
+{
+}
+
 text::text(const char *value, vector_2 start_) : start(start_)
 {
     if (value)
@@ -267,10 +275,6 @@ dialogue_box::dialogue_box()
     active_conversation = nullptr;
     index = 0;
     size = 0;
-
-    lines[0].start = {-40, 32};
-    lines[1].start = {-40, 48};
-    lines[2].start = {-40, 64};
 }
 
 void dialogue_box::load(conversation *new_conversation)
@@ -543,6 +547,8 @@ char digit_conv(int digit)
 {
     return (char)((digit % 10) + 48);
 }
+
+toast::toast() {}
 
 void text::add_toast(string<20> value, vector_2 pos)
 {

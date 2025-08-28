@@ -102,7 +102,7 @@ enum TYPEWRITER_TYPE
 void typewriter(int scene)
 {
     optional<regular_bg_ptr> frame;
-    text lines[3];
+    text lines[3] = {{nullptr, {-71 + 16, 36}}, {nullptr, {-71 + 16, 36 + 16}}, {nullptr, {-71 + 16, 36 + 32}}};
     conversation *current_conversation;
     int index = 0;
     int ticker = 0;
@@ -245,8 +245,6 @@ int main()
     global_data_ptr->process_stage = CUTSCENE_01;
 
     int value = NEW_CHAPTER;
-
-    BN_LOG("-", 1);
 
     // Test battle before game begins
     global_data_ptr->battle_foe = FOE_VISKERS_01;

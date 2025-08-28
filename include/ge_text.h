@@ -117,6 +117,8 @@ struct text
     static void update_toasts();
     static bool at_location(vector_2 pos);
 
+    text();
+    text(vector_2 start_ = {0, 0});
     text(const char *value = nullptr, vector_2 start_ = {0, 0});
     text(const string<20> &value, vector_2 start_ = {0, 0});
 
@@ -132,8 +134,10 @@ char digit_conv(int digit);
 
 struct toast
 {
-    text value;
+    text value = {nullptr, {0, 0}};
     int ticker;
+
+    toast();
 };
 
 struct dialogue_line
@@ -192,7 +196,10 @@ struct dialogue_box
     conversation *active_conversation;
     int index;
     int size;
-    text lines[3];
+    text lines[3] = {
+        {nullptr, {-40, 32}},
+        {nullptr, {-40, 48}},
+        {nullptr, {-40, 64}}};
 
     dialogue_box();
     void load(conversation *new_conversation);
