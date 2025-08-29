@@ -23,6 +23,7 @@ enum progress
     CUTSCENE_TO_GARBAGE,
     GARBAGE_TO_BLACK,
     BLACK_TO_LAB,
+    FOREST_01,
     FINAL_MSG
 };
 

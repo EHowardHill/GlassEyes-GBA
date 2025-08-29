@@ -240,17 +240,19 @@ int main()
 {
     core::init();
 
-    // Set for debug
-    global_data_ptr = new global_data();
-    global_data_ptr->process_stage = CUTSCENE_01;
-
     int value = NEW_CHAPTER;
 
+    // Set for debug
+    global_data_ptr = new global_data();
+    global_data_ptr->process_stage = GARBAGE_TO_BLACK; // CUTSCENE_01;
+
     // Test battle before game begins
+    /*
     global_data_ptr->battle_foe = FOE_VISKERS_01;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
+    */
 
     while (true)
     {
@@ -299,6 +301,13 @@ int main()
                 global_data_ptr->entry_map = &map_lab_01;
                 global_data_ptr->entry_position = {4, 5};
                 global_data_ptr->bg_track = &music_items::bg_office;
+                break;
+            }
+            case FOREST_01:
+            {
+                global_data_ptr->entry_map = &map_forest_01;
+                global_data_ptr->entry_position = {6, 8};
+                global_data_ptr->bg_track = &music_items::forest_01;
                 break;
             }
             case FINAL_MSG:

@@ -266,7 +266,7 @@ leaving_lab
 	db_ch_jeremy	EM_DEFAULT		I would	appreciate some	space.							
 	db_ch_ginger	EM_SAD		Right.		Sorry.							
 	db_ch_jeremy	EM_DEFAULT		Alright..		Here goes nothing.							
-			ACT_PROGRESS							FINAL_MSG			
+			ACT_PROGRESS							FOREST_01			
 													
 final_msg													
 				Thanks for	trying out the	demo so far!							
