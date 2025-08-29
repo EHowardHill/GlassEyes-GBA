@@ -18,6 +18,7 @@
 #include "bn_sprite_items_spr_vista_01.h"
 
 #include "bn_regular_bg_items_floor_wood01.h"
+#include "bn_regular_bg_items_big_bg_forest_01.h"
 
 #include "main.h"
 #include "ge_globals.h"
@@ -64,6 +65,13 @@ int navigate_map()
         current_map.update();
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
         v_sprite_ptr::update(!dialogue_is_active);
+
+        if (current_map.bg_ptr.has_value())
+        {
+            current_map.bg_ptr.value().set_x(v_sprite_ptr::camera.x / -5);
+            current_map.bg_ptr.value().set_y(v_sprite_ptr::camera.y / -5);
+        }
+
         if (handle_frame)
         {
             handle_frame = false;
@@ -244,7 +252,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = GARBAGE_TO_BLACK; // CUTSCENE_01;
+    global_data_ptr->process_stage = FOREST_01; // CUTSCENE_01;
 
     // Test battle before game begins
     /*
@@ -305,6 +313,7 @@ int main()
             }
             case FOREST_01:
             {
+                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
                 global_data_ptr->entry_map = &map_forest_01;
                 global_data_ptr->entry_position = {6, 8};
                 global_data_ptr->bg_track = &music_items::forest_01;
@@ -314,7 +323,8 @@ int main()
             {
                 typewriter(TYPEWRITER_BUFFER);
                 typewriter(TYPEWRITER_MSG);
-                while (true) {
+                while (true)
+                {
                     core::update();
                 }
                 break;

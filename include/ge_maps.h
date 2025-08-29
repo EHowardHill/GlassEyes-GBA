@@ -45,6 +45,7 @@ struct map
 
 struct map_manager
 {
+  optional<regular_bg_ptr> bg_ptr;
   optional<regular_bg_ptr> collider_ptr;
   const map *current_map;
 
