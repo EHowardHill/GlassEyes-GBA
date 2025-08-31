@@ -417,6 +417,22 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 ch_man->db->init(ch_man);
                 break;
             }
+            case ENTER_BG:
+            {
+                if (man->bg_ptr.has_value())
+                {
+                    man->bg_ptr.value().set_visible(true);
+                }
+                break;
+            }
+            case EXIT_BG:
+            {
+                if (man->bg_ptr.has_value())
+                {
+                    man->bg_ptr.value().set_visible(false);
+                }
+                break;
+            }
             default:
             {
                 break;

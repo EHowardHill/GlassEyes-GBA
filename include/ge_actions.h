@@ -320,7 +320,7 @@ constexpr conversation leaving_lab = {
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I would", "appreciate some", "space.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_ginger, EM_SAD, ACT_DEFAULT, "Right.", "", "Sorry.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Alright..", "", "Here goes nothing.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FINAL_MSG, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FOREST_01, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation final_msg = {

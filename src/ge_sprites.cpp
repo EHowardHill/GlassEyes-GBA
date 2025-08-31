@@ -158,7 +158,7 @@ character::character(int index_, vector_2 start_) : index(index_)
         (start_.x * 32) + 16,
         (start_.y * 32) + 16};
     v_sprite.bounds.width = 28;
-    v_sprite.bounds.height = 32;
+    v_sprite.bounds.height = 28;
 
     switch (index_)
     {

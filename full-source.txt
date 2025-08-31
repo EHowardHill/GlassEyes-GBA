@@ -418,6 +418,22 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 ch_man->db->init(ch_man);
                 break;
             }
+            case ENTER_BG:
+            {
+                if (man->bg_ptr.has_value())
+                {
+                    man->bg_ptr.value().set_visible(true);
+                }
+                break;
+            }
+            case EXIT_BG:
+            {
+                if (man->bg_ptr.has_value())
+                {
+                    man->bg_ptr.value().set_visible(false);
+                }
+                break;
+            }
             default:
             {
                 break;
@@ -434,7 +450,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
 }
 
 ge_battle.cpp: 
-// ge_battle_optimized.cpp - Optimized version with reduced memory usage
+// ge_battle_optimized.cpp - Optimized version with ACT menu and DEFEND removed
 
 #include "bn_core.h"
 #include "bn_keypad.h"
@@ -459,14 +475,19 @@ ge_battle.cpp:
 
 using namespace bn;
 
-// Simplified global state
-static vector<battle_action, 4> g_available_actions;
+// Jeremy frame indices
+static constexpr int JEREMY_IDLE_FRAME = 10;
+static constexpr int JEREMY_HURT_START = 11; // 11..14 inclusive
+static constexpr int JEREMY_HURT_END = 14;
+
+// NEW: attack animation range 15..21 inclusive
+static constexpr int JEREMY_ATK_START = 15;
+static constexpr int JEREMY_ATK_END = 21;
 
 struct battle_state
 {
     int party_size = 1;
     int current_actor = -1;
-    int defense_stacks = 0;
     int selected_menu = STATUS_BAR_NONE;
     int stage = stage_talking;
     int result = RESULT_FIRST;
@@ -491,9 +512,6 @@ struct battle_state
 
     // Menu state
     int menu_index = 0;
-    int act_index = 0;
-    int act_count = 0;
-    battle_action *actions[4] = {nullptr, nullptr, nullptr, nullptr};
 
     // Attack bar
     optional<sprite_ptr> attack_header;
@@ -508,7 +526,7 @@ struct battle_state
 
     // UI elements
     optional<sprite_ptr> char_img;
-    optional<sprite_ptr> battle_icons[5];
+    optional<sprite_ptr> battle_icons[3]; // Reduced from 4 to 3 (no DEFEND)
     optional<text> labels[5];
 };
 
@@ -685,7 +703,6 @@ int battle_map()
 
     // Create and reset battle state
     battle_state bs;
-    g_available_actions.clear();
 
     // Initialize sprites
     bs.player_sprite = sprite_items::jeremy_battle_intro.create_sprite(-96, 16, 0);
@@ -695,7 +712,6 @@ int battle_map()
     // Setup conversations based on foe
     vector<conversation *, 3> convos[RESULT_SIZE];
     vector<conversation *, 3> spare_convos;
-    conversation *act_conversation = nullptr;
 
     switch (global_data_ptr->battle_foe)
     {
@@ -709,10 +725,6 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
 
-        g_available_actions.push_back({"Compliment", &garbage_fight_01});
-        g_available_actions.push_back({"Joke", &garbage_fight_01});
-        g_available_actions.push_back({"Sarcasm", &garbage_fight_01});
-
         spare_convos.push_back(&garbage_fight_02);
         spare_convos.push_back(&garbage_fight_03);
         spare_convos.push_back(&garbage_fight_04);
@@ -724,57 +736,87 @@ int battle_map()
         global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
 
         convos[RESULT_FIRST].push_back(&garbage_fight_05);
-        g_available_actions.push_back({"Analyze", &garbage_fight_05});
-        g_available_actions.push_back({"Threaten", &garbage_fight_05});
         break;
 
     default:
         break;
     }
 
-    bool resume_status_after_talking = false;
-
     // Main game loop
     while (true)
     {
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
-        // Update player animation
         int y_offset = 16 + bs.y_delta;
         switch (bs.player_state)
         {
-        case 0: // INTRO
+        case 0:
+        {
             if (bs.player_ticker < 55)
             {
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(),
-                                            bs.player_ticker / 5);
+                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), bs.player_ticker / 5);
                 bs.player_ticker++;
             }
             else
+            {
+                bs.player_state = 1; // go idle after intro
+                bs.player_ticker = 0;
+                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), JEREMY_IDLE_FRAME);
+            }
+            break;
+        }
+
+        case 1: // IDLE
+            bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(),
+                                        JEREMY_IDLE_FRAME);
+            break;
+
+        case 2: // HURT (11..14 once, then idle 10)
+        {
+            constexpr int TICKS_PER_FRAME = 4;
+            int anim_frame_idx = bs.player_ticker / TICKS_PER_FRAME;
+            int frame = JEREMY_HURT_START + anim_frame_idx;
+
+            if (frame > JEREMY_HURT_END)
             {
                 bs.player_state = 1;
                 bs.player_ticker = 0;
-            }
-            break;
-
-        case 2: // RECV
-            if (bs.player_ticker < 20)
-            {
                 bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(),
-                                            (bs.player_ticker / 5) + 11);
-                bs.player_ticker++;
+                                            JEREMY_IDLE_FRAME);
             }
             else
             {
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), 11);
-                bs.player_ticker = 55;
-                bs.player_state = 1;
+                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), frame);
+                bs.player_ticker++;
             }
-            break;
+        }
+        break;
+
+        case 3: // NEW: ATTACK_ANIM (15..21 once, then idle 10)
+        {
+            constexpr int TICKS_PER_FRAME = 3; // tweak feel/speed as desired
+            int anim_frame_idx = bs.player_ticker / TICKS_PER_FRAME;
+            int frame = JEREMY_ATK_START + anim_frame_idx;
+
+            if (frame > JEREMY_ATK_END)
+            {
+                bs.player_state = 1;
+                bs.player_ticker = 0;
+                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(),
+                                            JEREMY_IDLE_FRAME);
+            }
+            else
+            {
+                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), frame);
+                bs.player_ticker++;
+            }
+        }
+        break;
 
         default:
             break;
         }
+
         bs.player_sprite->set_position(-96, y_offset);
 
         // Update enemy animation
@@ -823,21 +865,11 @@ int battle_map()
 
             if (!is_dialogue_active(&bs))
             {
-                if (act_conversation)
-                {
-                    init_dialogue(act_conversation, &bs);
-                    act_conversation = nullptr;
-                }
-                else if (bs.result < RESULT_SIZE && convos[bs.result].size() > 0)
+                if (bs.result < RESULT_SIZE && convos[bs.result].size() > 0)
                 {
                     conversation *c = convos[bs.result].front();
                     convos[bs.result].erase(convos[bs.result].begin());
                     init_dialogue(c, &bs);
-                }
-                else if (resume_status_after_talking)
-                {
-                    resume_status_after_talking = false;
-                    bs.stage = stage_status;
                 }
                 else
                 {
@@ -866,8 +898,13 @@ int battle_map()
             if (!bs.heart.has_value())
                 bs.heart = sprite_items::hearts.create_sprite(0, 0, 1);
 
-            bs.enemy_state = 2;
-            bs.enemy_ticker = 0;
+            if (bs.recv_ticker == 0)
+            {
+                bs.enemy_state = 2;
+                bs.enemy_ticker = 0;
+                int type = global_data_ptr->bn_random.get_int(0, global_data_ptr->enemy_allowed_moveset);
+                bullet::populate(&bs.bullets, type);
+            }
 
             if (next_living(-1, &bs) < 0 || global_data_ptr->enemy_hp[0] <= 0)
             {
@@ -898,8 +935,8 @@ int battle_map()
                 bs.heart_pos.y = 48;
 
             bs.heart->set_position(bs.heart_pos.x, bs.heart_pos.y);
-            bs.heart->set_tiles(sprite_items::hearts.tiles_item(),
-                                bs.defense_stacks > 0 ? 3 : 1);
+            // Always use normal heart sprite (no defense variation)
+            bs.heart->set_tiles(sprite_items::hearts.tiles_item(), 1);
 
             // Update bullets
             for (auto &b : bs.bullets)
@@ -908,24 +945,20 @@ int battle_map()
 
                 if (b.item && b.item->visible())
                 {
-                    if (abs(bs.heart_pos.x - b.item->x()) +
-                            abs(bs.heart_pos.y - b.item->y()) <
-                        12)
+                    if (abs(bs.heart_pos.x - b.item->x()) + abs(bs.heart_pos.y - b.item->y()) < 12)
                     {
+                        int who = random_living(&bs);
+                        if (who >= 0)
+                        {
+                            global_data_ptr->hp[who] -= 2;
+                            text::add_toast(-2, {-96, -36});
+                            sound_items::sfx_damage.play();
 
-                        if (bs.defense_stacks > 0)
-                        {
-                            bs.defense_stacks--;
-                            sound_items::snd_alert.play();
-                        }
-                        else
-                        {
-                            int who = random_living(&bs);
-                            if (who >= 0)
+                            // If Jeremy took the hit, play hurt animation
+                            if (who == 0)
                             {
-                                global_data_ptr->hp[who] -= 2;
-                                text::add_toast(-2, {-96, -36});
-                                sound_items::sfx_damage.play();
+                                bs.player_state = 2;  // HURT
+                                bs.player_ticker = 0; // restart the hurt anim
                             }
                         }
                         b.item->set_visible(false);
@@ -936,7 +969,6 @@ int battle_map()
             if (++bs.recv_ticker > 250)
             {
                 bs.recv_ticker = 0;
-                bs.defense_stacks = 0;
                 bs.current_actor = -1;
                 bs.stage = stage_status;
             }
@@ -946,8 +978,7 @@ int battle_map()
         else if (bs.stage == stage_status)
         {
             bs.bg_ptr.reset();
-            bs.enemy_state = 1;
-            bs.enemy_ticker = 0;
+            bs.enemy_state = 1; // stay in idle
             bs.heart.reset();
             bs.bullets.clear();
 
@@ -964,6 +995,7 @@ int battle_map()
                 int next = next_living(bs.current_actor, &bs);
                 if (next < 0)
                 {
+                    // All characters have acted, go to talking stage
                     bs.stage = stage_talking;
                     continue;
                 }
@@ -984,16 +1016,18 @@ int battle_map()
                 bs.labels[0]->render();
                 bs.labels[1]->render();
 
-                // Setup main menu
+                // Setup main menu (without ACT and DEFEND)
                 bs.menu_index = 0;
                 bs.selected_menu = STATUS_BAR_NONE;
 
-                for (int i = 0; i < 5; ++i)
+                // Create 3 menu icons: ATTACK, ITEM, SPARE
+                int icon_indices[] = {0, 2, 3}; // Skip index 1 (ACT) and 4 (DEFEND)
+                for (int i = 0; i < 3; ++i)
                 {
-                    bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), i);
+                    bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
                 }
 
-                const char *menu_labels[] = {"ATTACK", "ACT", "ITEM", "SPARE", "DEFEND"};
+                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
                 bs.labels[2] = {menu_labels[0], {0, -12}};
                 bs.labels[2]->render();
             }
@@ -1003,112 +1037,49 @@ int battle_map()
             {
                 if (keypad::up_pressed())
                 {
-                    bs.menu_index = (bs.menu_index + 4) % 5;
+                    bs.menu_index = (bs.menu_index + 2) % 3; // Changed from 4 to 3
                     sound_items::snd_dialogue_generic.play();
                 }
                 else if (keypad::down_pressed())
                 {
-                    bs.menu_index = (bs.menu_index + 1) % 5;
+                    bs.menu_index = (bs.menu_index + 1) % 3; // Changed from 4 to 3
                     sound_items::snd_dialogue_generic.play();
                 }
                 else if (keypad::a_pressed())
                 {
                     sound_items::snd_alert.play();
-                    bs.selected_menu = bs.menu_index + 1;
+                    // Map menu index to status bar values
+                    switch (bs.menu_index)
+                    {
+                    case 0:
+                        bs.selected_menu = STATUS_BAR_ATTACK;
+                        break;
+                    case 1:
+                        bs.selected_menu = STATUS_BAR_ITEM;
+                        break;
+                    case 2:
+                        bs.selected_menu = STATUS_BAR_SPARE;
+                        break;
+                    }
                 }
 
                 // Update label
-                const char *menu_labels[] = {"ATTACK", "ACT", "ITEM", "SPARE", "DEFEND"};
+                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
                 bs.labels[2].reset();
                 bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
                 bs.labels[2]->render();
             }
 
-            // Handle submenu: ACT
-            else if (bs.selected_menu == STATUS_BAR_ACT)
-            {
-                // Initialize ACT menu
-                if (bs.act_count == 0)
-                {
-                    bs.act_index = 0;
-                    for (int i = 0; i < g_available_actions.size() && bs.act_count < 4; ++i)
-                    {
-                        if (!g_available_actions[i].used)
-                        {
-                            bs.actions[bs.act_count++] = &g_available_actions[i];
-                        }
-                    }
-
-                    // Clear battle icons
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        bs.battle_icons[i].reset();
-                    }
-                }
-
-                // Update ACT labels
-                for (int i = 0; i < 4; ++i)
-                {
-                    bs.labels[2 + i].reset();
-                    if (i < bs.act_count)
-                    {
-                        string<32> label = (i == bs.act_index) ? "> " : "* ";
-                        label.append(bs.actions[i]->name);
-                        bs.labels[2 + i] = {label, {-22, -12 + (18 * i)}};
-                        bs.labels[2 + i]->render();
-                    }
-                }
-
-                // Handle ACT input
-                if (keypad::up_pressed() && bs.act_index > 0)
-                {
-                    bs.act_index--;
-                    sound_items::snd_dialogue_generic.play();
-                }
-                else if (keypad::down_pressed() && bs.act_index < bs.act_count - 1)
-                {
-                    bs.act_index++;
-                    sound_items::snd_dialogue_generic.play();
-                }
-                else if (keypad::a_pressed() && bs.act_count > 0)
-                {
-                    sound_items::snd_alert.play();
-                    bs.actions[bs.act_index]->used = true;
-                    act_conversation = bs.actions[bs.act_index]->convo;
-
-                    // Clear UI
-                    bs.char_img.reset();
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        bs.labels[i].reset();
-                    }
-
-                    bs.act_count = 0;
-                    bs.selected_menu = STATUS_BAR_NONE;
-                    bs.stage = stage_talking;
-                    resume_status_after_talking = true;
-                }
-                else if (keypad::b_pressed())
-                {
-                    sound_items::snd_alert.play();
-                    bs.act_count = 0;
-                    bs.selected_menu = STATUS_BAR_NONE;
-
-                    // Restore main menu icons
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), i);
-                    }
-                }
-            }
-
-            // Handle other menu selections
+            // Handle menu selections
             else if (bs.selected_menu == STATUS_BAR_ATTACK)
             {
                 bs.char_img.reset();
                 for (int i = 0; i < 5; ++i)
                 {
                     bs.labels[i].reset();
+                }
+                for (int i = 0; i < 3; ++i)
+                {
                     bs.battle_icons[i].reset();
                 }
                 bs.stage = stage_attack;
@@ -1117,55 +1088,64 @@ int battle_map()
             {
                 if (spare_convos.size() > 0)
                 {
-                    act_conversation = spare_convos.front();
+                    conversation *spare_conv = spare_convos.front();
                     spare_convos.erase(spare_convos.begin());
+                    init_dialogue(spare_conv, &bs);
 
                     bs.char_img.reset();
                     for (int i = 0; i < 5; ++i)
                     {
                         bs.labels[i].reset();
+                    }
+                    for (int i = 0; i < 3; ++i)
+                    {
                         bs.battle_icons[i].reset();
                     }
 
                     bs.stage = stage_talking;
-                    resume_status_after_talking = true;
                 }
-                bs.selected_menu = STATUS_BAR_NONE;
-            }
-            else if (bs.selected_menu == STATUS_BAR_DEFEND)
-            {
-                bs.defense_stacks++;
-                text::add_toast(0, {-96, -36});
-                sound_items::snd_alert.play();
-
-                bs.char_img.reset();
-                for (int i = 0; i < 5; ++i)
+                else
                 {
-                    bs.labels[i].reset();
-                    bs.battle_icons[i].reset();
+                    // No spare conversations left, just reset menu selection
+                    bs.selected_menu = STATUS_BAR_NONE;
                 }
-                bs.selected_menu = STATUS_BAR_NONE;
             }
             else if (bs.selected_menu == STATUS_BAR_ITEM)
             {
-                // Simplified ITEM menu - just show "No Items"
-                for (int i = 0; i < 5; ++i)
-                {
+                // Hide the scrolling selector label ("ITEM"/"ITEMS") while in the ITEM screen
+                if (bs.labels[2])
+                    bs.labels[2].reset();
+
+                // Remove the menu icons while viewing items
+                for (int i = 0; i < 3; ++i)
                     bs.battle_icons[i].reset();
-                }
+
+                // Show placeholder
                 bs.labels[3].reset();
                 bs.labels[3] = {"* No Items", {-22, -12}};
                 bs.labels[3]->render();
 
+                // Back out of ITEM screen
                 if (keypad::b_pressed())
                 {
                     sound_items::snd_alert.play();
+
+                    // Clear the placeholder so it doesn't persist
+                    if (bs.labels[3])
+                        bs.labels[3].reset();
+
                     bs.selected_menu = STATUS_BAR_NONE;
 
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), i);
-                    }
+                    // Restore menu icons
+                    int icon_indices[] = {0, 2, 3};
+                    for (int i = 0; i < 3; ++i)
+                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
+
+                    // Optionally force the selector label to reappear immediately this frame
+                    // (Otherwise the STATUS_BAR_NONE branch will recreate it on the next tick)
+                    const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
+                    bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
+                    bs.labels[2]->render();
                 }
             }
         }
@@ -1184,6 +1164,10 @@ int battle_map()
 
             if (keypad::a_pressed())
             {
+                // START ATTACK ANIMATION NOW
+                bs.player_state = 3; // ATTACK_ANIM
+                bs.player_ticker = 0;
+
                 int dist = abs(bs.attack_unit->x().integer() - bs.attack_recv->x().integer());
                 if (dist < 5)
                 {
@@ -1195,7 +1179,7 @@ int battle_map()
                 bs.attack_header.reset();
                 bs.attack_recv.reset();
                 bs.attack_unit.reset();
-                bs.stage = stage_talking;
+                bs.stage = stage_talking; // animation continues while we transition
             }
             else if (bs.attack_unit->x() <= -42)
             {
@@ -1592,8 +1576,6 @@ void character_manager::update(map_manager *current_map = nullptr)
         {
             ch->update(current_map, db_inactive);
 
-            BN_LOG(ch->index, " is ", ch->type());
-
             if (ch->is_follow)
             {
                 auto f_ch = find_by_index(ch->follow_id);
@@ -1645,6 +1627,7 @@ ge_maps.cpp:
 #include "bn_log.h"
 #include "bn_regular_bg_ptr.h"
 
+#include "ge_globals.h"
 #include "ge_maps.h"
 #include "ge_sprites.h"
 #include "ge_character_manager.h"
@@ -1652,6 +1635,12 @@ ge_maps.cpp:
 map_manager::map_manager(const map *current_map_)
     : current_map(current_map_)
 {
+    if (global_data_ptr->bg != nullptr)
+    {
+        bg_ptr = global_data_ptr->bg->create_bg(0, 0);
+        bg_ptr.value().set_visible(false);
+    }
+
     collider_ptr = current_map_->bg_item_ptr->create_bg(0, 0);
 }
 
@@ -1662,7 +1651,7 @@ void map_manager::update()
     vector_2 offset = {
         current_map->raw_size.x / 2,
         current_map->raw_size.y / 2};
-        
+
     collider_ptr.value().set_position(-cam->x + offset.x, -cam->y + offset.y);
 }
 
@@ -1759,24 +1748,24 @@ constexpr map map_forest_01 = {
     {128, 12},
     {4096, 4096},
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,25,18,18,18,18,93,95,18,18,18,0,0,0,0,0,0,0,0,0,0,0,44,48,44,43,47,44,48,35,100,104,108,112,1,42,46,42,46,42,34,0,0,23,93,95,21,0,0,32,43,47,48,47,48,49,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,46,19,19,19,58,94,96,58,19,19,42,46,1,0,0,0,0,0,0,0,0,43,47,43,44,34,45,49,0,101,105,109,113,32,43,47,43,47,43,35,0,0,0,94,96,0,0,0,33,44,48,47,48,49,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,0,0,0,0,0,0,32,43,47,34,0,0,0,0,0,0,0,32,43,47,34,32,43,44,48,44,48,44,48,44,48,44,43,47,34,0,0,102,106,110,114,33,44,48,49,45,49,0,0,0,0,0,0,0,0,0,32,48,47,48,49,32,34,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,25,18,18,18,18,93,95,18,18,18,0,0,0,0,0,0,0,0,0,0,0,44,48,44,43,47,44,48,35,100,104,108,112,1,42,46,42,46,42,34,0,0,23,93,95,21,0,0,32,43,47,48,47,48,49,0,25,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,46,19,19,19,58,94,96,58,19,19,42,46,1,0,0,0,0,0,0,0,0,43,47,43,44,34,45,49,0,101,105,109,113,32,43,47,43,47,43,35,0,0,0,94,96,0,0,0,33,44,48,47,48,49,0,0,25,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,0,0,0,0,0,0,32,43,47,34,0,0,0,0,0,0,0,32,43,47,34,32,43,44,48,44,48,44,48,44,48,44,43,47,34,0,0,102,106,110,114,33,44,48,49,45,49,0,0,0,0,0,0,0,0,0,32,48,47,48,49,32,34,0,25,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,0,0,0,0,0,0,33,44,48,35,0,0,0,0,0,0,0,33,44,48,35,33,35,43,47,43,47,43,47,43,47,43,44,48,35,0,0,103,107,111,115,0,45,49,0,0,0,0,0,0,0,0,0,0,0,32,43,47,48,49,32,43,47,34,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,0,42,46,42,46,42,46,45,49,0,0,0,0,0,0,0,0,0,45,49,0,0,42,44,48,44,48,44,48,44,48,44,45,49,0,0,68,0,0,0,0,32,34,0,0,42,46,42,46,42,46,42,46,0,32,43,47,48,49,32,43,44,48,35,0,0,0,0,0,0,0,0,0,0,0,
-	79,72,74,80,23,18,18,21,80,76,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,0,0,0,0,0,0,0,0,0,0,0,0,32,43,47,43,47,43,47,34,0,0,0,0,0,0,0,0,0,0,0,0,0,32,43,47,43,47,43,47,43,47,43,47,34,0,0,0,0,0,0,0,0,33,35,0,32,43,47,43,47,43,47,43,47,34,33,44,48,49,0,33,44,48,49,0,0,0,0,0,0,0,0,0,0,0,0,
-	80,73,75,81,23,93,95,21,81,77,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,0,0,0,0,0,0,0,0,0,0,0,0,33,44,48,44,48,44,48,35,0,0,0,0,0,0,0,0,0,0,0,0,0,33,44,48,44,48,44,48,44,48,44,48,35,0,0,0,0,0,0,0,0,0,0,0,33,44,48,44,48,44,48,44,48,35,0,45,49,0,0,0,45,49,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	79,0,0,0,0,94,96,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,81,81,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,49,45,49,45,49,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,49,45,49,45,49,45,49,45,49,0,0,0,0,0,0,0,0,0,0,0,0,0,45,49,45,49,45,49,45,49,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,86,87,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,46,42,46,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,145,145,146,146,26,27,27,27,28,0,0,
-	79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,43,47,43,47,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,
-	80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,145,146,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,85,17,3,42,46,42,46,42,46,42,46,42,46,33,44,48,44,48,35,1,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,1,0,0,0,0,0,0,0,0,20,148,148,147,147,22,0,0,0,20,0,0,
-	80,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,83,0,0,83,82,82,83,82,83,82,83,82,83,82,83,83,83,82,83,82,83,82,83,82,83,82,83,82,83,83,32,43,47,43,47,43,47,43,47,43,47,46,45,49,45,49,1,32,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,34,42,46,42,46,42,46,1,20,21,0,0,0,0,23,22,1,20,21,0,0
+	79,72,74,80,23,18,18,21,80,76,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,79,0,0,0,0,0,0,0,0,0,0,0,0,32,43,47,43,47,43,47,34,0,0,0,0,0,0,0,0,0,0,0,0,0,32,43,47,43,47,43,47,43,47,43,47,34,0,0,0,0,0,0,0,0,33,35,0,32,43,47,43,47,43,47,43,47,34,33,44,48,49,0,33,44,48,49,1,0,0,0,0,0,0,0,0,0,0,0,
+	80,73,75,81,23,93,95,21,81,77,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,0,0,0,0,0,0,0,0,0,0,0,0,33,44,48,44,48,44,48,35,0,0,0,0,0,0,0,0,0,0,0,0,0,33,44,48,44,48,44,48,44,48,44,48,35,0,0,0,0,0,0,0,0,0,0,0,33,44,48,44,48,44,48,44,48,35,0,45,49,0,0,0,45,49,0,25,18,0,0,0,0,0,0,0,0,0,0,
+	79,0,0,0,0,94,96,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,81,81,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,49,45,49,45,49,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,49,45,49,45,49,45,49,45,49,0,0,0,0,0,0,0,0,0,0,0,0,0,45,49,45,49,45,49,45,49,0,0,0,0,0,0,0,0,0,0,25,0,145,146,146,26,27,27,27,28,0,0,
+	80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,86,87,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,46,42,46,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,
+	79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,43,47,43,47,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,19,148,147,147,22,0,0,0,20,0,0,
+	80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,145,146,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,85,17,3,42,46,42,46,42,46,42,46,42,46,33,44,48,44,48,35,1,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,42,46,1,0,0,0,0,0,0,0,20,21,19,0,0,0,23,22,1,20,21,0,0,
+	80,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,83,0,0,83,82,82,83,82,83,82,83,82,83,82,83,83,83,82,83,82,83,82,83,82,83,82,83,82,83,83,32,43,47,43,47,43,47,43,47,43,47,46,45,49,45,49,1,32,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,34,42,46,20,18,18,18,18,21,21,19,0,0,0,23,23,18,21,21,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,41,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,37,0,0,0,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,44,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,0,0,0,0,0,0,46,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,47,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,41,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,49,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,37,0,0,0,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,44,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,49,0,0,45,0,0,0,0,0,0,46,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,49,0,0,0,0,0,0,0,0,0,0,47,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,49,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_forest_01};
 
@@ -2205,7 +2194,7 @@ character::character(int index_, vector_2 start_) : index(index_)
         (start_.x * 32) + 16,
         (start_.y * 32) + 16};
     v_sprite.bounds.width = 28;
-    v_sprite.bounds.height = 32;
+    v_sprite.bounds.height = 28;
 
     switch (index_)
     {
@@ -3245,6 +3234,7 @@ main.cpp:
 #include "bn_sprite_items_spr_vista_01.h"
 
 #include "bn_regular_bg_items_floor_wood01.h"
+#include "bn_regular_bg_items_big_bg_forest_01.h"
 
 #include "main.h"
 #include "ge_globals.h"
@@ -3291,6 +3281,13 @@ int navigate_map()
         current_map.update();
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
         v_sprite_ptr::update(!dialogue_is_active);
+
+        if (current_map.bg_ptr.has_value())
+        {
+            current_map.bg_ptr.value().set_x(v_sprite_ptr::camera.x / -5);
+            current_map.bg_ptr.value().set_y(v_sprite_ptr::camera.y / -5);
+        }
+
         if (handle_frame)
         {
             handle_frame = false;
@@ -3467,17 +3464,19 @@ int main()
 {
     core::init();
 
-    // Set for debug
-    global_data_ptr = new global_data();
-    global_data_ptr->process_stage = CUTSCENE_01;
-
     int value = NEW_CHAPTER;
 
+    // Set for debug
+    global_data_ptr = new global_data();
+    global_data_ptr->process_stage = FOREST_01; // CUTSCENE_01;
+
     // Test battle before game begins
+    /*
     global_data_ptr->battle_foe = FOE_VISKERS_01;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
+    */
 
     while (true)
     {
@@ -3528,11 +3527,20 @@ int main()
                 global_data_ptr->bg_track = &music_items::bg_office;
                 break;
             }
+            case FOREST_01:
+            {
+                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
+                global_data_ptr->entry_map = &map_forest_01;
+                global_data_ptr->entry_position = {6, 8};
+                global_data_ptr->bg_track = &music_items::forest_01;
+                break;
+            }
             case FINAL_MSG:
             {
                 typewriter(TYPEWRITER_BUFFER);
                 typewriter(TYPEWRITER_MSG);
-                while (true) {
+                while (true)
+                {
                     core::update();
                 }
                 break;
@@ -3888,7 +3896,7 @@ constexpr conversation leaving_lab = {
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "I would", "appreciate some", "space.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_ginger, EM_SAD, ACT_DEFAULT, "Right.", "", "Sorry.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Alright..", "", "Here goes nothing.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
-    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FINAL_MSG, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_PROGRESS, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, FOREST_01, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation final_msg = {
@@ -4299,7 +4307,9 @@ enum action_list
 	LAB_FRIDGE,
 	LAB_LOCKER,
 	TO_LAB_OUTSIDE,
-	ACTIONS_SIZE
+	ACTIONS_SIZE,
+	ENTER_BG = 49,
+	EXIT_BG = 50
 };
 
 enum response_list
@@ -4313,6 +4323,7 @@ struct global_data
 	random bn_random;
 	int action_iterations[ACTIONS_SIZE] = {0};
 	const map *entry_map = nullptr;
+	const regular_bg_item *bg = nullptr;
 	vector_2 entry_position = {0, 0};
 	vector_2 entry_position_raw = {0, 0};
 	int entry_direction = DIR_RIGHT;
@@ -4381,6 +4392,7 @@ struct map
 
 struct map_manager
 {
+  optional<regular_bg_ptr> bg_ptr;
   optional<regular_bg_ptr> collider_ptr;
   const map *current_map;
 
@@ -4604,6 +4616,7 @@ enum progress
     CUTSCENE_TO_GARBAGE,
     GARBAGE_TO_BLACK,
     BLACK_TO_LAB,
+    FOREST_01,
     FINAL_MSG
 };
 

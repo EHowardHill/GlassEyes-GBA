@@ -50,7 +50,9 @@ enum action_list
 	LAB_FRIDGE,
 	LAB_LOCKER,
 	TO_LAB_OUTSIDE,
-	ACTIONS_SIZE
+	ACTIONS_SIZE,
+	ENTER_BG = 49,
+	EXIT_BG = 50
 };
 
 enum response_list
@@ -64,6 +66,7 @@ struct global_data
 	random bn_random;
 	int action_iterations[ACTIONS_SIZE] = {0};
 	const map *entry_map = nullptr;
+	const regular_bg_item *bg = nullptr;
 	vector_2 entry_position = {0, 0};
 	vector_2 entry_position_raw = {0, 0};
 	int entry_direction = DIR_RIGHT;

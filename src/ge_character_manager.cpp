@@ -166,8 +166,6 @@ void character_manager::update(map_manager *current_map = nullptr)
         {
             ch->update(current_map, db_inactive);
 
-            BN_LOG(ch->index, " is ", ch->type());
-
             if (ch->is_follow)
             {
                 auto f_ch = find_by_index(ch->follow_id);

@@ -3,6 +3,7 @@
 #include "bn_log.h"
 #include "bn_regular_bg_ptr.h"
 
+#include "ge_globals.h"
 #include "ge_maps.h"
 #include "ge_sprites.h"
 #include "ge_character_manager.h"
@@ -10,6 +11,12 @@
 map_manager::map_manager(const map *current_map_)
     : current_map(current_map_)
 {
+    if (global_data_ptr->bg != nullptr)
+    {
+        bg_ptr = global_data_ptr->bg->create_bg(0, 0);
+        bg_ptr.value().set_visible(false);
+    }
+
     collider_ptr = current_map_->bg_item_ptr->create_bg(0, 0);
 }
 
@@ -20,7 +27,7 @@ void map_manager::update()
     vector_2 offset = {
         current_map->raw_size.x / 2,
         current_map->raw_size.y / 2};
-        
+
     collider_ptr.value().set_position(-cam->x + offset.x, -cam->y + offset.y);
 }
 
