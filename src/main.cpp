@@ -345,7 +345,7 @@ int main()
         {
             if (!music::playing())
             {
-                global_data_ptr->bg_track->play();
+                global_data_ptr->bg_track->play(0.5);
             }
 
             value = navigate_map();

@@ -13,6 +13,35 @@ static vector_2 previous_tile = {-1, -1};
 static bool action_triggered = false;
 static bool buffer_active = false;
 
+constexpr int is_interactive_array[999] = {
+    CONVO_GARBAGE_SIGN01,
+    CONVO_VISKER_SIGN,
+    CONVO_GARBAGE_03_SIGN,
+    CONVO_VISKER_AFTER_FIGHT,
+    CONVO_GARBAGE_04_SIGN,
+    CONVO_GARBAGE_05_SIGN,
+    LAB_COMPUTER,
+    CONVO_FOREST_01_SIGN,
+    CONVO_FOREST_02_SIGN,
+    CONVO_FOREST_03_SIGN,
+    -1};
+
+bool is_interactive(int action)
+{
+    for (int t = 0; t < 999; t++)
+    {
+        if (is_interactive_array[t] == -1)
+        {
+            return false;
+        }
+        else if (is_interactive_array[t] == action)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 int action_listener(map_manager *man, character_manager *ch_man)
 {
     if (!ch_man->db.has_value())
@@ -31,13 +60,6 @@ int action_listener(map_manager *man, character_manager *ch_man)
 
         // Get the action for current position
         int action = man->action(current_position);
-        bool is_interactive_action = (action == CONVO_GARBAGE_SIGN01 ||
-                                      action == CONVO_VISKER_SIGN ||
-                                      action == CONVO_GARBAGE_03_SIGN ||
-                                      action == CONVO_VISKER_AFTER_FIGHT ||
-                                      action == CONVO_GARBAGE_04_SIGN ||
-                                      action == CONVO_GARBAGE_05_SIGN ||
-                                      action == LAB_COMPUTER);
 
         // Reset action_triggered flag when entering a new tile
         if (new_tile)
@@ -45,13 +67,13 @@ int action_listener(map_manager *man, character_manager *ch_man)
             action_triggered = false;
             previous_tile = current_tile;
 
-            if (action != 0 && !is_interactive_action)
+            if (action != 0 && !is_interactive(action))
             {
                 global_data_ptr->action_iterations[action]++;
             }
         }
 
-        if (is_interactive_action && keypad::a_pressed() && !buffer_active)
+        if (is_interactive(action) && keypad::a_pressed() && !buffer_active)
         {
             global_data_ptr->action_iterations[action]++;
             buffer_active = true;
@@ -149,13 +171,35 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 }
                 break;
             }
+
+            case CONVO_FOREST_01_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&forest_dlg_sign_01);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_FOREST_02_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&forest_dlg_sign_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_FOREST_03_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&forest_dlg_sign_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
             default:
             {
                 break;
             }
             }
         }
-        else if (action != 0 && !is_interactive_action && !action_triggered)
+        else if (action != 0 && !is_interactive(action) && !action_triggered)
         {
             action_triggered = true; // Mark as triggered
 
@@ -415,6 +459,66 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 ch_man->db.emplace();
                 ch_man->db->load(&leaving_lab);
                 ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_FOREST_01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_FOREST_01] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&forest_dlg_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_FOREST_02:
+            {
+                if (global_data_ptr->action_iterations[CONVO_FOREST_02] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&forest_dlg_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_FOREST_03:
+            {
+                if (global_data_ptr->action_iterations[CONVO_FOREST_02] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&forest_dlg_03);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CONVO_CROKE_01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_CROKE_01] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&croke_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case TO_CAVE_01:
+            {
+
+                break;
+            }
+            case TO_CAVE_02:
+            {
+
+                break;
+            }
+            case CONVO_BRIDGE_02:
+            {
+                if (global_data_ptr->action_iterations[CONVO_BRIDGE_02] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&bridge_01);
+                    ch_man->db->init(ch_man);
+                }
                 break;
             }
             case ENTER_BG:

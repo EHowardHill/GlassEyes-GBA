@@ -1,4 +1,4 @@
-// ge_battle_optimized.cpp - Optimized version with ACT menu and DEFEND removed
+// ge_battle.cpp
 
 #include "bn_core.h"
 #include "bn_keypad.h"
@@ -9,13 +9,12 @@
 
 #include "bn_regular_bg_items_bg_battle_grid.h"
 #include "bn_regular_bg_items_bg_dialogue_box.h"
-#include "bn_sprite_items_spr_jeremy_01.h"
-#include "bn_sprite_items_spr_visker_01.h"
 #include "bn_sprite_items_hearts.h"
 #include "bn_sprite_items_battle_icons.h"
 #include "bn_sprite_items_battle_chars.h"
 #include "bn_sprite_items_battle_squares.h"
 
+#include "ge_text.h"
 #include "ge_character_manager.h"
 #include "ge_actions.h"
 #include "ge_battle.h"
@@ -23,14 +22,20 @@
 
 using namespace bn;
 
-// Jeremy frame indices
-static constexpr int JEREMY_IDLE_FRAME = 10;
-static constexpr int JEREMY_HURT_START = 11; // 11..14 inclusive
-static constexpr int JEREMY_HURT_END = 14;
+static constexpr int MAX_PARTY_SIZE = 4;
 
-// NEW: attack animation range 15..21 inclusive
+static constexpr int JEREMY_IDLE_START = 10;
+static constexpr int JEREMY_HURT_START = 11;
+static constexpr int JEREMY_HURT_END = 14;
 static constexpr int JEREMY_ATK_START = 15;
 static constexpr int JEREMY_ATK_END = 21;
+
+static constexpr int GINGER_IDLE_START = 8;
+static constexpr int GINGER_IDLE_END = 11;
+static constexpr int GINGER_HURT_START = 12;
+static constexpr int GINGER_HURT_END = 14;
+static constexpr int GINGER_ATK_START = 15;
+static constexpr int GINGER_ATK_END = 21;
 
 struct battle_state
 {
@@ -50,12 +55,13 @@ struct battle_state
     optional<sprite_ptr> portrait;
     optional<regular_bg_ptr> bg_ptr;
 
-    // Combat entities
-    optional<sprite_ptr> player_sprite;
+    // Combat entities - NOW USING ARRAYS
+    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE]; // Party member sprites
+    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};    // Animation states
+    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};   // Animation tickers
+
     optional<sprite_ptr> enemy_sprite;
-    int player_state = 0;
     int enemy_state = 0;
-    int player_ticker = 0;
     int enemy_ticker = 0;
 
     // Menu state
@@ -74,7 +80,7 @@ struct battle_state
 
     // UI elements
     optional<sprite_ptr> char_img;
-    optional<sprite_ptr> battle_icons[3]; // Reduced from 4 to 3 (no DEFEND)
+    optional<sprite_ptr> battle_icons[3];
     optional<text> labels[5];
 };
 
@@ -240,7 +246,142 @@ static bool are_lines_complete(battle_state *bs)
            bs->dlg_lines[2].is_ended();
 }
 
-// Main battle function
+// Helper function to get character Y position
+static int get_character_y_position(int index)
+{
+    // Stack characters vertically, with first character highest
+    return 8 - (index * 32);
+}
+
+// Helper function to update character animation
+static void update_character_animation(int char_index, battle_state &bs)
+{
+    if (!bs.character_sprites[char_index])
+        return;
+
+    auto &sprite = bs.character_sprites[char_index];
+    int &state = bs.character_states[char_index];
+    int &ticker = bs.character_tickers[char_index];
+
+    // Get appropriate sprite item and frame ranges based on character
+    // This would be cleaner with a character data structure, but working with what we have
+    const sprite_item *spr_item = nullptr;
+    int idle_start, idle_end, hurt_start, hurt_end, atk_start, atk_end;
+    int intro_frames = 55; // Default intro length
+
+    switch (char_index)
+    {
+    case 0: // Jeremy
+        spr_item = &sprite_items::jeremy_battle;
+        idle_start = JEREMY_IDLE_START;
+        idle_end = JEREMY_IDLE_START; // Single frame idle for Jeremy
+        hurt_start = JEREMY_HURT_START;
+        hurt_end = JEREMY_HURT_END;
+        atk_start = JEREMY_ATK_START;
+        atk_end = JEREMY_ATK_END;
+        break;
+
+    case 1: // Ginger
+        spr_item = &sprite_items::ginger_battle;
+        idle_start = GINGER_IDLE_START;
+        idle_end = GINGER_IDLE_END;
+        hurt_start = GINGER_HURT_START;
+        hurt_end = GINGER_HURT_END;
+        atk_start = GINGER_ATK_START;
+        atk_end = GINGER_ATK_END;
+        intro_frames = 40;
+        break;
+
+    // Add cases for other characters as needed
+    default:
+        return; // Unknown character
+    }
+
+    int y_offset = get_character_y_position(char_index) + bs.y_delta;
+
+    switch (state)
+    {
+    case 0: // INTRO
+        if (ticker < intro_frames)
+        {
+            // Intro animation
+            if (char_index == 0) // Jeremy has special intro
+            {
+                sprite->set_tiles(spr_item->tiles_item(), ticker / 5);
+            }
+            else // Others use idle frames for intro
+            {
+                int frame = idle_start + ((ticker / 10) % (idle_end - idle_start + 1));
+                sprite->set_tiles(spr_item->tiles_item(), frame);
+            }
+            ticker++;
+        }
+        else
+        {
+            state = 1; // Go to idle
+            ticker = 0;
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        break;
+
+    case 1:                        // IDLE
+        if (idle_end > idle_start) // Animated idle
+        {
+            int frame = idle_start + ((ticker / 8) % (idle_end - idle_start + 1));
+            sprite->set_tiles(spr_item->tiles_item(), frame);
+            ticker++;
+        }
+        else // Static idle
+        {
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        break;
+
+    case 2: // HURT
+    {
+        constexpr int TICKS_PER_FRAME = 4;
+        int anim_frame_idx = ticker / TICKS_PER_FRAME;
+        int frame = hurt_start + anim_frame_idx;
+
+        if (frame > hurt_end)
+        {
+            state = 1; // Back to idle
+            ticker = 0;
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        else
+        {
+            sprite->set_tiles(spr_item->tiles_item(), frame);
+            ticker++;
+        }
+    }
+    break;
+
+    case 3: // ATTACK
+    {
+        constexpr int TICKS_PER_FRAME = 3;
+        int anim_frame_idx = ticker / TICKS_PER_FRAME;
+        int frame = atk_start + anim_frame_idx;
+
+        if (frame > atk_end)
+        {
+            state = 1; // Back to idle
+            ticker = 0;
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        else
+        {
+            sprite->set_tiles(spr_item->tiles_item(), frame);
+            ticker++;
+        }
+    }
+    break;
+    }
+
+    sprite->set_position(-96, y_offset);
+}
+
+// In battle_map() function, modify the initialization:
 int battle_map()
 {
     music::stop();
@@ -252,8 +393,7 @@ int battle_map()
     // Create and reset battle state
     battle_state bs;
 
-    // Initialize sprites
-    bs.player_sprite = sprite_items::jeremy_battle_intro.create_sprite(-96, 16, 0);
+    // Initialize enemy sprite (always present)
     bs.enemy_sprite = sprite_items::visker_battle_intro.create_sprite(96, 16, 0);
     bs.heart = sprite_items::hearts.create_sprite(0, 0, 1);
 
@@ -267,6 +407,11 @@ int battle_map()
         global_data_ptr->enemy_max_hp[0] = 12;
         global_data_ptr->enemy_hp[0] = 12;
         global_data_ptr->enemy_allowed_moveset = 3;
+
+        // Just Jeremy for this battle
+        bs.party_size = 1;
+        bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
+        bs.character_sprites[0]->set_z_order(0);
 
         convos[RESULT_FIRST].push_back(&garbage_fight_01);
         convos[RESULT_UP].push_back(&garbage_fight_02);
@@ -283,8 +428,37 @@ int battle_map()
         global_data_ptr->enemy_hp[0] = 99;
         global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
 
+        // Jeremy and Ginger for this battle
+        bs.party_size = 2;
+
+        // Create character sprites
+        bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
+        bs.character_sprites[1] = sprite_items::ginger_battle.create_sprite(-96, get_character_y_position(1), 0);
+
+        // Set Z-order: lower index characters behind higher index characters
+        for (int i = 0; i < bs.party_size; ++i)
+        {
+            if (bs.character_sprites[i])
+                bs.character_sprites[i]->set_z_order(i);
+        }
+
+        // Initialize HP for Ginger if needed
+        if (global_data_ptr->max_hp[1] == 0)
+        {
+            global_data_ptr->max_hp[1] = 20;
+            global_data_ptr->hp[1] = 20;
+        }
+
         convos[RESULT_FIRST].push_back(&garbage_fight_05);
         break;
+
+        // Add more battle configurations as needed
+        // case FOE_SOMETHING_WITH_3_PARTY_MEMBERS:
+        //     bs.party_size = 3;
+        //     bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(...);
+        //     bs.character_sprites[1] = sprite_items::ginger_battle.create_sprite(...);
+        //     bs.character_sprites[2] = sprite_items::spr_sebellus_01.create_sprite(...);
+        //     break;
 
     default:
         break;
@@ -295,79 +469,13 @@ int battle_map()
     {
         bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
 
-        int y_offset = 16 + bs.y_delta;
-        switch (bs.player_state)
+        // Update all character animations
+        for (int i = 0; i < bs.party_size; ++i)
         {
-        case 0:
-        {
-            if (bs.player_ticker < 55)
-            {
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), bs.player_ticker / 5);
-                bs.player_ticker++;
-            }
-            else
-            {
-                bs.player_state = 1; // go idle after intro
-                bs.player_ticker = 0;
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), JEREMY_IDLE_FRAME);
-            }
-            break;
+            update_character_animation(i, bs);
         }
 
-        case 1: // IDLE
-            bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(),
-                                        JEREMY_IDLE_FRAME);
-            break;
-
-        case 2: // HURT (11..14 once, then idle 10)
-        {
-            constexpr int TICKS_PER_FRAME = 4;
-            int anim_frame_idx = bs.player_ticker / TICKS_PER_FRAME;
-            int frame = JEREMY_HURT_START + anim_frame_idx;
-
-            if (frame > JEREMY_HURT_END)
-            {
-                bs.player_state = 1;
-                bs.player_ticker = 0;
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(),
-                                            JEREMY_IDLE_FRAME);
-            }
-            else
-            {
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), frame);
-                bs.player_ticker++;
-            }
-        }
-        break;
-
-        case 3: // NEW: ATTACK_ANIM (15..21 once, then idle 10)
-        {
-            constexpr int TICKS_PER_FRAME = 3; // tweak feel/speed as desired
-            int anim_frame_idx = bs.player_ticker / TICKS_PER_FRAME;
-            int frame = JEREMY_ATK_START + anim_frame_idx;
-
-            if (frame > JEREMY_ATK_END)
-            {
-                bs.player_state = 1;
-                bs.player_ticker = 0;
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(),
-                                            JEREMY_IDLE_FRAME);
-            }
-            else
-            {
-                bs.player_sprite->set_tiles(sprite_items::jeremy_battle_intro.tiles_item(), frame);
-                bs.player_ticker++;
-            }
-        }
-        break;
-
-        default:
-            break;
-        }
-
-        bs.player_sprite->set_position(-96, y_offset);
-
-        // Update enemy animation
+        // Update enemy animation (unchanged from original)
         switch (bs.enemy_state)
         {
         case 0: // INTRO
@@ -394,11 +502,8 @@ int battle_map()
                                        ((bs.enemy_ticker / 5) % 6) + 10);
             bs.enemy_ticker++;
             break;
-
-        default:
-            break;
         }
-        bs.enemy_sprite->set_position(96, y_offset);
+        bs.enemy_sprite->set_position(96, 16 + bs.y_delta);
 
         // Y offset for dialogue
         bs.y_delta += is_dialogue_active(&bs) ? (bs.y_delta > -32 ? -4 : 0) : (bs.y_delta < 0 ? 4 : 0);
@@ -461,13 +566,6 @@ int battle_map()
                 return CONTINUE;
             }
 
-            // Initialize bullets if needed
-            if (bs.recv_ticker == 0)
-            {
-                int type = global_data_ptr->bn_random.get_int(0, global_data_ptr->enemy_allowed_moveset);
-                bullet::populate(&bs.bullets, type);
-            }
-
             // Update heart position
             bs.heart_pos.x += keypad::right_held() - keypad::left_held();
             bs.heart_pos.y += keypad::down_held() - keypad::up_held();
@@ -483,7 +581,6 @@ int battle_map()
                 bs.heart_pos.y = 48;
 
             bs.heart->set_position(bs.heart_pos.x, bs.heart_pos.y);
-            // Always use normal heart sprite (no defense variation)
             bs.heart->set_tiles(sprite_items::hearts.tiles_item(), 1);
 
             // Update bullets
@@ -499,15 +596,14 @@ int battle_map()
                         if (who >= 0)
                         {
                             global_data_ptr->hp[who] -= 2;
-                            text::add_toast(-2, {-96, -36});
+
+                            // Position toast based on character's Y position
+                            text::add_toast(-2, vector_2(-96, -44 + (who * 8)));
                             sound_items::sfx_damage.play();
 
-                            // If Jeremy took the hit, play hurt animation
-                            if (who == 0)
-                            {
-                                bs.player_state = 2;  // HURT
-                                bs.player_ticker = 0; // restart the hurt anim
-                            }
+                            // Trigger hurt animation for hit character
+                            bs.character_states[who] = 2; // HURT state
+                            bs.character_tickers[who] = 0;
                         }
                         b.item->set_visible(false);
                     }
@@ -564,12 +660,12 @@ int battle_map()
                 bs.labels[0]->render();
                 bs.labels[1]->render();
 
-                // Setup main menu (without ACT and DEFEND)
+                // Setup main menu
                 bs.menu_index = 0;
                 bs.selected_menu = STATUS_BAR_NONE;
 
                 // Create 3 menu icons: ATTACK, ITEM, SPARE
-                int icon_indices[] = {0, 2, 3}; // Skip index 1 (ACT) and 4 (DEFEND)
+                int icon_indices[] = {0, 2, 3};
                 for (int i = 0; i < 3; ++i)
                 {
                     bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
@@ -580,23 +676,22 @@ int battle_map()
                 bs.labels[2]->render();
             }
 
-            // Handle menu selection
+            // Handle menu selection (unchanged from original)
             if (bs.selected_menu == STATUS_BAR_NONE)
             {
                 if (keypad::up_pressed())
                 {
-                    bs.menu_index = (bs.menu_index + 2) % 3; // Changed from 4 to 3
+                    bs.menu_index = (bs.menu_index + 2) % 3;
                     sound_items::snd_dialogue_generic.play();
                 }
                 else if (keypad::down_pressed())
                 {
-                    bs.menu_index = (bs.menu_index + 1) % 3; // Changed from 4 to 3
+                    bs.menu_index = (bs.menu_index + 1) % 3;
                     sound_items::snd_dialogue_generic.play();
                 }
                 else if (keypad::a_pressed())
                 {
                     sound_items::snd_alert.play();
-                    // Map menu index to status bar values
                     switch (bs.menu_index)
                     {
                     case 0:
@@ -608,10 +703,11 @@ int battle_map()
                     case 2:
                         bs.selected_menu = STATUS_BAR_SPARE;
                         break;
+                    default:
+                        break;
                     }
                 }
 
-                // Update label
                 const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
                 bs.labels[2].reset();
                 bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
@@ -654,43 +750,34 @@ int battle_map()
                 }
                 else
                 {
-                    // No spare conversations left, just reset menu selection
                     bs.selected_menu = STATUS_BAR_NONE;
                 }
             }
             else if (bs.selected_menu == STATUS_BAR_ITEM)
             {
-                // Hide the scrolling selector label ("ITEM"/"ITEMS") while in the ITEM screen
                 if (bs.labels[2])
                     bs.labels[2].reset();
 
-                // Remove the menu icons while viewing items
                 for (int i = 0; i < 3; ++i)
                     bs.battle_icons[i].reset();
 
-                // Show placeholder
                 bs.labels[3].reset();
                 bs.labels[3] = {"* No Items", {-22, -12}};
                 bs.labels[3]->render();
 
-                // Back out of ITEM screen
                 if (keypad::b_pressed())
                 {
                     sound_items::snd_alert.play();
 
-                    // Clear the placeholder so it doesn't persist
                     if (bs.labels[3])
                         bs.labels[3].reset();
 
                     bs.selected_menu = STATUS_BAR_NONE;
 
-                    // Restore menu icons
                     int icon_indices[] = {0, 2, 3};
                     for (int i = 0; i < 3; ++i)
                         bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
 
-                    // Optionally force the selector label to reappear immediately this frame
-                    // (Otherwise the STATUS_BAR_NONE branch will recreate it on the next tick)
                     const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
                     bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
                     bs.labels[2]->render();
@@ -712,9 +799,9 @@ int battle_map()
 
             if (keypad::a_pressed())
             {
-                // START ATTACK ANIMATION NOW
-                bs.player_state = 3; // ATTACK_ANIM
-                bs.player_ticker = 0;
+                // Trigger attack animation for current actor
+                bs.character_states[bs.current_actor] = 3; // ATTACK state
+                bs.character_tickers[bs.current_actor] = 0;
 
                 int dist = abs(bs.attack_unit->x().integer() - bs.attack_recv->x().integer());
                 if (dist < 5)
@@ -727,7 +814,7 @@ int battle_map()
                 bs.attack_header.reset();
                 bs.attack_recv.reset();
                 bs.attack_unit.reset();
-                bs.stage = stage_talking; // animation continues while we transition
+                bs.stage = stage_talking;
             }
             else if (bs.attack_unit->x() <= -42)
             {

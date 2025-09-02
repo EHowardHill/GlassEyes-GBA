@@ -66,6 +66,7 @@ enum character_list
     CHAR_VISKER,
     CHAR_VISKER_WIFE,
     CHAR_GINGER,
+    CHAR_CROKE,
     CHAR_TYPEWRITER
 };
 

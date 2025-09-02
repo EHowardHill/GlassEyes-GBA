@@ -9,6 +9,7 @@
 #include "bn_sprite_items_spr_visker_01.h"
 #include "bn_sprite_items_spr_visker_wife_01.h"
 #include "bn_sprite_items_spr_ginger_01.h"
+#include "bn_sprite_items_spr_croke_01.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -185,6 +186,11 @@ character::character(int index_, vector_2 start_) : index(index_)
     case CHAR_GINGER:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_ginger_01;
+        break;
+    }
+    case CHAR_CROKE:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_croke_01;
         break;
     }
 

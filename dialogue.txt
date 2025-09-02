@@ -267,92 +267,94 @@ leaving_lab
 	db_ch_ginger	EM_SAD		Right.		Sorry.							
 	db_ch_jeremy	EM_DEFAULT		Alright..		Here goes nothing.							
 			ACT_PROGRESS							FOREST_01			
-
-forest_dlg_01
-	db_ch_ginger	EM_SIDE_EYE		"Oh- Not that way,"	That's the way to	New Berlin.
-	db_ch_jeremy	EM_DEFAULT		..I guess it isn't	worth testing their	hospitality.
-	db_ch_jeremy	EM_DEFAULT		If I have to be	"stuck out here," at	least it's nice.
-	db_ch_jeremy	EM_DEFAULT		Freezing cold	but otherwise nice.
-	db_ch_ginger	EM_SAD			Maybe we can find	you something warm	in Avalon.
-	db_ch_jeremy	EM_DEFAULT		One can hope.
-
-forest_dlg_02
-	db_ch_ginger	EM_DEFAULT		Okay.. we're not	too far from	Avalon village.
-	db_ch_jeremy	EM_DEFAULT		What are they going	to do when they	see a human?
-	db_ch_ginger	EM_SIDE_EYE		You look like a 	"tough guy, uh.."	Let's find out.
-
-croke_01
-	db_ch_croke		EM_DEFAULT		"HALT NOW,"	FILTHY GLABBER!
-	db_ch_ginger	EM_WAT		Don't hurt us!!	Please!
-	db_ch_jeremy	EM_DEFAULT		Can I help you?
-	db_ch_croke		EM_DEFAULT		Filthy Glabber 	can die!
-	db_ch_jeremy	EM_DEFAULT		"Hey, Greenie?"	What is a glabber?
-	db_ch_jeremy	EM_SIDE_EYE		It's a slur for	"humans, it means"	"""bald."""
-	db_ch_jeremy	EM_DEFAULT		Oh.	Well now	it's personal.
-
-croke_02
-	db_ch_croke		EM_DEFAULT		"TASTE POISON,"	GLABBER!
-	db_ch_croke		EM_DEFAULT		...
-
-croke_03
-	db_ch_ginger	EM_CONFUSED		He's.. Dead..
-	db_ch_jeremy	EM_DEFAULT		Great. Let's raid	his stuff.
-	db_ch_ginger	EM_SAD		Doesn't that	seem in bad taste?
-	db_ch_jeremy	EM_DEFAULT		I like to live.
-	db_ch_ginger	EM_DEFAULT		"Well, I do too.."
-	db_ch_jeremy	EM_DEFAULT		"Great, we're"	on the same page.
-
-croke_04
-				You found:	"""FAMILY PICTURE"""	"""CLOAK"""
-	db_ch_ginger	EM_DEFAULT		Might not be a 	bad idea to put	that on.
-
-forest_dlg_sign_01
-				DANGEROUS!!!	DO NOT ENTER
-				RESEARCHERS ONLY
-
-cave_01
-	db_ch_jeremy	EM_DEFAULT		What is all this?
-	db_ch_ginger	EM_DEFAULT		There are lots and	lots of tunnels	under the Old World.
-	db_ch_ginger	EM_EMBARRASSED	"I'm, uh.."	not supposed to	talk about them.
-	db_ch_jeremy	EM_DEFAULT		Why?	Is it a mueto	religion thing?
-	db_ch_ginger	EM_DEFAULT		"No, it's just-"
-	db_ch_ginger	EM_ANGRY		You could be a bit 	"nicer to me,"	you know.
-	db_ch_ginger	EM_ANGRY		I saved your life.
-	db_ch_jeremy	EM_DEFAULT		I'm sorry.	Flat affect.
-
-forest_dlg_sign_02
-	db_ch_jeremy	EM_DEFAULT		I can't read this.
-	db_ch_ginger	EM_CONFUSED		Uh.. I think	it says that	it's for sale.
-	db_ch_jeremy	EM_DEFAULT		You can't read?
-	db_ch_ginger	EM_DEFAULT		Hey, *you* can't 	read it either.
-
-forest_dlg_03
-	db_ch_ginger	EM_SIDE_EYE		We shouldn't be	going in other	people's houses.
-	db_ch_jeremy	EM_DEFAULT		Fair enough.	"Besides, the door"	is locked.
-	db_ch_ginger	EM_PAIN			Ugh.. we're gonna 	die out here.
-
-forest_dlg_paper
-	db_ch_jeremy	EM_DEFAULT		It's some kind of	research document.
-	db_ch_ginger	EM_DEFAULT		We should probably	take it with us.
-	db_ch_jeremy	EM_DEFAULT		Why.
-	db_ch_ginger	EM_DEFAULT		I don't know..	Vibes?
-	db_ch_jeremy	EM_DEFAULT		You take it if	you want it.
-
-bridge_01
-	db_ch_jeremy	EM_DEFAULT		"Let me guess,"	Avalon is THAT way.
-	db_ch_ginger	EM_DEFAULT		Yep.
-	db_ch_jeremy	EM_DEFAULT		When will it be	back up?
-	db_ch_ginger	EM_DEFAULT		It might not be. There's a joke,
-	db_ch_ginger	EM_EMBARRASSED	"""Mueto bridges are	human bridges,	but broken."""
-	db_ch_jeremy	EM_DEFAULT		I see.
-	db_ch_ginger	EM_DEFAULT		I'm sure there's a	tunnel around here	somewhere.
-	db_ch_ginger	EM_DEFAULT		You can get most	places through the	tunnels.
-
-tunnel_01
-	db_ch_ginger	EM_DEFAULT		Hey- Just, uh..	Before we go in,
-	db_ch_ginger	EM_SIDE_EYE		Tunnels aren't.. 	"""kind""" places.
-	db_ch_jeremy	EM_DEFAULT		I'm not exactly a	"""kind""" person.
-	db_ch_ginger	EM_EMBARRASSED		Yeah..
+													
+forest_dlg_01													
+	db_ch_ginger	EM_SIDE_EYE		"Oh- Not that way,"	That's the way to	New Berlin.							
+	db_ch_jeremy	EM_DEFAULT		..I guess it isn't	worth testing their	hospitality.							
+	db_ch_jeremy	EM_DEFAULT		If I have to be	"stuck out here, at"	least it's nice.							
+	db_ch_jeremy	EM_DEFAULT		Freezing cold	but otherwise nice.								
+	db_ch_ginger	EM_SAD		Maybe we can find	you something warm	in Avalon.							
+	db_ch_jeremy	EM_DEFAULT		One can hope.									
+													
+forest_dlg_02													
+	db_ch_ginger	EM_DEFAULT		Okay.. we're not	too far from	Avalon village.							
+	db_ch_jeremy	EM_DEFAULT		What are they going	to do when they	see a human?							
+	db_ch_ginger	EM_SIDE_EYE		You look like a 	"tough guy, uh.."	Let's find out.							
+													
+croke_01													
+	db_ch_croke	EM_DEFAULT	ACT_WALK	"HALT NOW,"	FILTHY GLABBER!					CHAR_CROKE		"{41, 8}"	
+	db_ch_ginger	EM_WAT		Don't hurt us!!	Please!								
+	db_ch_jeremy	EM_DEFAULT		Can I help you?									
+	db_ch_croke	EM_DEFAULT		Filthy Glabber 	can die!								
+	db_ch_croke	EM_DEFAULT		..with the mueto	who is a glabber	by association!							
+	db_ch_jeremy	EM_DEFAULT		"Hey, Greenie?"	What is a glabber?								
+	db_ch_ginger	EM_SIDE_EYE		It's a slur for	"humans, it means"	"""bald."""							
+	db_ch_jeremy	EM_DEFAULT		Oh.	Well now	it's personal.							
+			ACT_FIGHT							FOE_VISKERS_02			
+													
+croke_02													
+	db_ch_croke	EM_DEFAULT		"TASTE POISON,"	GLABBER!								
+	db_ch_croke	EM_DEFAULT		...									
+													
+croke_03													
+	db_ch_ginger	EM_CONFUSED		He's.. Dead..									
+	db_ch_jeremy	EM_DEFAULT		Great. Let's raid	his stuff.								
+	db_ch_ginger	EM_SAD		Doesn't that	seem in bad taste?								
+	db_ch_jeremy	EM_DEFAULT		I like to live.									
+	db_ch_ginger	EM_DEFAULT		"Well, I do too.."									
+	db_ch_jeremy	EM_DEFAULT		"Great, we're"	on the same page.								
+													
+croke_04													
+				You found:	"""FAMILY PICTURE"""	"""CLOAK"""							
+	db_ch_ginger	EM_DEFAULT		Might not be a 	bad idea to put	that on.							
+													
+forest_dlg_sign_01													
+				DANGEROUS!!!	DO NOT ENTER								
+				RESEARCHERS ONLY									
+													
+cave_01													
+	db_ch_jeremy	EM_DEFAULT		What is all this?									
+	db_ch_ginger	EM_DEFAULT		There are lots and	lots of tunnels	under the Old World.							
+	db_ch_ginger	EM_EMBARRASSED		"I'm, uh.."	not supposed to	talk about them.							
+	db_ch_jeremy	EM_DEFAULT		Why?	Is it a mueto	religion thing?							
+	db_ch_ginger	EM_DEFAULT		"No, it's just-"									
+	db_ch_ginger	EM_ANGRY		You could be	"kind to me,"	you know.							
+	db_ch_ginger	EM_ANGRY		I didn't have to	save your life.								
+	db_ch_jeremy	EM_DEFAULT		I'm sorry.	Flat affect.								
+													
+forest_dlg_sign_02													
+	db_ch_jeremy	EM_DEFAULT		I can't read this.									
+	db_ch_ginger	EM_CONFUSED		Uh.. I think	it says that	it's for sale.							
+	db_ch_jeremy	EM_DEFAULT		You can't read?									
+	db_ch_ginger	EM_DEFAULT		"Hey, *you* can't "	read it either.								
+													
+forest_dlg_03													
+	db_ch_ginger	EM_SIDE_EYE		We shouldn't be	going in other	people's houses.							
+	db_ch_jeremy	EM_DEFAULT		Fair enough.	"Besides, the door"	is locked.							
+	db_ch_ginger	EM_SAD		Ugh.. we're gonna 	die out here.								
+													
+forest_dlg_paper													
+	db_ch_jeremy	EM_DEFAULT		It's some kind of	research document.								
+	db_ch_ginger	EM_DEFAULT		We should probably	take it with us.								
+	db_ch_jeremy	EM_DEFAULT		Why.									
+	db_ch_ginger	EM_DEFAULT		I don't know..	Vibes?								
+	db_ch_jeremy	EM_DEFAULT		You take it if	you want it.								
+													
+bridge_01													
+	db_ch_jeremy	EM_DEFAULT		"Let me guess,"	Avalon is THAT way.								
+	db_ch_ginger	EM_DEFAULT		Yep.									
+	db_ch_jeremy	EM_DEFAULT		When will it be	back up?								
+	db_ch_ginger	EM_DEFAULT		It might not be.	We have a joke..								
+	db_ch_ginger	EM_EMBARRASSED		"""Mueto bridges"	"are human bridges,"	"but broken."""							
+	db_ch_jeremy	EM_DEFAULT		I see.									
+	db_ch_ginger	EM_DEFAULT		I'm sure there's a	tunnel around here	somewhere.							
+	db_ch_ginger	EM_DEFAULT		You can get most	places through the	tunnels.							
+													
+tunnel_01													
+	db_ch_ginger	EM_DEFAULT		"Hey- Just, uh.."	"Before we go in,"								
+	db_ch_ginger	EM_SIDE_EYE		Tunnels aren't.. 	"""kind"" places."								
+	db_ch_jeremy	EM_DEFAULT		I'm not exactly a	"""kind"" person."								
+	db_ch_ginger	EM_EMBARRASSED		Yeah..									
 													
 final_msg													
 				Thanks for	trying out the	demo so far!							
