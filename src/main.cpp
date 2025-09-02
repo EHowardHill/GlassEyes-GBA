@@ -255,12 +255,10 @@ int main()
     global_data_ptr->process_stage = FOREST_01; // CUTSCENE_01;
 
     // Test battle before game begins
-    /*
-    global_data_ptr->battle_foe = FOE_VISKERS_01;
+    global_data_ptr->battle_foe = FOE_VISKERS_02;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
-    */
 
     while (true)
     {

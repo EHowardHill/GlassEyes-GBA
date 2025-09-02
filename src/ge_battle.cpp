@@ -35,7 +35,12 @@ static constexpr int GINGER_IDLE_END = 11;
 static constexpr int GINGER_HURT_START = 12;
 static constexpr int GINGER_HURT_END = 14;
 static constexpr int GINGER_ATK_START = 15;
-static constexpr int GINGER_ATK_END = 21;
+static constexpr int GINGER_ATK_END = 17;
+
+static constexpr int ACTION_NONE = -1;
+static constexpr int ACTION_ATTACK = 0;
+static constexpr int ACTION_ITEM = 1;
+static constexpr int ACTION_SPARE = 2;
 
 struct battle_state
 {
@@ -46,6 +51,11 @@ struct battle_state
     int result = RESULT_FIRST;
     int y_delta = 0;
 
+    // Action tracking
+    int character_actions[MAX_PARTY_SIZE] = {ACTION_NONE, ACTION_NONE, ACTION_NONE, ACTION_NONE};
+    int choosing_for = 0; // Which character is currently choosing
+    bool has_acted[MAX_PARTY_SIZE];
+
     // Reusable dialogue state
     conversation *active_conv = nullptr;
     int dlg_index = 0;
@@ -55,10 +65,10 @@ struct battle_state
     optional<sprite_ptr> portrait;
     optional<regular_bg_ptr> bg_ptr;
 
-    // Combat entities - NOW USING ARRAYS
-    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE]; // Party member sprites
-    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};    // Animation states
-    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};   // Animation tickers
+    // Combat entities
+    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE];
+    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
 
     optional<sprite_ptr> enemy_sprite;
     int enemy_state = 0;
@@ -67,10 +77,19 @@ struct battle_state
     // Menu state
     int menu_index = 0;
 
-    // Attack bar
-    optional<sprite_ptr> attack_header;
-    optional<sprite_ptr> attack_recv;
-    optional<sprite_ptr> attack_unit;
+    // Attack bars - now arrays for multiple characters
+    optional<sprite_ptr> attack_headers[MAX_PARTY_SIZE];
+    optional<sprite_ptr> attack_recvs[MAX_PARTY_SIZE];
+    optional<sprite_ptr> attack_units[MAX_PARTY_SIZE];
+    int attack_damages[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    bool attack_pressed[MAX_PARTY_SIZE] = {false, false, false, false};
+    int num_attackers = 0;
+
+    // NEW: Individual attack timing parameters
+    fixed attack_speeds[MAX_PARTY_SIZE] = {0, 0, 0, 0};                  // Speed of each attack unit
+    int attack_launch_delays[MAX_PARTY_SIZE] = {0, 0, 0, 0};             // Frames to wait before launching
+    int attack_launch_timers[MAX_PARTY_SIZE] = {0, 0, 0, 0};             // Current timer for launch
+    bool attack_launched[MAX_PARTY_SIZE] = {false, false, false, false}; // Has this attack launched yet?
 
     // Recv state
     optional<sprite_ptr> heart;
@@ -116,6 +135,28 @@ static const char *get_name(int i)
 {
     const char *names[] = {"JEREMY", "GINGER", "SEBELLUS", "VISTA"};
     return i < 4 ? names[i] : "ALLY";
+}
+
+static int next_unacted_living(battle_state *bs)
+{
+    // Find the next living character who hasn't acted yet this round
+    for (int i = 0; i < bs->party_size; ++i)
+    {
+        if (is_alive(i, bs) && !bs->has_acted[i])
+            return i;
+    }
+    return -1; // All living characters have acted
+}
+
+static int count_action(battle_state *bs, int action)
+{
+    int count = 0;
+    for (int i = 0; i < bs->party_size; ++i)
+    {
+        if (is_alive(i, bs) && bs->character_actions[i] == action)
+            count++;
+    }
+    return count;
 }
 
 // Dialogue functions
@@ -246,14 +287,12 @@ static bool are_lines_complete(battle_state *bs)
            bs->dlg_lines[2].is_ended();
 }
 
-// Helper function to get character Y position
 static int get_character_y_position(int index)
 {
     // Stack characters vertically, with first character highest
     return 8 - (index * 32);
 }
 
-// Helper function to update character animation
 static void update_character_animation(int char_index, battle_state &bs)
 {
     if (!bs.character_sprites[char_index])
@@ -309,11 +348,17 @@ static void update_character_animation(int char_index, battle_state &bs)
             {
                 sprite->set_tiles(spr_item->tiles_item(), ticker / 5);
             }
-            else // Others use idle frames for intro
+            else if (char_index == 1) // Ginger intro
             {
-                int frame = idle_start + ((ticker / 10) % (idle_end - idle_start + 1));
+                // Ginger's intro uses frames 0-7 (before idle starts at 8)
+                int frame = ticker / 5;  // Adjust divisor as needed for speed
+                if (frame >= idle_start) // Don't go past intro frames
+                {
+                    frame = idle_start - 1;
+                }
                 sprite->set_tiles(spr_item->tiles_item(), frame);
             }
+            // Add other characters here as needed
             ticker++;
         }
         else
@@ -508,6 +553,8 @@ int battle_map()
         // Y offset for dialogue
         bs.y_delta += is_dialogue_active(&bs) ? (bs.y_delta > -32 ? -4 : 0) : (bs.y_delta < 0 ? 4 : 0);
 
+        BN_LOG("STAGE: ", bs.stage);
+
         // Stage: Talking
         if (bs.stage == stage_talking)
         {
@@ -614,6 +661,16 @@ int battle_map()
             {
                 bs.recv_ticker = 0;
                 bs.current_actor = -1;
+
+                // Reset for new round of turns
+                for (int i = 0; i < MAX_PARTY_SIZE; ++i)
+                {
+                    bs.has_acted[i] = false;
+                    bs.character_actions[i] = ACTION_NONE; // Add this - reset actions
+                }
+
+                bs.choosing_for = 0; // ADD THIS - reset to first character
+
                 bs.stage = stage_status;
             }
         }
@@ -633,29 +690,60 @@ int battle_map()
                 return CONTINUE;
             }
 
-            // Get next actor if needed
+            // Setup for character if needed
             if (!bs.char_img)
             {
-                int next = next_living(bs.current_actor, &bs);
-                if (next < 0)
+                // Find next character who needs to choose
+                while (bs.choosing_for < bs.party_size && !is_alive(bs.choosing_for, &bs))
                 {
-                    // All characters have acted, go to talking stage
-                    bs.stage = stage_talking;
+                    bs.choosing_for++;
+                }
+
+                if (bs.choosing_for >= bs.party_size)
+                {
+                    // All characters have chosen, execute actions
+                    bs.choosing_for = 0;
+
+                    // Check if anyone chose spare
+                    if (count_action(&bs, ACTION_SPARE) > 0)
+                    {
+                        if (spare_convos.size() > 0)
+                        {
+                            conversation *spare_conv = spare_convos.front();
+                            spare_convos.erase(spare_convos.begin());
+                            init_dialogue(spare_conv, &bs);
+                            bs.stage = stage_talking_then_attack; // New stage
+                        }
+                        else
+                        {
+                            bs.stage = stage_execute_attacks;
+                        }
+                    }
+                    else
+                    {
+                        bs.stage = stage_execute_attacks;
+                    }
+
+                    // DON'T reset actions here!
+                    // for (int i = 0; i < MAX_PARTY_SIZE; ++i)
+                    // {
+                    //     bs.character_actions[i] = ACTION_NONE;
+                    // }
                     continue;
                 }
 
-                bs.current_actor = next;
-                bs.char_img = sprite_items::battle_chars.create_sprite(-42, -42, next);
+                bs.current_actor = bs.choosing_for;
+                bs.char_img = sprite_items::battle_chars.create_sprite(-42, -42, bs.choosing_for);
 
                 // Setup labels
                 string<20> hp_str = "HP:";
-                hp_str.push_back('0' + global_data_ptr->hp[next] / 10);
-                hp_str.push_back('0' + global_data_ptr->hp[next] % 10);
+                hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] / 10);
+                hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] % 10);
                 hp_str.push_back('/');
-                hp_str.push_back('0' + global_data_ptr->max_hp[next] / 10);
-                hp_str.push_back('0' + global_data_ptr->max_hp[next] % 10);
+                hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] / 10);
+                hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] % 10);
 
-                bs.labels[0] = {get_name(next), {0, -52}};
+                bs.labels[0] = {get_name(bs.choosing_for), {0, -52}};
                 bs.labels[1] = {hp_str, {0, -36}};
                 bs.labels[0]->render();
                 bs.labels[1]->render();
@@ -664,7 +752,7 @@ int battle_map()
                 bs.menu_index = 0;
                 bs.selected_menu = STATUS_BAR_NONE;
 
-                // Create 3 menu icons: ATTACK, ITEM, SPARE
+                // Create 3 menu icons
                 int icon_indices[] = {0, 2, 3};
                 for (int i = 0; i < 3; ++i)
                 {
@@ -676,7 +764,7 @@ int battle_map()
                 bs.labels[2]->render();
             }
 
-            // Handle menu selection (unchanged from original)
+            // Handle menu selection
             if (bs.selected_menu == STATUS_BAR_NONE)
             {
                 if (keypad::up_pressed())
@@ -692,50 +780,23 @@ int battle_map()
                 else if (keypad::a_pressed())
                 {
                     sound_items::snd_alert.play();
+
+                    // Record the action choice
                     switch (bs.menu_index)
                     {
                     case 0:
-                        bs.selected_menu = STATUS_BAR_ATTACK;
+                        bs.character_actions[bs.choosing_for] = ACTION_ATTACK;
                         break;
                     case 1:
-                        bs.selected_menu = STATUS_BAR_ITEM;
+                        // For now, treat ITEM as a skip (since items aren't implemented)
+                        bs.character_actions[bs.choosing_for] = ACTION_ITEM;
                         break;
                     case 2:
-                        bs.selected_menu = STATUS_BAR_SPARE;
-                        break;
-                    default:
+                        bs.character_actions[bs.choosing_for] = ACTION_SPARE;
                         break;
                     }
-                }
 
-                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
-                bs.labels[2].reset();
-                bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
-                bs.labels[2]->render();
-            }
-
-            // Handle menu selections
-            else if (bs.selected_menu == STATUS_BAR_ATTACK)
-            {
-                bs.char_img.reset();
-                for (int i = 0; i < 5; ++i)
-                {
-                    bs.labels[i].reset();
-                }
-                for (int i = 0; i < 3; ++i)
-                {
-                    bs.battle_icons[i].reset();
-                }
-                bs.stage = stage_attack;
-            }
-            else if (bs.selected_menu == STATUS_BAR_SPARE)
-            {
-                if (spare_convos.size() > 0)
-                {
-                    conversation *spare_conv = spare_convos.front();
-                    spare_convos.erase(spare_convos.begin());
-                    init_dialogue(spare_conv, &bs);
-
+                    // Clean up current character's UI
                     bs.char_img.reset();
                     for (int i = 0; i < 5; ++i)
                     {
@@ -746,81 +807,278 @@ int battle_map()
                         bs.battle_icons[i].reset();
                     }
 
-                    bs.stage = stage_talking;
+                    // Move to next character
+                    bs.choosing_for++;
                 }
-                else
-                {
-                    bs.selected_menu = STATUS_BAR_NONE;
-                }
+
+                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
+                bs.labels[2].reset();
+                bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
+                bs.labels[2]->render();
             }
-            else if (bs.selected_menu == STATUS_BAR_ITEM)
+        }
+        else if (bs.stage == stage_talking_then_attack)
+        {
+            if (!is_dialogue_active(&bs))
             {
-                if (bs.labels[2])
-                    bs.labels[2].reset();
+                bs.stage = stage_execute_attacks;
+            }
+            else
+            {
+                update_dialogue(&bs);
 
-                for (int i = 0; i < 3; ++i)
-                    bs.battle_icons[i].reset();
-
-                bs.labels[3].reset();
-                bs.labels[3] = {"* No Items", {-22, -12}};
-                bs.labels[3]->render();
-
-                if (keypad::b_pressed())
+                if (keypad::a_pressed() && are_lines_complete(&bs))
                 {
-                    sound_items::snd_alert.play();
-
-                    if (bs.labels[3])
-                        bs.labels[3].reset();
-
-                    bs.selected_menu = STATUS_BAR_NONE;
-
-                    int icon_indices[] = {0, 2, 3};
-                    for (int i = 0; i < 3; ++i)
-                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
-
-                    const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
-                    bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
-                    bs.labels[2]->render();
+                    if (!advance_dialogue(&bs))
+                    {
+                        clear_dialogue(&bs);
+                    }
                 }
             }
         }
 
-        // Stage: Attack
-        else if (bs.stage == stage_attack)
+        else if (bs.stage == stage_execute_attacks)
         {
-            if (!bs.attack_header)
+            for (int i = 0; i < 5; ++i)
             {
-                bs.attack_header = sprite_items::battle_chars.create_sprite(-42, 0, 0);
-                bs.attack_recv = sprite_items::battle_squares.create_sprite(-10, 0, 0);
-                bs.attack_unit = sprite_items::battle_squares.create_sprite(64, 0, 2);
+                bs.labels[i].reset();
             }
 
-            bs.attack_unit->set_x(bs.attack_unit->x() - 1.2);
+            // Count attackers and start attack stage if any
+            bs.num_attackers = count_action(&bs, ACTION_ATTACK);
 
-            if (keypad::a_pressed())
+            if (bs.num_attackers > 0)
             {
-                // Trigger attack animation for current actor
-                bs.character_states[bs.current_actor] = 3; // ATTACK state
-                bs.character_tickers[bs.current_actor] = 0;
-
-                int dist = abs(bs.attack_unit->x().integer() - bs.attack_recv->x().integer());
-                if (dist < 5)
+                // Setup attack lanes for all attackers
+                int attacker_idx = 0;
+                for (int i = 0; i < bs.party_size; ++i)
                 {
-                    global_data_ptr->enemy_hp[0] -= (5 - dist);
-                    text::add_toast(-(5 - dist), {96, -36});
-                }
-                sound_items::snd_alert.play();
+                    if (is_alive(i, &bs) && bs.character_actions[i] == ACTION_ATTACK)
+                    {
+                        // Position based on how many attackers there are
+                        int y_pos = -32 + (attacker_idx * 32) - ((bs.num_attackers - 1) * 16);
 
-                bs.attack_header.reset();
-                bs.attack_recv.reset();
-                bs.attack_unit.reset();
+                        bs.attack_headers[i] = sprite_items::battle_chars.create_sprite(-42, y_pos, i);
+                        bs.attack_recvs[i] = sprite_items::battle_squares.create_sprite(-10, y_pos, 0);
+
+                        // Don't create attack_units yet - they'll be created after launch delay
+                        bs.attack_units[i].reset();
+
+                        bs.attack_pressed[i] = false;
+                        bs.attack_damages[i] = 0;
+                        bs.attack_launched[i] = false;
+
+                        // Set individual timing parameters based on character
+                        switch (i)
+                        {
+                        case 0: // Jeremy - medium speed, launches first
+                            bs.attack_speeds[i] = fixed(1.2);
+                            bs.attack_launch_delays[i] = 0;
+                            break;
+                        case 1: // Ginger - faster, launches slightly later
+                            bs.attack_speeds[i] = fixed(1.5);
+                            bs.attack_launch_delays[i] = 20;
+                            break;
+                        case 2: // Sebellus - slower but precise
+                            bs.attack_speeds[i] = fixed(0.9);
+                            bs.attack_launch_delays[i] = 10;
+                            break;
+                        case 3: // Vista - variable speed
+                            bs.attack_speeds[i] = fixed(1.0 + (global_data_ptr->bn_random.get_fixed(0, fixed(0.4))));
+                            bs.attack_launch_delays[i] = 30;
+                            break;
+                        default:
+                            bs.attack_speeds[i] = fixed(1.2);
+                            bs.attack_launch_delays[i] = 0;
+                            break;
+                        }
+
+                        bs.attack_launch_timers[i] = 0;
+                        attacker_idx++;
+                    }
+                }
+                bs.stage = stage_attack;
+            }
+            else
+            {
+                // No one attacked, go to talking
                 bs.stage = stage_talking;
             }
-            else if (bs.attack_unit->x() <= -42)
+        }
+        else if (bs.stage == stage_attack)
+        {
+            bool all_done = true;
+
+            // First, handle launching attacks after their delays
+            for (int i = 0; i < bs.party_size; ++i)
             {
-                bs.attack_header.reset();
-                bs.attack_recv.reset();
-                bs.attack_unit.reset();
+                if (bs.attack_headers[i] && !bs.attack_launched[i])
+                {
+                    bs.attack_launch_timers[i]++;
+                    if (bs.attack_launch_timers[i] >= bs.attack_launch_delays[i])
+                    {
+                        // Launch this attack!
+                        int y_pos = bs.attack_headers[i]->y().integer();
+                        bs.attack_units[i] = sprite_items::battle_squares.create_sprite(64, y_pos, 2);
+                        bs.attack_launched[i] = true;
+
+                        // Small visual effect on launch
+                        bs.attack_units[i]->set_scale(1.2);
+                    }
+                }
+            }
+
+            // Check for button press and find closest unpressed attack unit
+            if (keypad::a_pressed())
+            {
+                int closest_idx = -1;
+                fixed closest_dist = 200; // Large initial value
+
+                // Find the closest unpressed attack unit
+                for (int i = 0; i < bs.party_size; ++i)
+                {
+                    if (bs.attack_units[i] && !bs.attack_pressed[i])
+                    {
+                        fixed dist = abs(bs.attack_units[i]->x() - bs.attack_recvs[i]->x());
+                        if (dist < closest_dist)
+                        {
+                            closest_dist = dist;
+                            closest_idx = i;
+                        }
+                    }
+                }
+
+                // Handle the closest attack
+                if (closest_idx >= 0)
+                {
+                    bs.attack_pressed[closest_idx] = true;
+
+                    // Check if it's in the hit zone (within 8 pixels of target)
+                    if (closest_dist < 8)
+                    {
+                        // Good hit! Calculate damage based on accuracy
+                        bs.character_states[closest_idx] = 3; // ATTACK animation
+                        bs.character_tickers[closest_idx] = 0;
+
+                        if (closest_dist < 2)
+                        {
+                            bs.attack_damages[closest_idx] = 5; // Perfect hit
+                            sound_items::snd_alert.play();      // Use different sound if available
+                        }
+                        else if (closest_dist < 5)
+                        {
+                            bs.attack_damages[closest_idx] = 3; // Good hit
+                            sound_items::snd_alert.play();
+                        }
+                        else
+                        {
+                            bs.attack_damages[closest_idx] = 1; // Grazing hit
+                            sound_items::snd_dialogue_generic.play();
+                        }
+
+                        // Visual feedback - flash the unit
+                        bs.attack_units[closest_idx]->set_tiles(
+                            sprite_items::battle_squares.tiles_item(), 3); // Use different tile if available
+                    }
+                    else
+                    {
+                        // Pressed too early - this attack misses
+                        bs.attack_damages[closest_idx] = 0;
+                        sound_items::sfx_damage.play(); // Miss sound
+
+                        // Remove the attack unit immediately
+                        bs.attack_units[closest_idx].reset();
+                    }
+                }
+            }
+
+            // Update all active attack units
+            for (int i = 0; i < bs.party_size; ++i)
+            {
+                if (bs.attack_units[i])
+                {
+                    // Reset scale after launch effect
+                    if (bs.attack_units[i]->horizontal_scale() > 1.0)
+                    {
+                        bs.attack_units[i]->set_scale(bs.attack_units[i]->horizontal_scale() - 0.05);
+                    }
+
+                    // Move the attack unit at its individual speed
+                    bs.attack_units[i]->set_x(bs.attack_units[i]->x() - bs.attack_speeds[i]);
+
+                    // Check if this unit is still active
+                    if (bs.attack_units[i]->x() > -42 && !bs.attack_pressed[i])
+                    {
+                        all_done = false;
+                    }
+
+                    // Auto-miss if it goes past the target
+                    if (bs.attack_units[i]->x() <= -42 && !bs.attack_pressed[i])
+                    {
+                        bs.attack_pressed[i] = true;
+                        bs.attack_damages[i] = 0; // Missed
+                        bs.attack_units[i].reset();
+                    }
+
+                    // Clean up pressed units that are hit successes
+                    if (bs.attack_pressed[i] && bs.attack_damages[i] > 0)
+                    {
+                        // Immediately remove successful hits (they already played their animation)
+                        if (bs.attack_units[i])
+                        {
+                            bs.attack_units[i].reset();
+                        }
+                    }
+                }
+                else if (bs.attack_headers[i] && !bs.attack_pressed[i] && bs.attack_launched[i])
+                {
+                    // This attack was launched but unit is gone (early press miss)
+                    // Still not done if we're waiting for other attacks
+                    all_done = false;
+                }
+                else if (bs.attack_headers[i] && !bs.attack_launched[i])
+                {
+                    // Still waiting to launch
+                    all_done = false;
+                }
+            }
+
+            // When all attack lanes are done
+            if (all_done)
+            {
+                // Apply all damage
+                int total_damage = 0;
+                for (int i = 0; i < bs.party_size; ++i)
+                {
+                    if (bs.attack_damages[i] > 0)
+                    {
+                        total_damage += bs.attack_damages[i];
+                    }
+                }
+
+                if (total_damage > 0)
+                {
+                    global_data_ptr->enemy_hp[0] -= total_damage;
+                    text::add_toast(-total_damage, {96, -36});
+                }
+                else
+                {
+                    // Show miss feedback with sound
+                    sound_items::sfx_damage.play();
+                }
+
+                // Clean up all attack UI
+                for (int i = 0; i < MAX_PARTY_SIZE; ++i)
+                {
+                    bs.attack_headers[i].reset();
+                    bs.attack_recvs[i].reset();
+                    bs.attack_units[i].reset();
+                    bs.attack_damages[i] = 0;
+                    bs.attack_pressed[i] = false;
+                    bs.attack_launched[i] = false;
+                    bs.attack_launch_timers[i] = 0;
+                }
+
                 bs.stage = stage_talking;
             }
         }

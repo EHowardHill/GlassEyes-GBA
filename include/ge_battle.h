@@ -44,7 +44,9 @@ enum BATTLE_STAGE
     stage_recv,
     stage_status,
     stage_attack,
-    stage_act // Add new stage for ACT
+    stage_talking_then_attack,
+    stage_execute_attacks,
+    stage_act
 };
 
 enum BULLET_STYLE
