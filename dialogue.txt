@@ -282,6 +282,7 @@ forest_dlg_02
 	db_ch_ginger	EM_SIDE_EYE		You look like a 	"tough guy, uh.."	Let's find out.							
 													
 croke_01													
+		EM_SKIP								CHAR_CROKE	&croke_accuse		
 	db_ch_croke	EM_DEFAULT	ACT_WALK	"HALT NOW,"	FILTHY GLABBER!					CHAR_CROKE		"{41, 8}"	
 	db_ch_ginger	EM_WAT		Don't hurt us!!	Please!								
 	db_ch_jeremy	EM_DEFAULT		Can I help you?									
@@ -290,25 +291,35 @@ croke_01
 	db_ch_jeremy	EM_DEFAULT		"Hey, Greenie?"	What is a glabber?								
 	db_ch_ginger	EM_SIDE_EYE		It's a slur for	"humans, it means"	"""bald."""							
 	db_ch_jeremy	EM_DEFAULT		Oh.	Well now	it's personal.							
-			ACT_FIGHT							FOE_VISKERS_02			
+			ACT_FIGHT							FOE_CROKE_01			
 													
 croke_02													
 	db_ch_croke	EM_DEFAULT		"TASTE POISON,"	GLABBER!								
 	db_ch_croke	EM_DEFAULT		...									
 													
 croke_03													
+	db_ch_croke	EM_DEFAULT		..									
+	db_ch_croke	EM_DEFAULT		..A-									
+													
+croke_04													
+	db_ch_ginger	EM_CONFUSED		..									
+	db_ch_jeremy	EM_DEFAULT		..									
+	db_ch_ginger	EM_WAT		D-Did he just..									
+													
+croke_05													
+		EM_SKIP								CHAR_CROKE	&croke_lay_down		
+		EM_SKIP											
 	db_ch_ginger	EM_CONFUSED		He's.. Dead..									
-	db_ch_jeremy	EM_DEFAULT		Great. Let's raid	his stuff.								
+	db_ch_jeremy	EM_DEFAULT		You'd think he'd	know how to use	a blowdart.							
+	db_ch_jeremy	EM_DEFAULT		Let's raid	his stuff.								
 	db_ch_ginger	EM_SAD		Doesn't that	seem in bad taste?								
 	db_ch_jeremy	EM_DEFAULT		I like to live.									
 	db_ch_ginger	EM_DEFAULT		"Well, I do too.."									
 	db_ch_jeremy	EM_DEFAULT		"Great, we're"	on the same page.								
-													
-croke_04													
 				You found:	"""FAMILY PICTURE"""	"""CLOAK"""							
 	db_ch_ginger	EM_DEFAULT		Might not be a 	bad idea to put	that on.							
-													
 forest_dlg_sign_01													
+													
 				DANGEROUS!!!	DO NOT ENTER								
 				RESEARCHERS ONLY									
 													
@@ -321,26 +332,26 @@ cave_01
 	db_ch_ginger	EM_ANGRY		You could be	"kind to me,"	you know.							
 	db_ch_ginger	EM_ANGRY		I didn't have to	save your life.								
 	db_ch_jeremy	EM_DEFAULT		I'm sorry.	Flat affect.								
-													
 forest_dlg_sign_02													
+													
 	db_ch_jeremy	EM_DEFAULT		I can't read this.									
 	db_ch_ginger	EM_CONFUSED		Uh.. I think	it says that	it's for sale.							
 	db_ch_jeremy	EM_DEFAULT		You can't read?									
 	db_ch_ginger	EM_DEFAULT		"Hey, *you* can't "	read it either.								
-													
 forest_dlg_03													
+													
 	db_ch_ginger	EM_SIDE_EYE		We shouldn't be	going in other	people's houses.							
 	db_ch_jeremy	EM_DEFAULT		Fair enough.	"Besides, the door"	is locked.							
 	db_ch_ginger	EM_SAD		Ugh.. we're gonna 	die out here.								
-													
 forest_dlg_paper													
+													
 	db_ch_jeremy	EM_DEFAULT		It's some kind of	research document.								
 	db_ch_ginger	EM_DEFAULT		We should probably	take it with us.								
 	db_ch_jeremy	EM_DEFAULT		Why.									
 	db_ch_ginger	EM_DEFAULT		I don't know..	Vibes?								
 	db_ch_jeremy	EM_DEFAULT		You take it if	you want it.								
-													
 bridge_01													
+													
 	db_ch_jeremy	EM_DEFAULT		"Let me guess,"	Avalon is THAT way.								
 	db_ch_ginger	EM_DEFAULT		Yep.									
 	db_ch_jeremy	EM_DEFAULT		When will it be	back up?								
@@ -349,14 +360,14 @@ bridge_01
 	db_ch_jeremy	EM_DEFAULT		I see.									
 	db_ch_ginger	EM_DEFAULT		I'm sure there's a	tunnel around here	somewhere.							
 	db_ch_ginger	EM_DEFAULT		You can get most	places through the	tunnels.							
-													
 tunnel_01													
+													
 	db_ch_ginger	EM_DEFAULT		"Hey- Just, uh.."	"Before we go in,"								
 	db_ch_ginger	EM_SIDE_EYE		Tunnels aren't.. 	"""kind"" places."								
 	db_ch_jeremy	EM_DEFAULT		I'm not exactly a	"""kind"" person."								
 	db_ch_ginger	EM_EMBARRASSED		Yeah..									
-													
 final_msg													
+													
 				Thanks for	trying out the	demo so far!							
 				I've only been	working on this	"for a month,"							
 				so I'm sure I'll	make lots of	progress.							

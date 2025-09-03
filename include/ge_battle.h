@@ -28,7 +28,8 @@
 
 #include "bn_sprite_items_jeremy_battle.h"
 #include "bn_sprite_items_ginger_battle.h"
-#include "bn_sprite_items_visker_battle_intro.h"
+#include "bn_sprite_items_visker_battle.h"
+#include "bn_sprite_items_croke_battle.h"
 
 #include "ge_globals.h"
 #include "ge_text.h"

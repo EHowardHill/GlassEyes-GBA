@@ -44,6 +44,7 @@ static constexpr int ACTION_SPARE = 2;
 
 struct battle_state
 {
+    const sprite_item *enemy_sprite_item;
     int party_size = 1;
     int current_actor = -1;
     int selected_menu = STATUS_BAR_NONE;
@@ -85,11 +86,11 @@ struct battle_state
     bool attack_pressed[MAX_PARTY_SIZE] = {false, false, false, false};
     int num_attackers = 0;
 
-    // NEW: Individual attack timing parameters
-    fixed attack_speeds[MAX_PARTY_SIZE] = {0, 0, 0, 0};                  // Speed of each attack unit
-    int attack_launch_delays[MAX_PARTY_SIZE] = {0, 0, 0, 0};             // Frames to wait before launching
-    int attack_launch_timers[MAX_PARTY_SIZE] = {0, 0, 0, 0};             // Current timer for launch
-    bool attack_launched[MAX_PARTY_SIZE] = {false, false, false, false}; // Has this attack launched yet?
+    // Individual attack timing parameters
+    fixed attack_speeds[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int attack_launch_delays[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int attack_launch_timers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    bool attack_launched[MAX_PARTY_SIZE] = {false, false, false, false};
 
     // Recv state
     optional<sprite_ptr> heart;
@@ -101,6 +102,10 @@ struct battle_state
     optional<sprite_ptr> char_img;
     optional<sprite_ptr> battle_icons[3];
     optional<text> labels[5];
+
+    // Special Croke battle tracking
+    int croke_conv_index = 0; // Which conversation (0=croke_02, 1=croke_03, 2=croke_04)
+    int croke_anim_frame = 0; // Current animation frame for Croke
 };
 
 // Helper functions
@@ -135,17 +140,6 @@ static const char *get_name(int i)
 {
     const char *names[] = {"JEREMY", "GINGER", "SEBELLUS", "VISTA"};
     return i < 4 ? names[i] : "ALLY";
-}
-
-static int next_unacted_living(battle_state *bs)
-{
-    // Find the next living character who hasn't acted yet this round
-    for (int i = 0; i < bs->party_size; ++i)
-    {
-        if (is_alive(i, bs) && !bs->has_acted[i])
-            return i;
-    }
-    return -1; // All living characters have acted
 }
 
 static int count_action(battle_state *bs, int action)
@@ -303,7 +297,6 @@ static void update_character_animation(int char_index, battle_state &bs)
     int &ticker = bs.character_tickers[char_index];
 
     // Get appropriate sprite item and frame ranges based on character
-    // This would be cleaner with a character data structure, but working with what we have
     const sprite_item *spr_item = nullptr;
     int idle_start, idle_end, hurt_start, hurt_end, atk_start, atk_end;
     int intro_frames = 55; // Default intro length
@@ -351,14 +344,13 @@ static void update_character_animation(int char_index, battle_state &bs)
             else if (char_index == 1) // Ginger intro
             {
                 // Ginger's intro uses frames 0-7 (before idle starts at 8)
-                int frame = ticker / 5;  // Adjust divisor as needed for speed
-                if (frame >= idle_start) // Don't go past intro frames
+                int frame = ticker / 5;
+                if (frame >= idle_start)
                 {
                     frame = idle_start - 1;
                 }
                 sprite->set_tiles(spr_item->tiles_item(), frame);
             }
-            // Add other characters here as needed
             ticker++;
         }
         else
@@ -426,7 +418,7 @@ static void update_character_animation(int char_index, battle_state &bs)
     sprite->set_position(-96, y_offset);
 }
 
-// In battle_map() function, modify the initialization:
+// Main battle function
 int battle_map()
 {
     music::stop();
@@ -438,8 +430,6 @@ int battle_map()
     // Create and reset battle state
     battle_state bs;
 
-    // Initialize enemy sprite (always present)
-    bs.enemy_sprite = sprite_items::visker_battle_intro.create_sprite(96, 16, 0);
     bs.heart = sprite_items::hearts.create_sprite(0, 0, 1);
 
     // Setup conversations based on foe
@@ -449,6 +439,7 @@ int battle_map()
     switch (global_data_ptr->battle_foe)
     {
     case FOE_VISKERS_01:
+        bs.enemy_sprite_item = &sprite_items::visker_battle;
         global_data_ptr->enemy_max_hp[0] = 12;
         global_data_ptr->enemy_hp[0] = 12;
         global_data_ptr->enemy_allowed_moveset = 3;
@@ -469,45 +460,43 @@ int battle_map()
         break;
 
     case FOE_VISKERS_02:
+        bs.enemy_sprite_item = &sprite_items::visker_battle;
         global_data_ptr->enemy_max_hp[0] = 99;
         global_data_ptr->enemy_hp[0] = 99;
         global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
 
-        // Jeremy and Ginger for this battle
-        bs.party_size = 2;
-
-        // Create character sprites
+        bs.party_size = 1;
         bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
-        bs.character_sprites[1] = sprite_items::ginger_battle.create_sprite(-96, get_character_y_position(1), 0);
-
-        // Set Z-order: lower index characters behind higher index characters
-        for (int i = 0; i < bs.party_size; ++i)
-        {
-            if (bs.character_sprites[i])
-                bs.character_sprites[i]->set_z_order(i);
-        }
-
-        // Initialize HP for Ginger if needed
-        if (global_data_ptr->max_hp[1] == 0)
-        {
-            global_data_ptr->max_hp[1] = 20;
-            global_data_ptr->hp[1] = 20;
-        }
 
         convos[RESULT_FIRST].push_back(&garbage_fight_05);
         break;
 
-        // Add more battle configurations as needed
-        // case FOE_SOMETHING_WITH_3_PARTY_MEMBERS:
-        //     bs.party_size = 3;
-        //     bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(...);
-        //     bs.character_sprites[1] = sprite_items::ginger_battle.create_sprite(...);
-        //     bs.character_sprites[2] = sprite_items::spr_sebellus_01.create_sprite(...);
-        //     break;
+    case FOE_CROKE_01:
+        bs.enemy_sprite_item = &sprite_items::croke_battle;
+        global_data_ptr->enemy_max_hp[0] = 0;
+        global_data_ptr->enemy_hp[0] = 0;
+
+        bs.party_size = 2;
+        bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
+        bs.character_sprites[1] = sprite_items::ginger_battle.create_sprite(-96, get_character_y_position(1), 0);
+
+        // For Croke, we don't use the normal convos array
+        // We'll handle his sequence specially
+        bs.croke_conv_index = 0;
+        bs.croke_anim_frame = 0;
+        break;
 
     default:
         break;
     }
+
+    for (int i = 0; i < bs.party_size; ++i)
+    {
+        if (bs.character_sprites[i])
+            bs.character_sprites[i]->set_z_order(i);
+    }
+
+    bs.enemy_sprite = bs.enemy_sprite_item->create_sprite(96, 16, 0);
 
     // Main game loop
     while (true)
@@ -520,33 +509,80 @@ int battle_map()
             update_character_animation(i, bs);
         }
 
-        // Update enemy animation (unchanged from original)
-        switch (bs.enemy_state)
+        // Update enemy animation
+        if (global_data_ptr->battle_foe == FOE_CROKE_01)
         {
-        case 0: // INTRO
-            if (bs.enemy_ticker < 35)
+            // Special animation handling for Croke
+            if (bs.stage == stage_talking && bs.active_conv)
             {
-                bs.enemy_sprite->set_tiles(sprite_items::visker_battle_intro.tiles_item(),
-                                           bs.enemy_ticker / 5);
+                // Determine frame range based on conversation index
+                int start_frame = 0, end_frame = 4;
+
+                if (bs.croke_conv_index == 1)
+                { // croke_02 (first conv)
+                    start_frame = 0;
+                    end_frame = 4;
+                }
+                else if (bs.croke_conv_index == 2)
+                { // croke_03 (second conv)
+                    start_frame = 5;
+                    end_frame = 12;
+                }
+                else if (bs.croke_conv_index == 3)
+                { // croke_04 (third conv)
+                    start_frame = 19;
+                    end_frame = 21;
+                }
+
+                // Animate through the frames slowly
+                if (bs.enemy_ticker % 6 == 0)
+                {
+                    if (bs.croke_anim_frame < end_frame)
+                    {
+                        bs.croke_anim_frame++;
+                    }
+                }
+
+                // Clamp to valid range
+                if (bs.croke_anim_frame > end_frame)
+                    bs.croke_anim_frame = end_frame;
+                if (bs.croke_anim_frame < start_frame)
+                    bs.croke_anim_frame = start_frame;
+
+                bs.enemy_sprite->set_tiles(sprite_items::croke_battle.tiles_item(), bs.croke_anim_frame);
                 bs.enemy_ticker++;
             }
-            else
+        }
+        else
+        {
+            // Normal enemy animation for other enemies
+            switch (bs.enemy_state)
             {
-                bs.enemy_state = 1;
+            case 0: // INTRO
+                if (bs.enemy_ticker < 35)
+                {
+                    bs.enemy_sprite->set_tiles(sprite_items::visker_battle.tiles_item(),
+                                               bs.enemy_ticker / 5);
+                    bs.enemy_ticker++;
+                }
+                else
+                {
+                    bs.enemy_state = 1;
+                }
+                break;
+
+            case 1: // IDLE
+                bs.enemy_sprite->set_tiles(sprite_items::visker_battle.tiles_item(),
+                                           ((bs.enemy_ticker / 5) % 4) + 6);
+                bs.enemy_ticker++;
+                break;
+
+            case 2: // ATTACK
+                bs.enemy_sprite->set_tiles(sprite_items::visker_battle.tiles_item(),
+                                           ((bs.enemy_ticker / 5) % 6) + 10);
+                bs.enemy_ticker++;
+                break;
             }
-            break;
-
-        case 1: // IDLE
-            bs.enemy_sprite->set_tiles(sprite_items::visker_battle_intro.tiles_item(),
-                                       ((bs.enemy_ticker / 5) % 4) + 6);
-            bs.enemy_ticker++;
-            break;
-
-        case 2: // ATTACK
-            bs.enemy_sprite->set_tiles(sprite_items::visker_battle_intro.tiles_item(),
-                                       ((bs.enemy_ticker / 5) % 6) + 10);
-            bs.enemy_ticker++;
-            break;
         }
         bs.enemy_sprite->set_position(96, 16 + bs.y_delta);
 
@@ -558,33 +594,83 @@ int battle_map()
         // Stage: Talking
         if (bs.stage == stage_talking)
         {
-            if (global_data_ptr->enemy_hp[0] <= 0)
+            // Special handling for Croke battle
+            if (global_data_ptr->battle_foe == FOE_CROKE_01)
             {
-                bs.result = RESULT_LAST_WIN;
-            }
-
-            if (!is_dialogue_active(&bs))
-            {
-                if (bs.result < RESULT_SIZE && convos[bs.result].size() > 0)
+                if (!is_dialogue_active(&bs))
                 {
-                    conversation *c = convos[bs.result].front();
-                    convos[bs.result].erase(convos[bs.result].begin());
-                    init_dialogue(c, &bs);
+                    // Start the appropriate Croke conversation
+                    if (bs.croke_conv_index == 0)
+                    {
+                        init_dialogue(&croke_02, &bs);
+                        bs.croke_anim_frame = 0;
+                        bs.croke_conv_index = 1;
+                    }
+                    else if (bs.croke_conv_index == 1)
+                    {
+                        init_dialogue(&croke_03, &bs);
+                        bs.croke_anim_frame = 5;
+                        bs.croke_conv_index = 2;
+                    }
+                    else if (bs.croke_conv_index == 2)
+                    {
+                        init_dialogue(&croke_04, &bs);
+                        bs.croke_anim_frame = 13;
+                        bs.croke_conv_index = 3;
+                    }
+                    else
+                    {
+                        // All Croke conversations done, end battle
+                        music::stop();
+                        text::toasts.clear();
+                        return CONTINUE;
+                    }
                 }
                 else
                 {
-                    bs.stage = stage_recv;
+                    update_dialogue(&bs);
+
+                    if (keypad::a_pressed() && are_lines_complete(&bs))
+                    {
+                        if (!advance_dialogue(&bs))
+                        {
+                            clear_dialogue(&bs);
+                            // For Croke, stay in talking stage
+                        }
+                    }
                 }
             }
             else
             {
-                update_dialogue(&bs);
-
-                if (keypad::a_pressed() && are_lines_complete(&bs))
+                // Normal battle dialogue flow
+                if (global_data_ptr->enemy_hp[0] <= 0)
                 {
-                    if (!advance_dialogue(&bs))
+                    bs.result = RESULT_LAST_WIN;
+                }
+
+                if (!is_dialogue_active(&bs))
+                {
+                    if (bs.result < RESULT_SIZE && convos[bs.result].size() > 0)
                     {
-                        clear_dialogue(&bs);
+                        conversation *c = convos[bs.result].front();
+                        convos[bs.result].erase(convos[bs.result].begin());
+                        init_dialogue(c, &bs);
+                    }
+                    else
+                    {
+                        bs.stage = stage_recv;
+                    }
+                }
+                else
+                {
+                    update_dialogue(&bs);
+
+                    if (keypad::a_pressed() && are_lines_complete(&bs))
+                    {
+                        if (!advance_dialogue(&bs))
+                        {
+                            clear_dialogue(&bs);
+                        }
                     }
                 }
             }
@@ -666,10 +752,10 @@ int battle_map()
                 for (int i = 0; i < MAX_PARTY_SIZE; ++i)
                 {
                     bs.has_acted[i] = false;
-                    bs.character_actions[i] = ACTION_NONE; // Add this - reset actions
+                    bs.character_actions[i] = ACTION_NONE;
                 }
 
-                bs.choosing_for = 0; // ADD THIS - reset to first character
+                bs.choosing_for = 0;
 
                 bs.stage = stage_status;
             }
@@ -712,7 +798,7 @@ int battle_map()
                             conversation *spare_conv = spare_convos.front();
                             spare_convos.erase(spare_convos.begin());
                             init_dialogue(spare_conv, &bs);
-                            bs.stage = stage_talking_then_attack; // New stage
+                            bs.stage = stage_talking_then_attack;
                         }
                         else
                         {
@@ -724,11 +810,6 @@ int battle_map()
                         bs.stage = stage_execute_attacks;
                     }
 
-                    // DON'T reset actions here!
-                    // for (int i = 0; i < MAX_PARTY_SIZE; ++i)
-                    // {
-                    //     bs.character_actions[i] = ACTION_NONE;
-                    // }
                     continue;
                 }
 
@@ -884,7 +965,7 @@ int battle_map()
                             bs.attack_launch_delays[i] = 10;
                             break;
                         case 3: // Vista - variable speed
-                            bs.attack_speeds[i] = fixed(1.0 + (global_data_ptr->bn_random.get_fixed(0, fixed(0.4))));
+                            bs.attack_speeds[i] = 1.0 + (global_data_ptr->bn_random.get_fixed(0, fixed(0.4)));
                             bs.attack_launch_delays[i] = 30;
                             break;
                         default:

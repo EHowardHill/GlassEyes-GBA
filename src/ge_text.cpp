@@ -382,6 +382,13 @@ void dialogue_box::init(character_manager *ch_man)
         }
         case ACT_FIGHT:
         {
+            auto ginger = ch_man->find_by_index(CHAR_GINGER);
+            if (ginger != nullptr)
+            {
+                auto g_pos = ginger->v_sprite.bounds.position;
+                global_data_ptr->ginger_position = {g_pos.x.integer() / 32, g_pos.y.integer() / 32};
+            }
+
             auto pos = ch_man->player_ptr->v_sprite.bounds.position;
             global_data_ptr->entry_position = {pos.x.integer() / 32, pos.y.integer() / 32};
             global_data_ptr->battle_foe = line.index;

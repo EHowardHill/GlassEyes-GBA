@@ -19,3 +19,7 @@ const animation jeremy_lay_down = {{9}, 1, SP_DEFAULT, true};
 
 // Ginger
 const animation ginger_eat_lime = {{9}, 1, SP_DEFAULT, true};
+
+// Croke
+const animation croke_accuse = {{9}, 1, SP_DEFAULT, true};
+const animation croke_lay_down = {{10}, 1, SP_DEFAULT, true};

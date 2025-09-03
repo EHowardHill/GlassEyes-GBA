@@ -63,8 +63,11 @@ enum action_list
 	CONVO_BRIDGE_02,
 	CONVO_BRIDGE_03,
 	TO_CAVE_02,
-	ENTER_BG = 49,
-	EXIT_BG = 50,
+	ENTER_BG,
+	EXIT_BG,
+	FROM_CAVE_01,
+	CONVO_CAVE_01,
+	FOREST_01_SETUP,
 	ACTIONS_SIZE
 };
 
@@ -81,7 +84,7 @@ struct global_data
 	const map *entry_map = nullptr;
 	const regular_bg_item *bg = nullptr;
 	vector_2 entry_position = {0, 0};
-	vector_2 entry_position_raw = {0, 0};
+	vector_2 ginger_position = {0, 0};
 	int entry_direction = DIR_RIGHT;
 	int battle_foe = 0;
 	int hp[4] = {20, 20, 20, 20};

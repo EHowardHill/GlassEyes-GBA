@@ -56,6 +56,11 @@ int navigate_map()
         char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position);
     }
 
+    if (global_data_ptr->ginger_position.x != 0 && global_data_ptr->ginger_position.y != 0)
+    {
+        char_mgr.add_character(CHAR_GINGER, global_data_ptr->ginger_position);
+    }
+
     int loop_value = 0;
     bool handle_frame = true;
     while (loop_value == CONTINUE && char_mgr.status == CONTINUE)
@@ -69,7 +74,7 @@ int navigate_map()
         if (current_map.bg_ptr.has_value())
         {
             current_map.bg_ptr.value().set_x(v_sprite_ptr::camera.x / -5);
-            current_map.bg_ptr.value().set_y(v_sprite_ptr::camera.y / -5);
+            // current_map.bg_ptr.value().set_y(v_sprite_ptr::camera.y / -5);
         }
 
         if (handle_frame)
@@ -255,10 +260,12 @@ int main()
     global_data_ptr->process_stage = FOREST_01; // CUTSCENE_01;
 
     // Test battle before game begins
-    global_data_ptr->battle_foe = FOE_VISKERS_02;
+    /*
+    global_data_ptr->battle_foe = FOE_CROKE_01;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
+    */
 
     while (true)
     {
@@ -314,6 +321,7 @@ int main()
                 global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
                 global_data_ptr->entry_map = &map_forest_01;
                 global_data_ptr->entry_position = {6, 8};
+                global_data_ptr->ginger_position = {5, 8};
                 global_data_ptr->bg_track = &music_items::forest_01;
                 break;
             }

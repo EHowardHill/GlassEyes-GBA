@@ -6,6 +6,9 @@
 
 #include "ge_maps.h"
 
+inline constexpr map map_cave_01;
+inline constexpr map map_cave_02;
+inline constexpr map map_cave_03;
 inline constexpr map map_forest_01;
 inline constexpr map map_garbage_01;
 inline constexpr map map_garbage_02;

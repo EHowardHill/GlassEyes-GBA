@@ -121,7 +121,6 @@ void character_manager::alert()
         core::update();
     }
 
-    global_data_ptr->entry_position_raw = player_pos;
     global_data_ptr->entry_direction = player_ptr->face;
     status = BATTLE;
 }
@@ -169,34 +168,39 @@ void character_manager::update(map_manager *current_map = nullptr)
             if (ch->is_follow)
             {
                 auto f_ch = find_by_index(ch->follow_id);
-                vector_2 f_pos = {f_ch->v_sprite.bounds.position.x / 32, f_ch->v_sprite.bounds.position.y / 32};
 
-                switch (f_ch->face)
+                vector_2 f_pos = {f_ch->v_sprite.bounds.position.x / 32, f_ch->v_sprite.bounds.position.y / 32};
+                vector_2 m_pos = {ch->v_sprite.bounds.position.x / 32, ch->v_sprite.bounds.position.y / 32};
+
+                if (abs((m_pos.x - f_pos.x) * 32) + abs((m_pos.y - f_pos.y) * 32) > 32)
                 {
-                case DIR_UP:
-                {
-                    ch->move_to = {f_pos.x.integer(), f_pos.y.integer() + 1};
-                    break;
-                }
-                case DIR_DOWN:
-                {
-                    ch->move_to = {f_pos.x.integer(), f_pos.y.integer() - 1};
-                    break;
-                }
-                case DIR_LEFT:
-                {
-                    ch->move_to = {f_pos.x.integer() + 1, f_pos.y.integer()};
-                    break;
-                }
-                case DIR_RIGHT:
-                {
-                    ch->move_to = {f_pos.x.integer() - 1, f_pos.y.integer()};
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
+                    switch (f_ch->face)
+                    {
+                    case DIR_UP:
+                    {
+                        ch->move_to = {f_pos.x.integer(), f_pos.y.integer() + 1};
+                        break;
+                    }
+                    case DIR_DOWN:
+                    {
+                        ch->move_to = {f_pos.x.integer(), f_pos.y.integer() - 1};
+                        break;
+                    }
+                    case DIR_LEFT:
+                    {
+                        ch->move_to = {f_pos.x.integer() + 1, f_pos.y.integer()};
+                        break;
+                    }
+                    case DIR_RIGHT:
+                    {
+                        ch->move_to = {f_pos.x.integer() - 1, f_pos.y.integer()};
+                        break;
+                    }
+                    default:
+                    {
+                        break;
+                    }
+                    }
                 }
             }
         }

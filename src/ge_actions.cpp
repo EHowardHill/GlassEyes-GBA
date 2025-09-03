@@ -1,5 +1,6 @@
 #include "bn_log.h"
 #include "bn_music.h"
+#include "bn_music_items.h"
 
 #include "ge_globals.h"
 #include "ge_sprites.h"
@@ -499,16 +500,56 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     ch_man->db->load(&croke_01);
                     ch_man->db->init(ch_man);
                 }
+                else if (global_data_ptr->action_iterations[CONVO_CROKE_01] == 2)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&croke_05);
+                    ch_man->db->init(ch_man);
+                }
                 break;
             }
             case TO_CAVE_01:
             {
-
+                global_data_ptr->entry_map = &map_cave_01;
+                global_data_ptr->entry_position = {7, 12};
+                global_data_ptr->ginger_position = {6, 12};
+                global_data_ptr->bg_track = nullptr;
+                music::stop();
+                return 1;
+                break;
+            }
+            case FROM_CAVE_01:
+            {
+                global_data_ptr->entry_map = &map_forest_01;
+                global_data_ptr->entry_position = {67, 3};
+                global_data_ptr->ginger_position = {66, 3};
+                global_data_ptr->bg_track = &music_items::forest_01;
+                music::stop();
+                return 1;
+                break;
+            }
+            case CONVO_CAVE_01:
+            {
+                if (global_data_ptr->action_iterations[CONVO_CAVE_01] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&cave_01);
+                    ch_man->db->init(ch_man);
+                }
                 break;
             }
             case TO_CAVE_02:
             {
 
+                break;
+            }
+            case FOREST_01_SETUP:
+            {
+                auto croke = ch_man->find_by_index(CHAR_CROKE);
+                if (croke != nullptr)
+                {
+                    ch_man->remove_character(croke);
+                }
                 break;
             }
             case CONVO_BRIDGE_02:
