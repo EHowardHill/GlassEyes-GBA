@@ -540,7 +540,10 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case TO_CAVE_02:
             {
-
+                global_data_ptr->entry_map = &map_cave_02;
+                global_data_ptr->entry_position = {3, 30};
+                global_data_ptr->ginger_position = {2, 30};
+                return 1;
                 break;
             }
             case FOREST_01_SETUP:
@@ -576,6 +579,130 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 {
                     man->bg_ptr.value().set_visible(false);
                 }
+                break;
+            }
+            case TO_FOREST_02:
+            {
+                global_data_ptr->entry_map = &map_forest_01;
+                global_data_ptr->entry_position = {105, 3};
+                global_data_ptr->ginger_position = {104, 3};
+                return 1;
+                break;
+            }
+            case ACT_55:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {19, 30};
+                global_data_ptr->ginger_position = {20, 30};
+                return 1;
+                break;
+            }
+            case ACT_56:
+            {
+                global_data_ptr->entry_map = &map_cave_02;
+                global_data_ptr->entry_position = {28, 3};
+                global_data_ptr->ginger_position = {29, 3};
+                return 1;
+                break;
+            }
+            case ACT_57:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {16, 4};
+                global_data_ptr->ginger_position = {15, 4};
+                return 1;
+                break;
+            }
+            case ACT_58:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {16, 16};
+                global_data_ptr->ginger_position = {15, 16};
+                return 1;
+                break;
+            }
+            case ACT_59:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {30, 19};
+                global_data_ptr->ginger_position = {31, 19};
+                return 1;
+                break;
+            }
+            case ACT_60:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {29, 3};
+                global_data_ptr->ginger_position = {30, 3};
+                return 1;
+                break;
+            }
+            case ACT_61:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {12, 11};
+                global_data_ptr->ginger_position = {11, 11};
+                return 1;
+                break;
+            }
+            case ACT_62:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {12, 21};
+                global_data_ptr->ginger_position = {11, 21};
+                return 1;
+                break;
+            }
+            case ACT_63:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {4, 3};
+                global_data_ptr->ginger_position = {5, 3};
+                return 1;
+                break;
+            }
+            case ACT_64:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {28, 11};
+                global_data_ptr->ginger_position = {29, 11};
+                return 1;
+                break;
+            }
+            case ACT_65:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {2, 24};
+                global_data_ptr->ginger_position = {2, 23};
+                return 1;
+                break;
+            }
+            case ACT_66:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {13, 8};
+                global_data_ptr->ginger_position = {13, 7};
+                return 1;
+                break;
+            }
+            case ACT_67:
+            {
+                global_data_ptr->entry_map = &map_cave_cowbemmie;
+                global_data_ptr->entry_position = {2, 3};
+                global_data_ptr->ginger_position = {1, 3};
+                global_data_ptr->bg_track = &music_items::bg_dixieland;
+                music::stop();
+                return 1;
+                break;
+            }
+            case ACT_68:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {5, 23};
+                global_data_ptr->ginger_position = {6, 23};
+                global_data_ptr->bg_track = &music_items::forest_01;
+                music::stop();
+                return 1;
                 break;
             }
             default:
