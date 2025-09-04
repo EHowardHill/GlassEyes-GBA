@@ -269,7 +269,7 @@ leaving_lab
 			ACT_PROGRESS							FOREST_01			
 													
 forest_dlg_01													
-	db_ch_ginger	EM_SIDE_EYE		"Oh- Not that way,"	That's the way to	New Berlin.							
+	db_ch_ginger	EM_SIDE_EYE		"Oh- Not that way,"	That's the way to	New Berlin.				CHAR_GINGER			
 	db_ch_jeremy	EM_DEFAULT		..I guess it isn't	worth testing their	hospitality.							
 	db_ch_jeremy	EM_DEFAULT		If I have to be	"stuck out here, at"	least it's nice.							
 	db_ch_jeremy	EM_DEFAULT		Freezing cold	but otherwise nice.								
@@ -372,3 +372,53 @@ final_msg
 				I've only been	working on this	"for a month,"							
 				so I'm sure I'll	make lots of	progress.							
 				Discord / X:		"""@cinemint"""							
+													
+temmie_sign													
+				COWBEMMIE	VILLAGE								
+													
+temmie_01													
+				HOIDY AND	WELCOM TO	COWBEMMIE LAND							
+				COM EXPERENCE	OUR VIBRANT	CULTURE							
+				ADMISION IS FREE	BUT YOU HAVE TO	BE NICE							
+													
+temmie_02													
+	db_ch_temmie	EM_HAPPY		hoi-dy!!	im cowbemmie								
+	db_ch_temmie	EM_DEFAULT		wat r you	cowpokes doin	round these parts							
+	db_ch_ginger	EM_HAPPY		Oh hi!!	I've heard all	about y'all!							
+	db_ch_jeremy	EM_DEFAULT		Do you all..	live down here?								
+	db_ch_temmie	EM_DEFAULT		we surviv on	butter from	da churn							
+	db_ch_jeremy	EM_DEFAULT		What?									
+	db_ch_temmie	EM_EXCITED		butter from	da churn								
+	db_ch_jeremy	EM_DEFAULT		Okay.									
+													
+temmie_03													
+				"""The beautiful"	blue tunnel flower	can be found							
+				all over the	tunnels of the	Old World.							
+				"It doesn't do much."""									
+													
+temmie_04													
+	db_ch_temmie	EM_DEFAULT		hoi cowbemmie									
+	db_ch_temmie	EM_HAPPY		hoi to you too	cowbemmie								
+	db_ch_temmie	EM_DEFAULT		this ton aint	big nough for da	two of us							
+	db_ch_temmie	EM_EXCITED		okay		..then draw							
+	db_ch_temmie	EM_DEFAULT		i cant draw									
+	db_ch_temmie	EM_EXCITED		oh ok ok									
+	db_ch_temmie	EM_EXCITED		maybe it is	big nough then								
+													
+temmie_05													
+				"""AR HISTORY"""	~ cowbemmie								
+				The cowbemmie	next to it appears	to be painted on.							
+													
+temmie_06													
+	db_ch_temmie	EM_DEFAULT		in da olden days	cowbemmies rode	da hose							
+	db_ch_temmie	EM_ANGRY		MOO									
+	db_ch_temmie	EM_DEFAULT		good hose									
+													
+temmie_07													
+	db_ch_temmie	EM_HAPPY		no good culture	is withot a	CULT							
+	db_ch_temmie	EM_DEFAULT		if u wanna be	honorary cow-	bemmie							
+	db_ch_temmie	EM_EXCITED		u gotta partake	in da frot	of da churn							
+	db_ch_jeremy	EM_DEFAULT		Fruit?									
+	db_ch_temmie	EM_EXCITED		frot of da churn	yes								
+	db_ch_temmie	EM_DEFAULT		then we mail u	yor honorary	cowbemmie hat							
+	db_ch_temmie	EM_DEFAULT		an u can come	to secret meetings								

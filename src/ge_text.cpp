@@ -23,6 +23,7 @@
 #include "bn_sprite_items_db_ch_visker.h"
 #include "bn_sprite_items_db_ch_visker_wife.h"
 #include "bn_sprite_items_db_ch_ginger.h"
+#include "bn_sprite_items_db_ch_temmie.h"
 
 using namespace bn;
 
@@ -318,7 +319,7 @@ void dialogue_box::init(character_manager *ch_man)
 
         if (line.action == ACT_SPAWN)
         {
-            ch_man->add_character(line.index, line.navigate);
+            ch_man->add_character(line.index, line.navigate, 0);
         }
 
         auto ch = ch_man->find_by_index(line.index);

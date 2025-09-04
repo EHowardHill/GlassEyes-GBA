@@ -10,17 +10,17 @@
 #include "ge_character_manager.h"
 #include "ge_maps.h"
 #include "ge_globals.h"
+#include "ge_animations.h"
 
 #include "bn_sprite_items_hearts.h"
 
 using namespace bn;
 
-// Implementation in ge_character_manager.cpp
 character_manager::character_manager() : player_ptr(nullptr)
 {
 }
 
-character *character_manager::add_character(int index, vector_2 position)
+character *character_manager::add_character(int index, vector_2 position, int id)
 {
     if (characters.size() >= 64)
         return nullptr;
@@ -28,6 +28,7 @@ character *character_manager::add_character(int index, vector_2 position)
     // Create new character
     characters.push_back(make_unique<character>(index, position));
     character *new_char = characters.back().get();
+    new_char->id = id;
 
     if (global_data_ptr->process_stage != GARBAGE_TO_BLACK)
     {
@@ -108,6 +109,18 @@ character *character_manager::find_by_index(int index)
     return nullptr;
 }
 
+character *character_manager::find_by_id(int id)
+{
+    for (auto &ch : characters)
+    {
+        if (ch && ch->id == id)
+        {
+            return ch.get();
+        }
+    }
+    return nullptr;
+}
+
 void character_manager::alert()
 {
     vector_2 player_pos = player_ptr->v_sprite.real_position().position;
@@ -164,6 +177,22 @@ void character_manager::update(map_manager *current_map = nullptr)
         if (ch)
         {
             ch->update(current_map, db_inactive);
+
+            if (ch->index == ITEM_BUTTON)
+            {
+                if (ch->idle_animation != &elem_button_down)
+                {
+                    vector_2 f_pos = {player_ptr->v_sprite.bounds.position.x / 32, player_ptr->v_sprite.bounds.position.y / 32};
+                    vector_2 m_pos = {ch->v_sprite.bounds.position.x / 32, ch->v_sprite.bounds.position.y / 32};
+
+                    if (f_pos.x.integer() == m_pos.x.integer() && f_pos.y.integer() == m_pos.y.integer())
+                    {
+                        sound_items::snd_alert.play(0.5);
+                        ch->idle_animation = &elem_button_down;
+                        ch->is_pressed = true;
+                    }
+                }
+            }
 
             if (ch->is_follow)
             {

@@ -26,6 +26,14 @@ constexpr int is_interactive_array[999] = {
     CONVO_FOREST_01_SIGN,
     CONVO_FOREST_02_SIGN,
     CONVO_FOREST_03_SIGN,
+    CONVO_COWBEMMIE_01_SIGN,
+    TEMMIE_01,
+    TEMMIE_02,
+    TEMMIE_03,
+    TEMMIE_04,
+    TEMMIE_05,
+    TEMMIE_06,
+    TEMMIE_07,
     -1};
 
 bool is_interactive(int action)
@@ -192,6 +200,62 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 ch_man->db.emplace();
                 ch_man->db->load(&forest_dlg_sign_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_COWBEMMIE_01_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_sign);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_01:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_01);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_02:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_03:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_03);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_04:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_04);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_05:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_05);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_06:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_06);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_07:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_07);
                 ch_man->db->init(ch_man);
                 break;
             }
@@ -2118,17 +2182,17 @@ ge_character_manager.cpp:
 #include "ge_character_manager.h"
 #include "ge_maps.h"
 #include "ge_globals.h"
+#include "ge_animations.h"
 
 #include "bn_sprite_items_hearts.h"
 
 using namespace bn;
 
-// Implementation in ge_character_manager.cpp
 character_manager::character_manager() : player_ptr(nullptr)
 {
 }
 
-character *character_manager::add_character(int index, vector_2 position)
+character *character_manager::add_character(int index, vector_2 position, int id)
 {
     if (characters.size() >= 64)
         return nullptr;
@@ -2136,6 +2200,7 @@ character *character_manager::add_character(int index, vector_2 position)
     // Create new character
     characters.push_back(make_unique<character>(index, position));
     character *new_char = characters.back().get();
+    new_char->id = id;
 
     if (global_data_ptr->process_stage != GARBAGE_TO_BLACK)
     {
@@ -2216,6 +2281,18 @@ character *character_manager::find_by_index(int index)
     return nullptr;
 }
 
+character *character_manager::find_by_id(int id)
+{
+    for (auto &ch : characters)
+    {
+        if (ch && ch->id == id)
+        {
+            return ch.get();
+        }
+    }
+    return nullptr;
+}
+
 void character_manager::alert()
 {
     vector_2 player_pos = player_ptr->v_sprite.real_position().position;
@@ -2272,6 +2349,22 @@ void character_manager::update(map_manager *current_map = nullptr)
         if (ch)
         {
             ch->update(current_map, db_inactive);
+
+            if (ch->index == ITEM_BUTTON)
+            {
+                if (ch->idle_animation != &elem_button_down)
+                {
+                    vector_2 f_pos = {player_ptr->v_sprite.bounds.position.x / 32, player_ptr->v_sprite.bounds.position.y / 32};
+                    vector_2 m_pos = {ch->v_sprite.bounds.position.x / 32, ch->v_sprite.bounds.position.y / 32};
+
+                    if (f_pos.x.integer() == m_pos.x.integer() && f_pos.y.integer() == m_pos.y.integer())
+                    {
+                        sound_items::snd_alert.play(0.5);
+                        ch->idle_animation = &elem_button_down;
+                        ch->is_pressed = true;
+                    }
+                }
+            }
 
             if (ch->is_follow)
             {
@@ -2454,6 +2547,9 @@ constexpr map map_cave_01 = {
     {14, 14},
     {512, 512},
     {
+	
+    },
+    {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -2483,6 +2579,9 @@ constexpr map map_cave_02 = {
     {32, 32},
     {1024, 1024},
     {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,6,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,26,28,9,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,
@@ -2496,12 +2595,12 @@ constexpr map map_cave_02 = {
 	0,0,0,0,0,0,13,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,13,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,6,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,9,0,
-	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,
-	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,
+	0,6,0,0,163,165,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,153,0,0,0,0,0,0,0,9,0,
+	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,154,0,0,0,0,0,0,0,9,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,0,0,3,3,3,3,3,3,3,3,9,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,10,7,10,7,10,7,0,0,10,7,0,0,0,0,0,0,0,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,6,0,0,9,6,0,0,0,0,0,0,0,0,
-	0,6,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,6,0,0,8,5,0,0,0,0,0,0,0,0,
+	0,6,0,0,0,0,169,171,173,175,0,0,0,0,9,0,0,0,0,6,0,0,8,5,0,0,0,0,0,0,0,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,6,0,0,2,2,2,2,2,2,2,9,0,0,
 	0,6,3,3,3,3,3,3,3,3,3,3,3,3,9,0,0,0,0,6,0,0,0,0,0,0,0,0,0,9,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,9,0,0,
@@ -2510,8 +2609,8 @@ constexpr map map_cave_02 = {
 	0,6,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,9,0,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
-	0,6,0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,9,0,0,
-	0,6,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
+	0,6,0,0,10,7,180,178,81,81,81,81,35,38,9,6,9,6,9,6,81,36,9,6,184,182,180,178,81,9,0,0,
 	0,6,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,6,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,5,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -2520,7 +2619,7 @@ constexpr map map_cave_02 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,55,55,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,54,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,54,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,71,71,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_cave_02};
 
@@ -2529,6 +2628,9 @@ constexpr map map_cave_02 = {
 constexpr map map_cave_03 = {
     {32, 32},
     {1024, 1024},
+    {
+	
+    },
     {
 	0,0,0,0,0,0,0,0,0,0,0,64,63,63,63,63,63,63,63,63,65,0,0,0,0,0,0,0,0,0,0,9,
 	0,59,30,30,26,28,30,30,62,0,0,59,0,0,0,0,0,0,0,0,62,92,95,0,0,0,0,122,9,26,28,9,
@@ -2577,14 +2679,17 @@ constexpr map map_cave_cowbemmie = {
     {16, 16},
     {512, 512},
     {
-	24,20,22,24,24,24,24,24,5,24,24,24,24,24,24,24,
-	25,21,23,25,25,25,13,14,6,25,25,25,25,25,25,25,
+	
+    },
+    {
+	24,20,22,24,24,7,24,24,24,24,24,24,24,24,24,24,
+	25,21,23,25,25,8,13,14,25,25,25,25,25,25,25,25,
 	0,0,0,0,0,0,0,0,0,0,9,11,0,0,0,0,
 	0,0,0,0,2,0,0,0,0,0,10,12,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	19,17,0,0,0,0,0,0,0,0,0,0,0,0,15,1,
-	0,0,18,0,0,0,0,4,0,2,0,0,0,0,16,2,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,4,0,2,0,0,0,0,16,2,
+	0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,
 	27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,
 	28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -2595,7 +2700,7 @@ constexpr map map_cave_cowbemmie = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,68,68,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,68,68,72,0,76,76,76,76,0,0,0,0,0,0,0,0,0,0,72,0,0,0,0,0,77,0,0,77,0,0,0,0,0,0,0,0,0,0,0,0,77,77,77,77,0,0,0,0,74,0,0,0,0,75,75,75,75,0,0,0,78,0,0,0,74,0,0,73,0,75,0,75,0,75,0,0,78,0,0,0,0,0,0,73,0,75,75,75,75,75,0,0,78,78,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -2607,6 +2712,9 @@ constexpr map map_cave_cowbemmie = {
 constexpr map map_forest_01 = {
     {128, 12},
     {4096, 4096},
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,25,18,18,18,18,93,95,18,18,18,0,0,0,0,0,0,0,0,0,0,0,44,48,44,43,47,44,48,35,100,104,108,112,1,42,46,42,46,42,34,7,60,23,93,95,21,59,5,32,43,47,48,47,48,49,0,25,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,46,19,19,19,58,94,96,58,19,19,42,46,1,0,0,0,0,0,0,0,0,43,47,43,44,34,45,49,0,101,105,109,113,32,43,47,43,47,43,35,7,2,60,94,96,59,2,5,33,44,48,47,48,49,0,0,25,0,0,0,0,0,0,0,0,0,0,
@@ -2635,6 +2743,9 @@ constexpr map map_garbage_01 = {
     {24, 12},
     {768, 768},
     {
+	
+    },
+    {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,24,3,3,3,3,3,3,14,16,3,3,3,3,3,3,3,3,3,3,3,3,3,25,
 	0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,
@@ -2661,6 +2772,9 @@ constexpr map map_garbage_01 = {
 constexpr map map_garbage_02 = {
     {26, 12},
     {1024, 1024},
+    {
+	
+    },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,6,3,3,3,3,3,3,3,15,17,3,4,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -2689,6 +2803,9 @@ constexpr map map_garbage_03 = {
     {12, 12},
     {512, 512},
     {
+	
+    },
+    {
 	0,0,0,0,0,0,0,0,0,0,0,0,
 	6,2,2,2,2,2,2,2,14,16,4,0,
 	0,0,0,0,0,0,0,0,0,0,13,0,
@@ -2715,6 +2832,9 @@ constexpr map map_garbage_03 = {
 constexpr map map_garbage_04 = {
     {32, 24},
     {1024, 1024},
+    {
+	
+    },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,16,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,6,2,2,2,2,4,0,0,6,2,2,2,2,4,6,2,15,17,2,2,2,2,2,2,2,2,2,2,2,4,0,
@@ -2754,6 +2874,9 @@ constexpr map map_garbage_04 = {
 constexpr map map_garbage_05 = {
     {10, 48},
     {1536, 1536},
+    {
+	
+    },
     {
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
@@ -2818,6 +2941,9 @@ constexpr map map_lab_01 = {
     {31, 17},
     {1024, 1024},
     {
+	
+    },
+    {
 	1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	40,3,4,4,4,4,4,2,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	40,32,0,32,0,32,0,32,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -2850,6 +2976,9 @@ constexpr map map_room01 = {
     {12, 8},
     {512, 512},
     {
+	
+    },
+    {
 	10,1,3,15,16,38,40,22,20,21,6,9,
 	8,2,4,13,14,39,0,23,17,18,19,7,
 	42,0,0,0,0,0,0,0,0,0,0,7,
@@ -2872,6 +3001,9 @@ constexpr map map_room01 = {
 constexpr map map_viskers_house = {
     {8, 8},
     {256, 256},
+    {
+	
+    },
     {
 	0,0,0,0,0,0,0,0,
 	0,6,2,15,17,2,4,0,
@@ -2906,6 +3038,7 @@ ge_sprites.cpp:
 #include "bn_sprite_items_spr_visker_wife_01.h"
 #include "bn_sprite_items_spr_ginger_01.h"
 #include "bn_sprite_items_spr_croke_01.h"
+#include "bn_sprite_items_spr_elements.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -3022,8 +3155,13 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             else
             {
                 // Update z-order for both sprites
-                item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
-                item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
+                if (item->sprite_item_ptr != &sprite_items::spr_elements)
+                {
+                    item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 16);
+                    item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 16);
+                } else {
+                    item->sprite_ptr_raw[1].value().set_z_order(999);
+                }
 
                 // Always update both sprites (tall sprites)
                 item->sprite_ptr_raw[0].value().set_position(bounds.position.x, bounds.position.y - 32);
@@ -3087,6 +3225,18 @@ character::character(int index_, vector_2 start_) : index(index_)
     case CHAR_CROKE:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_croke_01;
+        break;
+    }
+    case ITEM_BUTTON:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_elements;
+        idle_animation = &elem_button_up;
+        break;
+    }
+    case ITEM_SPIKE:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_elements;
+        idle_animation = &elem_spike_up;
         break;
     }
 
@@ -3398,7 +3548,7 @@ void character::update(map_manager *current_map, bool db_inactive)
 void character::add(list<character, 32> *characters, int character_id, vector_2 location)
 {
     characters->emplace_back(character_id, location);
-}
+};
 
 ge_structs.cpp: 
 // ge_structs.cpp
@@ -3450,6 +3600,7 @@ ge_text.cpp:
 #include "bn_sprite_items_db_ch_visker.h"
 #include "bn_sprite_items_db_ch_visker_wife.h"
 #include "bn_sprite_items_db_ch_ginger.h"
+#include "bn_sprite_items_db_ch_temmie.h"
 
 using namespace bn;
 
@@ -3745,7 +3896,7 @@ void dialogue_box::init(character_manager *ch_man)
 
         if (line.action == ACT_SPAWN)
         {
-            ch_man->add_character(line.index, line.navigate);
+            ch_man->add_character(line.index, line.navigate, 0);
         }
 
         auto ch = ch_man->find_by_index(line.index);
@@ -4135,19 +4286,27 @@ int navigate_map()
 
             if (current_map.current_map->characters[tile] != 0)
             {
-                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y});
+                int id = current_map.current_map->metadata[tile];
+                int index = current_map.current_map->characters[tile] - 1;
+
+                if (index == ITEM_BUTTON)
+                {
+                    BN_LOG("BUTTON: ", id);
+                }
+
+                char_mgr.add_character(index, {x, y}, id);
             }
         }
     }
 
     if (global_data_ptr->entry_map != &map_room01)
     {
-        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position);
+        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, 0);
     }
 
     if (global_data_ptr->ginger_position.x != 0 && global_data_ptr->ginger_position.y != 0)
     {
-        char_mgr.add_character(CHAR_GINGER, global_data_ptr->ginger_position);
+        char_mgr.add_character(CHAR_GINGER, global_data_ptr->ginger_position, 0);
     }
 
     int loop_value = 0;
@@ -4163,8 +4322,26 @@ int navigate_map()
         if (current_map.bg_ptr.has_value())
         {
             current_map.bg_ptr.value().set_x(v_sprite_ptr::camera.x / -5);
-            // current_map.bg_ptr.value().set_y(v_sprite_ptr::camera.y / -5);
         }
+
+        // Handle map-specific puzzle logic
+        auto button_01 = char_mgr.find_by_id(1);
+
+        if (button_01 != nullptr)
+        {
+            if (button_01->is_pressed)
+            {
+                for (auto &ch : char_mgr.characters)
+                {
+                    if (ch->id == 2)
+                    {
+                        ch->idle_animation = &elem_spike_down;
+                    }
+                }
+            }
+        }
+
+        // Frame handling
 
         if (handle_frame)
         {
@@ -4281,8 +4458,6 @@ void typewriter(int scene)
                 // Check if we've reached the end
                 if ((*current_conversation)[index].action == ACT_END)
                     break;
-
-                BN_LOG((*current_conversation)[index].raw_text[0]);
 
                 // Clear existing letters
                 lines[0].letters.clear();
@@ -4469,6 +4644,7 @@ using namespace bn;
 #include "bn_sprite_items_db_ch_visker_wife.h"
 #include "bn_sprite_items_db_ch_ginger.h"
 #include "bn_sprite_items_db_ch_croke.h"
+#include "bn_sprite_items_db_ch_temmie.h"
 
 constexpr conversation intro_01 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Deep within the", "woods of the", "old world,", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -4780,7 +4956,7 @@ constexpr conversation leaving_lab = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
 constexpr conversation forest_dlg_01 = {
-    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Oh- Not that way,", "That's the way to", "New Berlin.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Oh- Not that way,", "That's the way to", "New Berlin.", false, SIZE_DEFAULT, SP_DEFAULT, CHAR_GINGER, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "..I guess it isn't", "worth testing their", "hospitality.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "If I have to be", "stuck out here, at", "least it's nice.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Freezing cold", "but otherwise nice.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
@@ -4899,6 +5075,64 @@ constexpr conversation final_msg = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Discord / X:", "", "\"@cinemint\"", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
 
+constexpr conversation temmie_sign = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "COWBEMMIE", "VILLAGE", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation temmie_01 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "HOIDY AND", "WELCOM TO", "COWBEMMIE LAND", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "COM EXPERENCE", "OUR VIBRANT", "CULTURE", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "ADMISION IS FREE", "BUT YOU HAVE TO", "BE NICE", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation temmie_02 = {
+    {0, &sprite_items::db_ch_temmie, EM_HAPPY, ACT_DEFAULT, "hoi-dy!!", "im cowbemmie", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "wat r you", "cowpokes doin", "round these parts", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Oh hi!!", "I've heard all", "about y'all!", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Do you all..", "live down here?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "we surviv on", "butter from", "da churn", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "What?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "butter from", "da churn", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Okay.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation temmie_03 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "\"The beautiful", "blue tunnel flower", "can be found", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "all over the", "tunnels of the", "Old World.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "It doesn't do much.\"", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation temmie_04 = {
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "hoi cowbemmie", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_HAPPY, ACT_DEFAULT, "hoi to you too", "cowbemmie", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "this ton aint", "big nough for da", "two of us", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "okay", "", "..then draw", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "i cant draw", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "oh ok ok", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "maybe it is", "big nough then", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation temmie_05 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "\"AR HISTORY\"", "~ cowbemmie", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "The cowbemmie", "next to it appears", "to be painted on.", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation temmie_06 = {
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "in da olden days", "cowbemmies rode", "da hose", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_ANGRY, ACT_DEFAULT, "MOO", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "good hose", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
+constexpr conversation temmie_07 = {
+    {0, &sprite_items::db_ch_temmie, EM_HAPPY, ACT_DEFAULT, "no good culture", "is withot a", "CULT", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "if u wanna be", "honorary cow-", "bemmie", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "u gotta partake", "in da frot", "of da churn", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_jeremy, EM_DEFAULT, ACT_DEFAULT, "Fruit?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "frot of da churn", "yes", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "then we mail u", "yor honorary", "cowbemmie hat", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "an u can come", "to secret meetings", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}};
+
 int action_listener(map_manager *man, character_manager *ch_man);
 
 ge_animations.h: 
@@ -4927,6 +5161,12 @@ const animation ginger_eat_lime = {{9}, 1, SP_DEFAULT, true};
 // Croke
 const animation croke_accuse = {{9}, 1, SP_DEFAULT, true};
 const animation croke_lay_down = {{10}, 1, SP_DEFAULT, true};
+
+// Elements
+const animation elem_button_up = {{0}, 1, SP_DEFAULT, true};
+const animation elem_button_down = {{1}, 1, SP_DEFAULT, true};
+const animation elem_spike_up = {{3}, 1, SP_DEFAULT, true};
+const animation elem_spike_down = {{2}, 1, SP_DEFAULT, true};
 
 ge_battle.h: 
 // ge_battle.h
@@ -5231,12 +5471,13 @@ struct character_manager
 
     character_manager();
 
-    character *add_character(int index, vector_2 position);
+    character *add_character(int index, vector_2 position, int id);
     bool remove_character(character *ch);
     void clear_npcs();
     character *get_player() { return player_ptr; }
     character *find_at_position(vector_2 pos, int tolerance = 32);
     character *find_by_index(int index);
+    character *find_by_id(int id);
     void update(map_manager *current_map);
     void alert();
     int size() const { return characters.size(); }
@@ -5345,6 +5586,13 @@ enum action_list
 	ACT_69,
 	CONVO_COWBEMMIE_01_SIGN,
 	TO_FOREST_02,
+	TEMMIE_01,
+	TEMMIE_02,
+	TEMMIE_03,
+	TEMMIE_04,
+	TEMMIE_05,
+	TEMMIE_06,
+	TEMMIE_07,
 	ACTIONS_SIZE
 };
 
@@ -5406,6 +5654,7 @@ struct map
 {
   vector_2 size;
   vector_2 raw_size;
+  array<int, 2048> metadata;
   array<int, 2048> collisions;
   array<int, 2048> actions;
   array<int, 2048> characters;
@@ -5414,12 +5663,14 @@ struct map
   // Constexpr constructor for compile-time initialization
   constexpr map(vector_2 size_,
                 vector_2 raw_size_,
+                const array<int, 2048> &metadata_,
                 const array<int, 2048> &collisions_,
                 const array<int, 2048> &actions_,
                 const array<int, 2048> &characters_,
                 const regular_bg_item *bg_item_ptr_)
       : size(size_),
         raw_size(raw_size_),
+        metadata(metadata_),
         collisions(collisions_),
         actions(actions_),
         characters(characters_),
@@ -5538,6 +5789,9 @@ enum character_list
     CHAR_VISKER_WIFE,
     CHAR_GINGER,
     CHAR_CROKE,
+    ITEM_BUTTON,
+    ITEM_SPIKE,
+    ITEM_X,
     CHAR_TYPEWRITER
 };
 
@@ -5553,6 +5807,7 @@ enum character_type
 {
     CH_TYPE_PLAYER,
     CH_TYPE_NPC,
+    CH_TYPE_ELEMENT,
     CH_TYPE_PUSHABLE,
     CH_TYPE_ITEM,
     CH_TYPE_DECORATION,
@@ -5565,6 +5820,7 @@ struct character
     const animation *current_animation;
     const animation *idle_animation;
 
+    int id = 0;
     int index = CHAR_VISTA;
     int ticker = 0;
     int frame = 0;
@@ -5573,6 +5829,9 @@ struct character
     vector_2 move_to = {0, 0};
     bool is_follow = false;
     int follow_id = CHAR_JEREMY;
+
+    bool is_sticky = false;
+    bool is_pressed = false;
 
     character(int index_, vector_2 start_);
 

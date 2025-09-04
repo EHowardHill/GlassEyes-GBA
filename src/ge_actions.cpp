@@ -25,6 +25,14 @@ constexpr int is_interactive_array[999] = {
     CONVO_FOREST_01_SIGN,
     CONVO_FOREST_02_SIGN,
     CONVO_FOREST_03_SIGN,
+    CONVO_COWBEMMIE_01_SIGN,
+    TEMMIE_01,
+    TEMMIE_02,
+    TEMMIE_03,
+    TEMMIE_04,
+    TEMMIE_05,
+    TEMMIE_06,
+    TEMMIE_07,
     -1};
 
 bool is_interactive(int action)
@@ -191,6 +199,62 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 ch_man->db.emplace();
                 ch_man->db->load(&forest_dlg_sign_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_COWBEMMIE_01_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_sign);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_01:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_01);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_02:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_03:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_03);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_04:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_04);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_05:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_05);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_06:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_06);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case TEMMIE_07:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&temmie_07);
                 ch_man->db->init(ch_man);
                 break;
             }

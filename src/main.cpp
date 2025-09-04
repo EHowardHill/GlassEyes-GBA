@@ -46,19 +46,27 @@ int navigate_map()
 
             if (current_map.current_map->characters[tile] != 0)
             {
-                char_mgr.add_character(current_map.current_map->characters[tile] - 1, {x, y});
+                int id = current_map.current_map->metadata[tile];
+                int index = current_map.current_map->characters[tile] - 1;
+
+                if (index == ITEM_BUTTON)
+                {
+                    BN_LOG("BUTTON: ", id);
+                }
+
+                char_mgr.add_character(index, {x, y}, id);
             }
         }
     }
 
     if (global_data_ptr->entry_map != &map_room01)
     {
-        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position);
+        char_mgr.add_character(CHAR_JEREMY, global_data_ptr->entry_position, 0);
     }
 
     if (global_data_ptr->ginger_position.x != 0 && global_data_ptr->ginger_position.y != 0)
     {
-        char_mgr.add_character(CHAR_GINGER, global_data_ptr->ginger_position);
+        char_mgr.add_character(CHAR_GINGER, global_data_ptr->ginger_position, 0);
     }
 
     int loop_value = 0;
@@ -74,8 +82,26 @@ int navigate_map()
         if (current_map.bg_ptr.has_value())
         {
             current_map.bg_ptr.value().set_x(v_sprite_ptr::camera.x / -5);
-            // current_map.bg_ptr.value().set_y(v_sprite_ptr::camera.y / -5);
         }
+
+        // Handle map-specific puzzle logic
+        auto button_01 = char_mgr.find_by_id(1);
+
+        if (button_01 != nullptr)
+        {
+            if (button_01->is_pressed)
+            {
+                for (auto &ch : char_mgr.characters)
+                {
+                    if (ch->id == 2)
+                    {
+                        ch->idle_animation = &elem_spike_down;
+                    }
+                }
+            }
+        }
+
+        // Frame handling
 
         if (handle_frame)
         {
@@ -192,8 +218,6 @@ void typewriter(int scene)
                 // Check if we've reached the end
                 if ((*current_conversation)[index].action == ACT_END)
                     break;
-
-                BN_LOG((*current_conversation)[index].raw_text[0]);
 
                 // Clear existing letters
                 lines[0].letters.clear();

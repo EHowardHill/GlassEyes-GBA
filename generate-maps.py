@@ -223,7 +223,7 @@ for map in maps:
                 tile_basis = [0 for _ in list2]
             tile_basis = [b if b != 0 else a for a, b in zip(tile_basis, list2)]
 
-        elif layer_name in ["characters", "actions"]:
+        elif layer_name in ["characters", "actions", "metadata"]:
             map_data[map_name][layer_name] = ",".join(
                 [
                     str(int(x) - lbl_blue if int(x) != 0 else 0)
@@ -257,6 +257,7 @@ template = """
 constexpr map map_$name = {
     {$width, $height},
     {$raw_width, $raw_height},
+    {\n\t$metadata\n    },
     {\n\t$colliders\n    },
     {\n\t$actions\n    },
     {\n\t$characters\n    },
@@ -267,6 +268,9 @@ constexpr map map_$name = {
 full_data = []
 for key in map_data.keys():
     map = map_data[key]
+
+    if "metadata" not in map.keys():
+        map["metadata"] = ""
 
     new_entry = template
     for elem in map.keys():

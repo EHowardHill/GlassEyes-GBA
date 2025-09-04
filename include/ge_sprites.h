@@ -67,6 +67,9 @@ enum character_list
     CHAR_VISKER_WIFE,
     CHAR_GINGER,
     CHAR_CROKE,
+    ITEM_BUTTON,
+    ITEM_SPIKE,
+    ITEM_X,
     CHAR_TYPEWRITER
 };
 
@@ -82,6 +85,7 @@ enum character_type
 {
     CH_TYPE_PLAYER,
     CH_TYPE_NPC,
+    CH_TYPE_ELEMENT,
     CH_TYPE_PUSHABLE,
     CH_TYPE_ITEM,
     CH_TYPE_DECORATION,
@@ -94,6 +98,7 @@ struct character
     const animation *current_animation;
     const animation *idle_animation;
 
+    int id = 0;
     int index = CHAR_VISTA;
     int ticker = 0;
     int frame = 0;
@@ -102,6 +107,9 @@ struct character
     vector_2 move_to = {0, 0};
     bool is_follow = false;
     int follow_id = CHAR_JEREMY;
+
+    bool is_sticky = false;
+    bool is_pressed = false;
 
     character(int index_, vector_2 start_);
 

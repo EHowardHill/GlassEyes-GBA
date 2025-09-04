@@ -23,6 +23,7 @@ struct map
 {
   vector_2 size;
   vector_2 raw_size;
+  array<int, 2048> metadata;
   array<int, 2048> collisions;
   array<int, 2048> actions;
   array<int, 2048> characters;
@@ -31,12 +32,14 @@ struct map
   // Constexpr constructor for compile-time initialization
   constexpr map(vector_2 size_,
                 vector_2 raw_size_,
+                const array<int, 2048> &metadata_,
                 const array<int, 2048> &collisions_,
                 const array<int, 2048> &actions_,
                 const array<int, 2048> &characters_,
                 const regular_bg_item *bg_item_ptr_)
       : size(size_),
         raw_size(raw_size_),
+        metadata(metadata_),
         collisions(collisions_),
         actions(actions_),
         characters(characters_),

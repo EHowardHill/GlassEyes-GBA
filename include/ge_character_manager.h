@@ -19,12 +19,13 @@ struct character_manager
 
     character_manager();
 
-    character *add_character(int index, vector_2 position);
+    character *add_character(int index, vector_2 position, int id);
     bool remove_character(character *ch);
     void clear_npcs();
     character *get_player() { return player_ptr; }
     character *find_at_position(vector_2 pos, int tolerance = 32);
     character *find_by_index(int index);
+    character *find_by_id(int id);
     void update(map_manager *current_map);
     void alert();
     int size() const { return characters.size(); }

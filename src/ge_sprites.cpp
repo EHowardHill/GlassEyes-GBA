@@ -10,6 +10,7 @@
 #include "bn_sprite_items_spr_visker_wife_01.h"
 #include "bn_sprite_items_spr_ginger_01.h"
 #include "bn_sprite_items_spr_croke_01.h"
+#include "bn_sprite_items_spr_elements.h"
 
 #include "ge_structs.h"
 #include "ge_text.h"
@@ -126,8 +127,13 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             else
             {
                 // Update z-order for both sprites
-                item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
-                item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[0].value().y().integer() / 16);
+                if (item->sprite_item_ptr != &sprite_items::spr_elements)
+                {
+                    item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 16);
+                    item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 16);
+                } else {
+                    item->sprite_ptr_raw[1].value().set_z_order(999);
+                }
 
                 // Always update both sprites (tall sprites)
                 item->sprite_ptr_raw[0].value().set_position(bounds.position.x, bounds.position.y - 32);
@@ -191,6 +197,18 @@ character::character(int index_, vector_2 start_) : index(index_)
     case CHAR_CROKE:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_croke_01;
+        break;
+    }
+    case ITEM_BUTTON:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_elements;
+        idle_animation = &elem_button_up;
+        break;
+    }
+    case ITEM_SPIKE:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_elements;
+        idle_animation = &elem_spike_up;
         break;
     }
 
@@ -502,4 +520,4 @@ void character::update(map_manager *current_map, bool db_inactive)
 void character::add(list<character, 32> *characters, int character_id, vector_2 location)
 {
     characters->emplace_back(character_id, location);
-}
+};

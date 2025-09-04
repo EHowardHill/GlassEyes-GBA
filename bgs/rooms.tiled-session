@@ -25,35 +25,35 @@
             }
         },
         "maps/cave_02.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 252.66666666666663,
-                "y": 879.3333333333333
+                "x": 404,
+                "y": 796.3333333333333
             }
         },
         "maps/cave_03.tmx": {
             "scale": 1,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 378.5,
-                "y": 547.5
+                "x": 431,
+                "y": 606.5
             }
         },
         "maps/cave_cowbemmie.tmx": {
             "scale": 2,
-            "selectedLayer": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 197.75,
-                "y": 90.25
+                "x": 202,
+                "y": 176.75
             }
         },
         "maps/forest_01.tmx": {
             "scale": 1.5,
-            "selectedLayer": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 3299,
-                "y": 230.33333333333337
+                "x": 294,
+                "y": 193.66666666666663
             }
         },
         "maps/garbage_01.tmx": {
@@ -123,6 +123,10 @@
         "tilesets/blue-labels.tsx": {
             "scaleInDock": 1
         },
+        "tilesets/cowbemmie01.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
         "tilesets/floor_wood01.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
@@ -152,7 +156,7 @@
             "scaleInEditor": 1
         },
         "tilesets/underground02.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         }
     },
@@ -169,17 +173,17 @@
     "project": "rooms.tiled-project",
     "recentFiles": [
         "maps/cave_cowbemmie.tmx",
+        "tilesets/cowbemmie01.tsx",
+        "maps/cave_03.tmx",
+        "maps/cave_02.tmx",
+        "maps/cave_01.tmx",
+        "tilesets/underground02.tsx",
         "maps/garbage_01.tmx",
         "maps/garbage_02.tmx",
         "maps/garbage_03.tmx",
         "maps/garbage_04.tmx",
         "maps/garbage_05.tmx",
-        "tilesets/underground02.tsx",
-        "maps/cave_01.tmx",
-        "maps/lab_01.tmx",
-        "maps/forest_01.tmx",
-        "tilesets/underground01.tsx",
-        "tilesets/forest01.tsx"
+        "maps/lab_01.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
