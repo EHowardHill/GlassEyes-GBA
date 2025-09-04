@@ -4329,7 +4329,7 @@ int navigate_map()
 
         if (button_01 != nullptr)
         {
-            BN_LOG(button_01->is_pressed);
+            //BN_LOG(button_01->is_pressed);
             if (button_01->is_pressed)
             {
                 for (auto &ch : char_mgr.characters)

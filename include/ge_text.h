@@ -78,7 +78,7 @@ enum emotion
     EM_WAT,
     EM_CONFUSED,
     EM_PAIN,
-    EM_SKIP,
+    EM_SKIP
 };
 
 enum size
