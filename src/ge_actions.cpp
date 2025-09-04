@@ -33,6 +33,8 @@ constexpr int is_interactive_array[999] = {
     TEMMIE_05,
     TEMMIE_06,
     TEMMIE_07,
+    CONVO_CAVE_02_SIGN,
+    CAVE_04_SIGN,
     -1};
 
 bool is_interactive(int action)
@@ -255,6 +257,20 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 ch_man->db.emplace();
                 ch_man->db->load(&temmie_07);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CONVO_CAVE_02_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&cave_sign_01);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case CAVE_04_SIGN:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&cave_sign_02);
                 ch_man->db->init(ch_man);
                 break;
             }
@@ -766,6 +782,38 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->ginger_position = {6, 23};
                 global_data_ptr->bg_track = &music_items::forest_01;
                 music::stop();
+                return 1;
+                break;
+            }
+            case BACK_TO_CAVE_03:
+            {
+                global_data_ptr->entry_map = &map_cave_03;
+                global_data_ptr->entry_position = {5, 15};
+                global_data_ptr->ginger_position = {4, 15};
+                return 1;
+                break;
+            }
+            case TO_FOREST_02b:
+            {
+                global_data_ptr->entry_map = &map_forest_02;
+                global_data_ptr->entry_position = {2, 3};
+                global_data_ptr->ginger_position = {1, 3};
+                return 1;
+                break;
+            }
+            case TO_FOREST_03:
+            {
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {14, 15};
+                global_data_ptr->ginger_position = {13, 15};
+                return 1;
+                break;
+            }
+            case TO_CAVE_04:
+            {
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {16, 3};
+                global_data_ptr->ginger_position = {15, 3};
                 return 1;
                 break;
             }

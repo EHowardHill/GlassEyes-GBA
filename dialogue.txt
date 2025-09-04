@@ -422,3 +422,23 @@ temmie_07
 	db_ch_temmie	EM_EXCITED		frot of da churn	yes								
 	db_ch_temmie	EM_DEFAULT		then we mail u	yor honorary	cowbemmie hat							
 	db_ch_temmie	EM_DEFAULT		an u can come	to secret meetings								
+													
+cave_sign_01													
+				WARNING:	SKULL WORMS								
+	db_ch_jeremy	EM_DEFAULT		What is THAT?									
+	db_ch_ginger	EM_SIDE_EYE		..do you know	where muetos	come from?							
+	db_ch_jeremy	EM_DEFAULT		You pop out of	"holes in the ground,"	right?							
+	db_ch_ginger	EM_DEFAULT		We come from	"the tunnels, yes."								
+	db_ch_ginger	EM_DEFAULT		Not all of us are	strong enough to	"make it out, though."							
+	db_ch_ginger	EM_SIDE_EYE		Just.. Keep your	eyes peeled.								
+													
+cave_sign_02													
+				If you make	"a mistake,"								
+				go back to where	you came from and	get a breath of air.							
+				You'll come back	with fresh ideas.								
+	db_ch_ginger	EM_DEFAULT		That's a pleasant	message.								
+	db_ch_jeremy	EM_DEFAULT		So you CAN read?									
+	db_ch_ginger	EM_DEFAULT		"English, yes."									
+	db_ch_jeremy	EM_DEFAULT		But not mueto?									
+	db_ch_ginger	EM_DEFAULT		Nothing really	worth reading	in mueto.							
+	db_ch_jeremy	EM_DEFAULT		..Fair enough.									

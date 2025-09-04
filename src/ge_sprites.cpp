@@ -21,7 +21,7 @@
 using namespace bn;
 
 // Static member definitions
-vector<v_sprite_ptr *, 12> v_sprite_ptr::manager;
+vector<v_sprite_ptr *, MAX_V_SPRITES> v_sprite_ptr::manager;
 vector_2 v_sprite_ptr::camera = {0, 0};
 
 bool within_bounds(bound me, bound you)

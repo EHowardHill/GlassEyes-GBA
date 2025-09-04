@@ -26,9 +26,11 @@ struct animation
     bool loop = true;
 };
 
+#define MAX_V_SPRITES 32
+
 struct v_sprite_ptr
 {
-    static vector<v_sprite_ptr *, 12> manager;
+    static vector<v_sprite_ptr *, MAX_V_SPRITES> manager;
     static vector_2 camera;
 
     const sprite_item *sprite_item_ptr;
@@ -70,6 +72,7 @@ enum character_list
     ITEM_BUTTON,
     ITEM_SPIKE,
     ITEM_X,
+    CHAR_SIZE,
     CHAR_TYPEWRITER
 };
 

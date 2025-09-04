@@ -38,6 +38,8 @@ int navigate_map()
     map_manager current_map(global_data_ptr->entry_map);
     character_manager char_mgr;
 
+    BN_LOG(1);
+
     for (int y = 0; y < current_map.current_map->size.y.integer(); y++)
     {
         for (int x = 0; x < current_map.current_map->size.x.integer(); x++)
@@ -54,10 +56,17 @@ int navigate_map()
                     BN_LOG("BUTTON: ", id);
                 }
 
-                char_mgr.add_character(index, {x, y}, id);
+                BN_LOG("Adding: ", index, " at ", x, " x ", y);
+
+                if (index > -1 && index < CHAR_SIZE)
+                {
+                    char_mgr.add_character(index, {x, y}, id);
+                }
             }
         }
     }
+
+    BN_LOG(2);
 
     if (global_data_ptr->entry_map != &map_room01)
     {
@@ -69,6 +78,8 @@ int navigate_map()
         char_mgr.add_character(CHAR_GINGER, global_data_ptr->ginger_position, 0);
     }
 
+    BN_LOG(3);
+
     int loop_value = 0;
     bool handle_frame = true;
     while (loop_value == CONTINUE && char_mgr.status == CONTINUE)
@@ -79,28 +90,61 @@ int navigate_map()
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
         v_sprite_ptr::update(!dialogue_is_active);
 
+        BN_LOG(4);
+
         if (current_map.bg_ptr.has_value())
         {
             current_map.bg_ptr.value().set_x(v_sprite_ptr::camera.x / -5);
         }
 
         // Handle map-specific puzzle logic
-        auto button_01 = char_mgr.find_by_id(1);
-
-        if (button_01 != nullptr)
+        if (current_map.current_map == &map_cave_02)
         {
-            //BN_LOG(button_01->is_pressed);
-            if (button_01->is_pressed)
+            auto button_01 = char_mgr.find_by_id(1);
+
+            if (button_01 != nullptr)
             {
-                for (auto &ch : char_mgr.characters)
+                // BN_LOG(button_01->is_pressed);
+                if (button_01->is_pressed)
                 {
-                    if (ch->id == 2)
+                    for (auto &ch : char_mgr.characters)
                     {
-                        ch->idle_animation = &elem_spike_down;
+                        if (ch->id == 2)
+                        {
+                            ch->idle_animation = &elem_spike_down;
+                        }
                     }
                 }
             }
         }
+
+        else if (current_map.current_map == &map_cave_03)
+        {
+            bool correct_up = true;
+            bool incorrect_down = true;
+
+            for (auto &ch : char_mgr.characters)
+            {
+                if (ch->index == ITEM_BUTTON)
+                {
+                    if (ch->id == 1 && ch->idle_animation == &elem_button_up)
+                    {
+                        correct_up = false;
+                    }
+                    else if (ch->id == 2 && ch->idle_animation == &elem_button_down)
+                    {
+                        incorrect_down = false;
+                    }
+                }
+            }
+
+            if (correct_up && incorrect_down)
+            {
+                char_mgr.find_by_id(3)->idle_animation = &elem_spike_down;
+            }
+        }
+
+        BN_LOG(4);
 
         // Frame handling
 
@@ -111,6 +155,8 @@ int navigate_map()
         else
         {
             core::update();
+
+            BN_LOG(5);
         }
     }
 
