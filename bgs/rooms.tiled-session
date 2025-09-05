@@ -25,19 +25,27 @@
             }
         },
         "maps/cave_02.tmx": {
-            "scale": 1.5,
-            "selectedLayer": 3,
+            "scale": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 404,
-                "y": 796.3333333333333
+                "x": 343,
+                "y": 747.5
             }
         },
         "maps/cave_03.tmx": {
             "scale": 1,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 431,
-                "y": 606.5
+                "x": 419,
+                "y": 651.5
+            }
+        },
+        "maps/cave_04.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 483,
+                "y": 720.5
             }
         },
         "maps/cave_cowbemmie.tmx": {
@@ -50,10 +58,26 @@
         },
         "maps/forest_01.tmx": {
             "scale": 1.5,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 294,
+                "x": 3820,
                 "y": 193.66666666666663
+            }
+        },
+        "maps/forest_02.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 439,
+                "y": 259.5
+            }
+        },
+        "maps/forest_03.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 381.3333333333333,
+                "y": 383.33333333333326
             }
         },
         "maps/garbage_01.tmx": {
@@ -132,7 +156,7 @@
             "scaleInEditor": 1
         },
         "tilesets/forest01.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "tilesets/garbage-cave01.tsx": {
@@ -161,11 +185,11 @@
         }
     },
     "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
-    "map.height": 16,
+    "map.height": 24,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,
     "map.tileWidth": 32,
-    "map.width": 16,
+    "map.width": 64,
     "openFiles": [
         "maps/forest_01.tmx",
         "maps/lab_01.tmx"

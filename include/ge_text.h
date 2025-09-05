@@ -24,7 +24,8 @@ enum progress
     GARBAGE_TO_BLACK,
     BLACK_TO_LAB,
     FOREST_01,
-    FINAL_MSG
+    FINAL_MSG,
+    TEST_MAP
 };
 
 enum foes
@@ -78,7 +79,7 @@ enum emotion
     EM_WAT,
     EM_CONFUSED,
     EM_PAIN,
-    EM_SKIP,
+    EM_SKIP
 };
 
 enum size

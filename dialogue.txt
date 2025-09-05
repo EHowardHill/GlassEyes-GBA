@@ -422,3 +422,89 @@ temmie_07
 	db_ch_temmie	EM_EXCITED		frot of da churn	yes								
 	db_ch_temmie	EM_DEFAULT		then we mail u	yor honorary	cowbemmie hat							
 	db_ch_temmie	EM_DEFAULT		an u can come	to secret meetings								
+													
+cave_sign_01													
+				WARNING:	SKULL WORMS								
+	db_ch_jeremy	EM_DEFAULT		What is THAT?									
+	db_ch_ginger	EM_SIDE_EYE		..do you know	where muetos	come from?							
+	db_ch_jeremy	EM_DEFAULT		You pop out of	"holes in the ground,"	right?							
+	db_ch_ginger	EM_DEFAULT		We come from	"the tunnels, yes."								
+	db_ch_ginger	EM_DEFAULT		Not all of us are	strong enough to	"make it out, though."							
+	db_ch_ginger	EM_SIDE_EYE		Just.. Keep your	eyes peeled.								
+													
+cave_sign_02													
+				If you make	"a mistake,"								
+				go back to where	you came from and	get a breath of air.							
+				You'll come back	with fresh ideas.								
+	db_ch_ginger	EM_DEFAULT		That's a pleasant	message.								
+	db_ch_jeremy	EM_DEFAULT		So you CAN read?									
+	db_ch_ginger	EM_DEFAULT		"English, yes."									
+	db_ch_jeremy	EM_DEFAULT		But not mueto?									
+	db_ch_ginger	EM_DEFAULT		Nothing really	worth reading	in mueto.							
+	db_ch_jeremy	EM_DEFAULT		..Fair enough.									
+													
+new_berlin_sign													
+				JEREMY	We're already so far	from New Berlin..							
+				JEREMY	How much longer	until we get to							
+				JEREMY	"Canterbury, do you"	think?							
+				GINGER	Beats me.								
+				GINGER	What's it like in	the city?							
+				GINGER	Everything inside	that cylinder?							
+				JEREMY	Awful. Dim. Smells.	The air's stale.							
+				GINGER	I've always	"wondered,"							
+				GINGER	What's that line at	the top for?							
+				JEREMY	That's the airport.	They want to keep							
+				JEREMY	planes away from	the damage							
+				JEREMY	in the lower levels.								
+				GINGER	I guess that makes	"sense, huh."							
+				JEREMY	I thought the war	wouldn't be my							
+				JEREMY	problem. I wish I	stayed home.							
+				GINGER	Yeah.. Me too	sometimes.							
+													
+avalon_sign_01													
+	db_ch_jeremy	EM_DEFAULT		It's so far down..	I think I see..	trash?							
+	db_ch_ginger	EM_DEFAULT		That's a lot of	trash down there.								
+	db_ch_ginger	EM_DEFAULT		Yeah..	I'mma stand	back here.							
+	db_ch_jeremy	EM_DEFAULT		Don't like heights?									
+	db_ch_ginger	EM_DEFAULT		I'm not fond of	anything about that	ledge.							
+													
+avalon_sign_02													
+				WELCOME TO	AVALON VILLAGE								
+	db_ch_jeremy	EM_DEFAULT		"New Berlin is bad,"	but..								
+	db_ch_ginger	EM_DEFAULT		I think I smell	something rotting.	Ugh.							
+	db_ch_jeremy	EM_DEFAULT		I take it you're	not a local then.								
+	db_ch_ginger	EM_DEFAULT		Yeah..	*retch*	Not local.							
+													
+avalon_sign_03													
+				GRAND MASTER	SENATRIX MARELON								
+	db_ch_jeremy	EM_DEFAULT		"She's your queen,"	right?								
+	db_ch_jeremy	EM_DEFAULT		What do meutos	think about her?								
+	db_ch_ginger	EM_DEFAULT		Muetos don't live	very long. Maybe a	decade at most.							
+	db_ch_ginger	EM_DEFAULT		The Senatrix has	lived for two-	hundred years.							
+	db_ch_ginger	EM_DEFAULT		Many muetos see	her like a fixture of	the world.							
+	db_ch_ginger	EM_DEFAULT		Many see her	"as a demigod, the"	daughter of Losus.							
+	db_ch_jeremy	EM_DEFAULT		I don't know how	you muetos'	religion works.							
+	db_ch_ginger	EM_DEFAULT		"Me either, I don't"	practice the meuto	religion.							
+	db_ch_jeremy	EM_DEFAULT		Nice.									
+	db_ch_jeremy	EM_DEFAULT		I didn't think I'd	bump into another	athiest out here.							
+	db_ch_ginger	EM_DEFAULT		"Oh, uh.."	I wouldn't call	myself an athiest.							
+	db_ch_jeremy	EM_DEFAULT		Maybe this is just	"me, but you sort of"	look like her.							
+	db_ch_ginger	EM_DEFAULT		"Hehe, yeah.."	I get that a lot.								
+													
+avalon_sign_04													
+				AVALON TAVERN									
+													
+avalon_sign_05													
+	db_ch_ginger	EM_DEFAULT		"Give me a moment,"	I think I can	read this..							
+	db_ch_ginger	EM_DEFAULT		"""Ma.. Ma.. Sel.."""		Uh..							
+	db_ch_jeremy	EM_DEFAULT		Somehow I had the	good fortune to	bump into the							
+	db_ch_jeremy	EM_DEFAULT		one single friendly	mueto in the	"Old World,"							
+	db_ch_jeremy	EM_DEFAULT		but you don't	speak starqus?								
+	db_ch_ginger	EM_DEFAULT		"I was.. Uh.. Well,"	I was raised kind	of weird.							
+	db_ch_ginger	EM_DEFAULT		It's why I don't	have trouble with	your language.							
+	db_ch_jeremy	EM_DEFAULT		"Hey, fair enough."									
+													
+avalon_sign_06													
+	db_ch_ginger	EM_DEFAULT		No idea what	that says.								
+	db_ch_jeremy	EM_DEFAULT		All the blood	all over the ground	"is really, uh.."							
+	db_ch_jeremy	EM_DEFAULT		Giving me a warm	fuzzy feeling.								

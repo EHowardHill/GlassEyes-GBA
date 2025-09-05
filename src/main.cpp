@@ -1,6 +1,5 @@
 // main.cpp
 #include "bn_core.h"
-#include "bn_log.h"
 #include "bn_regular_bg_item.h"
 #include "bn_string.h"
 #include "bn_keypad.h"
@@ -29,7 +28,7 @@
 #include "ge_actions.h"
 #include "ge_battle.h"
 
-#include "ge_map_data.cpp"
+#include "ge_map_data.h"
 
 using namespace bn;
 
@@ -51,10 +50,12 @@ int navigate_map()
 
                 if (index == ITEM_BUTTON)
                 {
-                    BN_LOG("BUTTON: ", id);
                 }
 
-                char_mgr.add_character(index, {x, y}, id);
+                if (index > -1 && index < CHAR_SIZE)
+                {
+                    char_mgr.add_character(index, {x, y}, id);
+                }
             }
         }
     }
@@ -85,20 +86,49 @@ int navigate_map()
         }
 
         // Handle map-specific puzzle logic
-        auto button_01 = char_mgr.find_by_id(1);
-
-        if (button_01 != nullptr)
+        if (current_map.current_map == &map_cave_02)
         {
-            //BN_LOG(button_01->is_pressed);
-            if (button_01->is_pressed)
+            auto button_01 = char_mgr.find_by_id(1);
+
+            if (button_01 != nullptr)
             {
-                for (auto &ch : char_mgr.characters)
+                if (button_01->is_pressed)
                 {
-                    if (ch->id == 2)
+                    for (auto &ch : char_mgr.characters)
                     {
-                        ch->idle_animation = &elem_spike_down;
+                        if (ch->id == 2)
+                        {
+                            ch->idle_animation = &elem_spike_down;
+                        }
                     }
                 }
+            }
+        }
+
+        else if (current_map.current_map == &map_cave_04)
+        {
+            bool correct_up = true;
+            bool incorrect_down = true;
+
+            for (auto &ch : char_mgr.characters)
+            {
+                if (ch->index == ITEM_BUTTON)
+                {
+                    BN_LOG(ch->id, " - ", ch->is_pressed);
+                    if (ch->id == 1 && !ch->is_pressed)
+                    {
+                        correct_up = false;
+                    }
+                    else if (ch->id == 2 && ch->is_pressed)
+                    {
+                        incorrect_down = false;
+                    }
+                }
+            }
+
+            if (correct_up && incorrect_down)
+            {
+                char_mgr.find_by_id(3)->idle_animation = &elem_spike_down;
             }
         }
 
@@ -282,7 +312,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = FOREST_01; // CUTSCENE_01;
+    global_data_ptr->process_stage = TEST_MAP; // CUTSCENE_01;
 
     // Test battle before game begins
     /*
@@ -305,6 +335,15 @@ int main()
         {
             switch (global_data_ptr->process_stage)
             {
+            case TEST_MAP:
+            {
+                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {14, 15};
+                global_data_ptr->ginger_position = {13, 15};
+                global_data_ptr->bg_track = &music_items::bg_avalon;
+                break;
+            }
             case CUTSCENE_01:
             {
                 typewriter(TYPEWRITER_INTRO);
