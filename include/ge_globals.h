@@ -7,6 +7,7 @@
 #include "bn_random.h"
 #include "ge_maps.h"
 #include "ge_sprites.h"
+#include "ge_text.h"
 
 using namespace bn;
 
@@ -126,6 +127,7 @@ struct global_data
 	int enemy_allowed_moveset = 2;
 	bool progress_cue = false;
 	int process_stage = 0;
+	bool items[ITEMS_SIZE] = {0};
 
 	const music_item *bg_track;
 };

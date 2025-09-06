@@ -1,3 +1,5 @@
+// ge_character_manager.cpp
+
 #include "bn_log.h"
 #include "bn_list.h"
 #include "bn_unique_ptr.h"
@@ -138,31 +140,58 @@ void character_manager::alert()
     status = BATTLE;
 }
 
+// Modified character_manager::update method to handle branching dialogue
 void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
+    bool ib_inactive = true;
+
+    // Handle items box first (takes priority over dialogue)
+    if (ib.has_value() && ib.value().is_active())
+    {
+        ib_inactive = false;
+        ib.value().update();
+        ib.value().handle_input(this);
+
+        // If items box closed and opened a dialogue, don't process other input
+        if (!ib.value().is_active() || keypad::b_pressed() || keypad::start_pressed())
+        {
+            ib.reset();
+        }
+    }
 
     // Handle dialogue box
-    if (db.has_value())
+    else if (db.has_value())
     {
         db_inactive = db.value().is_ended();
-        db.value().update();
-
-        if (keypad::a_pressed())
+        
+        // Check if we're in branching mode
+        if (db.value().is_branching)
         {
-            db.value().handle_a_button_press(this);
+            // Only handle branching input, no normal update
+            db.value().handle_branching_input(this);
         }
-        else if (keypad::b_pressed())
+        else
         {
-            db.value().index++;
-            db.value().init(this);
-            // Only render lines that have been properly initialized
-            if (!db.value().lines[0].reference.empty())
-                db.value().lines[0].render();
-            if (!db.value().lines[1].reference.empty())
-                db.value().lines[1].render();
-            if (!db.value().lines[2].reference.empty())
-                db.value().lines[2].render();
+            // Normal dialogue handling
+            db.value().update();
+
+            if (keypad::a_pressed())
+            {
+                db.value().handle_a_button_press(this);
+            }
+            else if (keypad::b_pressed())
+            {
+                db.value().index++;
+                db.value().init(this);
+                // Only render lines that have been properly initialized
+                if (!db.value().lines[0].reference.empty())
+                    db.value().lines[0].render();
+                if (!db.value().lines[1].reference.empty())
+                    db.value().lines[1].render();
+                if (!db.value().lines[2].reference.empty())
+                    db.value().lines[2].render();
+            }
         }
 
         if (db.value().is_ended())
@@ -171,12 +200,25 @@ void character_manager::update(map_manager *current_map = nullptr)
         }
     }
 
+    // Only allow opening items menu when no dialogue or items box is active
+    else if (db_inactive && ib_inactive)
+    {
+        // Example: Open items with START button
+        if (keypad::start_pressed())
+        {
+            ib = items_box();
+            ib.value().init();
+        }
+    }
+
+    bool allow_movement = db_inactive && ib_inactive;
+
     // Handle characters
     for (auto &ch : characters)
     {
         if (ch)
         {
-            ch->update(current_map, db_inactive);
+            ch->update(current_map, allow_movement);
 
             if (ch->index == ITEM_BUTTON)
             {

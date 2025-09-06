@@ -1,4 +1,4 @@
-// Implementation file (ge_text.cpp)
+// ge_text.cpp
 
 #include "bn_log.h"
 #include "bn_sound_items.h"
@@ -16,6 +16,7 @@
 
 // Sprites
 #include "bn_sprite_items_spr_font_01.h"
+#include "bn_sprite_items_hearts.h"
 #include "bn_regular_bg_items_bg_dialogue_box.h"
 
 #include "bn_sprite_items_db_ch_jeremy.h"
@@ -24,6 +25,8 @@
 #include "bn_sprite_items_db_ch_visker_wife.h"
 #include "bn_sprite_items_db_ch_ginger.h"
 #include "bn_sprite_items_db_ch_temmie.h"
+
+#include "ge_dialogue.h"
 
 using namespace bn;
 
@@ -36,6 +39,25 @@ constexpr char alphabet[] = {
     '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
     '[', ']', '\\', '{', '}', '|', ';', '\'', ':', '"', ',', '.', '/',
     '<', '>', '?'};
+
+const char *ITEM_LABELS[ITEMS_SIZE] = {
+    "Lime",
+    "Document",
+    "Item1",
+    "Item2",
+    "Item3",
+};
+
+const bool ITEM_DROP[ITEMS_SIZE] = {
+    true,
+    false,
+    true,
+    true,
+    true};
+
+const conversation *ITEM_CONVOS[ITEMS_SIZE] = {
+    &convo_lime,
+    nullptr};
 
 vector<toast, 16> text::toasts;
 
@@ -276,6 +298,9 @@ dialogue_box::dialogue_box()
     active_conversation = nullptr;
     index = 0;
     size = 0;
+    is_branching = false;
+    branching_selection = 0;
+    num_options = 0;
 }
 
 void dialogue_box::load(conversation *new_conversation)
@@ -308,6 +333,44 @@ void dialogue_box::init(character_manager *ch_man)
         skip = false;
         const dialogue_line &line = (*active_conversation)[index];
 
+        // Check if this is a branching dialogue
+        is_branching = (line.dlg01 != nullptr);
+
+        if (is_branching)
+        {
+            // Set up branching mode
+            branching_selection = 0;
+            num_options = (line.dlg02 != nullptr) ? 3 : 2;
+
+            // Change pointer to hearts sprite for selection
+            BN_LOG("setting pointer:");
+            pointer = sprite_items::hearts.create_sprite(-64, 36, 1);
+
+            // Instantly render all options
+            for (int t = 0; t < num_options; t++)
+            {
+                lines[t].init(line.raw_text[t]);
+                lines[t].size = line.size;
+                lines[t].render(); // Instant display for branching
+            }
+
+            // Clear unused lines if only 2 options
+            if (num_options == 2)
+            {
+                lines[2].init("");
+            }
+
+            // Don't show portrait in branching mode
+            portrait.reset();
+
+            // Update selector position
+            update_branching_selector();
+
+            // Skip the rest of normal dialogue processing
+            return;
+        }
+
+        // Rest of your existing init code for normal dialogue...
         if (line.portrait != nullptr)
         {
             portrait = line.portrait->create_sprite(-84, 56, line.emotion);
@@ -338,22 +401,22 @@ void dialogue_box::init(character_manager *ch_man)
                 }
             }
             ch->idle_animation = line.anim;
-
-            if (ch->idle_animation != nullptr)
-            {
-                BN_LOG(ch->idle_animation->size);
-            }
         }
 
         for (int t = 0; t < 3; t++)
         {
-            BN_LOG(line.raw_text[t]);
             lines[t].init(line.raw_text[t]);
             lines[t].size = line.size;
         }
 
+        // Rest of your existing switch statement...
         switch (line.action)
         {
+        case ACT_ITEM:
+        {
+            global_data_ptr->items[line.index] = true;
+            break;
+        }
         case ACT_SFX_KNOCK:
         {
             sound_items::sfx_knock.play();
@@ -430,6 +493,12 @@ void dialogue_box::update()
         return;
     }
 
+    // Don't do normal update in branching mode
+    if (is_branching)
+    {
+        return;
+    }
+
     auto l = (*active_conversation)[index];
 
     // Only update portrait if it exists and has a valid portrait pointer
@@ -470,6 +539,112 @@ void dialogue_box::update()
                 return;
             }
         }
+    }
+}
+
+void dialogue_box::handle_branching_input(character_manager *ch_man)
+{
+    if (!is_branching)
+    {
+        return;
+    }
+
+    // Handle up/down navigation
+    if (keypad::up_pressed())
+    {
+        if (branching_selection > 0)
+        {
+            branching_selection--;
+            sound_items::snd_dialogue_generic.play(0.3);
+            update_branching_selector();
+        }
+    }
+    else if (keypad::down_pressed())
+    {
+        if (branching_selection < num_options - 1)
+        {
+            branching_selection++;
+            sound_items::snd_dialogue_generic.play(0.3);
+            update_branching_selector();
+        }
+    }
+    else if (keypad::a_pressed())
+    {
+        const dialogue_line &line = (*active_conversation)[index];
+
+        // Play selection sound
+        sound_items::snd_dialogue_generic.play(0.5);
+
+        if (branching_selection == 0)
+        {
+            // Option 1: Continue normally
+            is_branching = false;
+            index++;
+
+            // Reset pointer to normal dialogue pointer
+            pointer = sprite_items::spr_font_01.create_sprite(-52, 32, 73);
+
+            // Initialize the next dialogue line
+            init(ch_man);
+        }
+        else if (branching_selection == 1 && line.dlg01 != nullptr)
+        {
+            // Option 2: Switch to dlg01
+            is_branching = false;
+            active_conversation = const_cast<conversation *>(line.dlg01);
+            index = 0;
+
+            // Recalculate size for new conversation
+            size = 0;
+            for (int i = 0; i < 64; i++)
+            {
+                if ((*active_conversation)[i].action == ACT_END)
+                {
+                    break;
+                }
+                size++;
+            }
+
+            // Reset pointer to normal dialogue pointer
+            pointer = sprite_items::spr_font_01.create_sprite(-52, 32, 73);
+
+            // Initialize the new conversation
+            init(ch_man);
+        }
+        else if (branching_selection == 2 && line.dlg02 != nullptr)
+        {
+            // Option 3: Switch to dlg02
+            is_branching = false;
+            active_conversation = const_cast<conversation *>(line.dlg02);
+            index = 0;
+
+            // Recalculate size for new conversation
+            size = 0;
+            for (int i = 0; i < 64; i++)
+            {
+                if ((*active_conversation)[i].action == ACT_END)
+                {
+                    break;
+                }
+                size++;
+            }
+
+            // Reset pointer to normal dialogue pointer
+            pointer = sprite_items::spr_font_01.create_sprite(-52, 32, 73);
+
+            // Initialize the new conversation
+            init(ch_man);
+        }
+    }
+}
+
+void dialogue_box::update_branching_selector()
+{
+    if (pointer.has_value() && is_branching)
+    {
+        // Position selector at the selected option
+        pointer.value().set_y(32 + (branching_selection * 16));
+        pointer.value().set_visible(true);
     }
 }
 
@@ -525,6 +700,13 @@ void dialogue_box::handle_a_button_press(character_manager *ch_man)
 {
     if (!active_conversation || is_ended())
     {
+        return;
+    }
+
+    // If in branching mode, let handle_branching_input handle it
+    if (is_branching)
+    {
+        handle_branching_input(ch_man);
         return;
     }
 
@@ -658,4 +840,222 @@ void text::update_toasts()
     {
         text::toasts.erase(text::toasts.begin() + delete_toast);
     }
+}
+
+items_box::items_box() : cursor_position(0),
+                         scroll_offset(0),
+                         total_items(0),
+                         active(false)
+{
+    // Initialize lines with proper positions
+    lines[0] = text(nullptr, {-40, 32});
+    lines[1] = text(nullptr, {-40, 48});
+    lines[2] = text(nullptr, {-40, 64});
+}
+
+void items_box::init()
+{
+    // Create the dialogue box background
+    box = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
+
+    // Create the selector sprite (using the same font sprite for "*")
+    selector = sprite_items::spr_font_01.create_sprite(-52, 32, 73); // Adjust index for "*" character
+
+    // Count items in inventory
+    total_items = 0;
+    for (int i = 0; i < ITEMS_SIZE; i++)
+    {
+        if (global_data_ptr->items[i])
+        {
+            item_indices[total_items] = i;
+            total_items++;
+        }
+    }
+
+    cursor_position = 0;
+    scroll_offset = 0;
+    active = true;
+
+    refresh_display();
+}
+
+void items_box::refresh_display()
+{
+    // Clear all lines first
+    for (int i = 0; i < 3; i++)
+    {
+        lines[i].init("");
+    }
+
+    if (total_items == 0)
+    {
+        // Display "No Items" on the first line
+        lines[0].init("* No Items");
+        lines[0].render();
+
+        // Hide selector when no items
+        if (selector.has_value())
+        {
+            selector.value().set_visible(false);
+        }
+    }
+    else
+    {
+        // Display up to 3 items starting from scroll_offset
+        for (int i = 0; i < 3 && (scroll_offset + i) < total_items; i++)
+        {
+            int item_idx = item_indices[scroll_offset + i];
+
+            // Create item text with some spacing from the selector
+            string<20> item_text = "  "; // Two spaces for selector area
+            item_text.append(ITEM_LABELS[item_idx]);
+
+            lines[i].init(item_text.c_str());
+            lines[i].render();
+        }
+
+        // Show and position selector
+        if (selector.has_value())
+        {
+            selector.value().set_visible(true);
+            // Position selector at current cursor position
+            selector.value().set_position(-52, 32 + (cursor_position * 16));
+        }
+    }
+}
+
+void items_box::handle_input(character_manager *ch_man)
+{
+    if (!active || total_items == 0)
+    {
+        return;
+    }
+
+    // Handle up/down navigation
+    if (keypad::up_pressed())
+    {
+        if (cursor_position > 0)
+        {
+            cursor_position--;
+            sound_items::snd_dialogue_generic.play(0.3);
+        }
+        else if (scroll_offset > 0)
+        {
+            scroll_offset--;
+            sound_items::snd_dialogue_generic.play(0.3);
+        }
+        refresh_display();
+    }
+    else if (keypad::down_pressed())
+    {
+        int items_on_screen = min(3, total_items - scroll_offset);
+
+        if (cursor_position < items_on_screen - 1)
+        {
+            cursor_position++;
+            sound_items::snd_dialogue_generic.play(0.3);
+        }
+        else if (scroll_offset + items_on_screen < total_items)
+        {
+            scroll_offset++;
+            sound_items::snd_dialogue_generic.play(0.3);
+        }
+        refresh_display();
+    }
+    // Handle item selection
+    else if (keypad::a_pressed())
+    {
+        int selected_idx = get_selected_item_index();
+        if (selected_idx >= 0 && selected_idx < ITEMS_SIZE)
+        {
+            // Play selection sound
+            sound_items::snd_alert.play(0.5);
+
+            // Load the associated conversation
+            if (ITEM_CONVOS[selected_idx] != nullptr)
+            {
+                // Create dialogue box and load conversation
+                ch_man->db = dialogue_box();
+                ch_man->db.value().load(const_cast<conversation *>(ITEM_CONVOS[selected_idx]));
+                ch_man->db.value().init(ch_man);
+            }
+
+            // Remove item if needed
+            if (ITEM_DROP[selected_idx])
+            {
+                global_data_ptr->items[selected_idx] = false;
+
+                // Rebuild item list
+                int new_total = 0;
+                for (int i = 0; i < ITEMS_SIZE; i++)
+                {
+                    if (global_data_ptr->items[i])
+                    {
+                        item_indices[new_total] = i;
+                        new_total++;
+                    }
+                }
+                total_items = new_total;
+
+                // Adjust cursor and scroll if needed
+                if (cursor_position >= total_items && total_items > 0)
+                {
+                    cursor_position = total_items - 1;
+                }
+                if (scroll_offset >= total_items && total_items > 0)
+                {
+                    scroll_offset = max(0, total_items - 3);
+                }
+            }
+
+            // Close items box
+            close();
+        }
+    }
+    // Handle cancel/back
+    else if (keypad::b_pressed())
+    {
+        sound_items::snd_dialogue_generic.play(0.3);
+        close();
+    }
+}
+
+void items_box::update()
+{
+    if (!active)
+    {
+        return;
+    }
+
+    // Just keep the display updated
+    // Animation or other visual updates could go here
+}
+
+void items_box::close()
+{
+    active = false;
+    box.reset();
+    selector.reset();
+
+    // Clear text lines
+    for (int i = 0; i < 3; i++)
+    {
+        lines[i].letters.clear();
+    }
+}
+
+int items_box::get_selected_item_index() const
+{
+    if (total_items == 0)
+    {
+        return -1;
+    }
+
+    int actual_selection = scroll_offset + cursor_position;
+    if (actual_selection >= 0 && actual_selection < total_items)
+    {
+        return item_indices[actual_selection];
+    }
+
+    return -1;
 }

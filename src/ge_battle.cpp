@@ -16,7 +16,7 @@
 
 #include "ge_text.h"
 #include "ge_character_manager.h"
-#include "ge_actions.h"
+#include "ge_dialogue.h"
 #include "ge_battle.h"
 #include "ge_bullet.h"
 

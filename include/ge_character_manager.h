@@ -15,6 +15,7 @@ struct character_manager
     list<unique_ptr<character>, 32> characters;
     character *player_ptr;
     optional<dialogue_box> db;
+    optional<items_box> ib;
     int status = CONTINUE;
 
     character_manager();

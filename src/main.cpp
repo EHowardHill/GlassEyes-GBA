@@ -25,6 +25,7 @@
 #include "ge_text.h"
 #include "ge_maps.h"
 #include "ge_character_manager.h"
+#include "ge_dialogue.h"
 #include "ge_actions.h"
 #include "ge_battle.h"
 
@@ -312,7 +313,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = TEST_MAP; // CUTSCENE_01;
+    global_data_ptr->process_stage = BLACK_TO_LAB; // CUTSCENE_01;
 
     // Test battle before game begins
     /*
@@ -340,7 +341,7 @@ int main()
                 global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
                 global_data_ptr->entry_map = &map_forest_03;
                 global_data_ptr->entry_position = {14, 15};
-                global_data_ptr->ginger_position = {13, 15};
+                global_data_ptr->ginger_position = {15, 15};
                 global_data_ptr->bg_track = &music_items::bg_avalon;
                 break;
             }

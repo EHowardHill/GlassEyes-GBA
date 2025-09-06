@@ -3,13 +3,15 @@ import csv
 import re
 import sys
 import chardet
+import os
+
+# --- Helper Functions (No changes needed here) ---
 
 
 def parse_navigate_coords(nav_str):
     """Parse coordinate string like '{2, 6}' into tuple (2, 6)"""
     if not nav_str or nav_str.strip() == "":
         return (0, 0)
-    # Remove curly braces and split by comma
     nav_str = nav_str.strip().strip("{}")
     coords = nav_str.split(",")
     if len(coords) == 2:
@@ -24,6 +26,7 @@ sprites = []
 
 
 def process_csv(filename):
+    """Processes the dialogue.txt file into a dictionary of conversations."""
     conversations = {}
     current_convo = None
     current_entries = []
@@ -37,26 +40,21 @@ def process_csv(filename):
         reader = csv.reader(csvfile, delimiter="\t")
 
         for row in reader:
-            # Skip empty rows
             if not any(cell.strip() for cell in row):
                 continue
 
-            # Check if this is a conversation name (non-empty first column, rest empty)
             if row[0].strip() and all(not cell.strip() for cell in row[1:]):
-                # Save previous conversation if exists
                 if current_convo and current_entries:
                     conversations[current_convo] = current_entries
-                    current_entries = []
+                current_entries = []
                 current_convo = row[0].strip()
                 continue
 
-            # Skip header row
             if row[0] == "Name / ID":
                 continue
 
-            # Process data row
             if current_convo:
-                # Parse fields with defaults
+                # (Parsing logic is unchanged)
                 name_id = int(row[0]) if row[0].strip() else 0
                 portrait = row[1].strip() if row[1].strip() else "nullptr"
                 emotion = row[2].strip() if row[2].strip() else "EM_DEFAULT"
@@ -87,8 +85,18 @@ def process_csv(filename):
                 )
                 nav_str = row[12].strip() if len(row) > 12 else ""
                 nav_coords = parse_navigate_coords(nav_str)
+                dlg_opt_1 = (
+                    row[13].strip()
+                    if (len(row) > 13 and row[13].strip())
+                    else "nullptr"
+                )
+                dlg_opt_2 = (
+                    row[14].strip()
+                    if (len(row) > 14 and row[14].strip())
+                    else "nullptr"
+                )
 
-                if portrait not in sprites:
+                if portrait != "nullptr" and portrait not in sprites:
                     sprites.append(portrait)
 
                 if portrait != "nullptr":
@@ -99,81 +107,148 @@ def process_csv(filename):
                     "portrait": portrait,
                     "emotion": emotion,
                     "action": action,
-                    "line1": line1.replace("\"", '\\"'),
-                    "line2": line2.replace("\"", '\\"'),
-                    "line3": line3.replace("\"", '\\"'),
+                    "line1": line1.replace('"', '\\"'),
+                    "line2": line2.replace('"', '\\"'),
+                    "line3": line3.replace('"', '\\"'),
                     "shake": shake,
                     "size": size,
                     "speed": speed,
                     "index": index,
                     "anim": anim_ptr,
                     "nav": nav_coords,
+                    "dlg1": dlg_opt_1,
+                    "dlg2": dlg_opt_2,
                 }
                 current_entries.append(entry)
 
-    # Save last conversation
     if current_convo and current_entries:
         conversations[current_convo] = current_entries
 
     return conversations
 
 
-def generate_header(conversations):
-    """Generate the C++ header file content"""
-    output = []
+# --- NEW: Function to generate header file content ---
+def generate_header_content(conversations, sprite_list):
+    """Generates the content for the .h file with only extern declarations."""
 
-    for convo_name, entries in conversations.items():
-        output.append(f"constexpr conversation {convo_name} = {{")
+    sprite_includes = "\n".join(
+        [f'#include "bn_sprite_items_{s}.h"' for s in sprite_list if s != "nullptr"]
+    )
 
-        for entry in entries:
-            # Convert index to proper format - if it's "0" or empty, use 0, otherwise use the constant name
-            index_value = (
-                "0" if (entry["index"] == "0" or not entry["index"]) else entry["index"]
-            )
+    declarations = ["// Forward declarations for conversations"]
+    for convo_name in sorted(conversations.keys()):
+        declarations.append(f"extern const conversation {convo_name};")
 
-            line = f'    {{{entry["id"]}, {entry["portrait"]}, {entry["emotion"]}, {entry["action"]}, '
-            line += f'"{entry["line1"]}", "{entry["line2"]}", "{entry["line3"]}", '
-            line += f'{entry["shake"]}, {entry["size"]}, {entry["speed"]}, '
-            line += f'{index_value}, {entry["anim"]}, {{{entry["nav"][0]}, {entry["nav"][1]}}}}}'
-            output.append(line + ",")
+    template_h = f"""// ge_dialogue.h
+// THIS IS AN AUTO-GENERATED FILE. DO NOT EDIT.
 
-        # Add EOL entry
-        eol_line = '    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, nullptr, {0, 0}}'
-        output.append(eol_line + "};")
-        output.append("")
-
-    return "\n".join(output)
-
-
-input_file = "dialogue.txt"
-
-template = """// ge_actions.h
+#ifndef GE_DIALOGUE_H
+#define GE_DIALOGUE_H
 
 #include "ge_text.h"
 #include "ge_sprites.h"
-#include "ge_maps.h"
-#include "ge_character_manager.h"
 #include "ge_animations.h"
 
 using namespace bn;
 
-$sprites
+typedef const dialogue_line conversation[128];
 
-$data
-int action_listener(map_manager *man, character_manager *ch_man);"""
+{sprite_includes}
 
-conversations = process_csv(input_file)
-header_content = generate_header(conversations)
-final = template.replace("$data", header_content).replace(
-    "$sprites",
-    "\n".join(
-        [
-            '#include "bn_sprite_items_' + s.replace("&", "") + '.h"'
-            for s in sprites
-            if s != "nullptr"
-        ]
-    ),
-)
+{'\n'.join(declarations)}
 
-with open("include/ge_actions.h", "w") as f:
-    f.write(final)
+#endif // GE_DIALOGUE_H
+"""
+    return template_h
+
+
+# --- Corrected function to generate source file content ---
+def generate_cpp_content(conversations, sprite_list):
+    """Generates the content for the .cpp file with the actual definitions."""
+
+    sprite_includes = "\n".join(
+        [f'#include "bn_sprite_items_{s}.h"' for s in sprite_list if s != "nullptr"]
+    )
+
+    definitions = []
+    for convo_name in sorted(conversations.keys()):
+        entries = conversations[convo_name]
+        definitions.append(f"const conversation {convo_name} = {{")
+
+        for entry in entries:
+            index_value = entry["index"] if entry["index"] else "0"
+
+            # --- FIX #1: Use a single '&' for variable addresses ---
+            anim_value = (
+                f'{entry["anim"]}'
+                if entry["anim"] != "nullptr"
+                else "static_cast<const animation*>(nullptr)"
+            )
+
+            dlg1_value = (
+                f'{entry["dlg1"]}'
+                if entry["dlg1"] != "nullptr"
+                else "static_cast<const conversation*>(nullptr)"
+            )
+            dlg2_value = (
+                f'{entry["dlg2"]}'
+                if entry["dlg2"] != "nullptr"
+                else "static_cast<const conversation*>(nullptr)"
+            )
+
+            # --- FIX #2: Removed extra '}' at the very end of the line ---
+            line = (
+                f'    {{{entry["id"]}, {entry["portrait"]}, {entry["emotion"]}, {entry["action"]}, '
+                f'"{entry["line1"]}", "{entry["line2"]}", "{entry["line3"]}", '
+                f'{entry["shake"]}, {entry["size"]}, {entry["speed"]}, '
+                f"{index_value}, {anim_value}, "
+                f'{{{entry["nav"][0]}, {entry["nav"][1]}}}, '
+                f"{dlg1_value}, {dlg2_value}}}"
+            )
+            definitions.append(line + ",")
+
+        eol_line = '    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}'
+        definitions.append(eol_line + "};")
+        definitions.append("")
+
+    template_cpp = f"""// ge_dialogue.cpp
+// THIS IS AN AUTO-GENERATED FILE. DO NOT EDIT.
+
+#include "ge_dialogue.h"
+
+{sprite_includes}
+
+{'\n'.join(definitions)}
+"""
+    return template_cpp
+
+
+# --- Main Execution Logic ---
+if __name__ == "__main__":
+    input_file = "dialogue.txt"
+
+    # Create output directories if they don't exist
+    if not os.path.exists("include"):
+        os.makedirs("include")
+    if not os.path.exists("src"):
+        os.makedirs("src")
+
+    output_header_path = "include/ge_dialogue.h"
+    output_source_path = "src/ge_dialogue.cpp"
+
+    print(f"Processing '{input_file}'...")
+    conversations = process_csv(input_file)
+
+    # Generate content for both files
+    header_file_content = generate_header_content(conversations, sprites)
+    cpp_file_content = generate_cpp_content(conversations, sprites)
+
+    # Write the header file
+    with open(output_header_path, "w", encoding="utf-8") as f:
+        f.write(header_file_content)
+    print(f"Successfully generated header file: {output_header_path}")
+
+    # Write the source file
+    with open(output_source_path, "w", encoding="utf-8") as f:
+        f.write(cpp_file_content)
+    print(f"Successfully generated source file: {output_source_path}")

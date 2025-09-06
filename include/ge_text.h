@@ -47,6 +47,7 @@ enum actions
     ACT_END,
     ACT_FIGHT,
     ACT_PROGRESS,
+    ACT_ITEM,
     ACT_CUE_GINGER,
     ACT_SFX_KNOCK,
     ACT_MUSIC_VISKER,
@@ -88,6 +89,77 @@ enum size
     SIZE_SMALL,
     SIZE_LARGE
 };
+
+struct dialogue_line;
+typedef const dialogue_line conversation[128];
+
+struct dialogue_line
+{
+    int id = 0;
+    const sprite_item *portrait = nullptr;
+    int emotion = EM_DEFAULT;
+    int action = ACT_DEFAULT;
+    const char *raw_text[3] = {nullptr, nullptr, nullptr};
+
+    int branches[3] = {0, 0, 0};
+    bool shake = false;
+    int size = SIZE_DEFAULT;
+    int speed = SP_DEFAULT;
+
+    int index = 0;
+    const animation *anim = nullptr;
+    vector_2 navigate = {0, 0};
+
+    const conversation *dlg01 = nullptr;
+    const conversation *dlg02 = nullptr;
+
+    constexpr dialogue_line(
+        int id_ = 0,
+        const sprite_item *char_ = nullptr,
+        int emotion_ = EM_DEFAULT,
+        int action_ = ACT_DEFAULT,
+        const char *line1 = nullptr,
+        const char *line2 = nullptr,
+        const char *line3 = nullptr,
+        bool shake_ = false,
+        int size_ = SIZE_DEFAULT,
+        int speed_ = SP_DEFAULT,
+        int index_ = 0,
+        const animation *anim_ = nullptr,
+        vector_2 navigate_ = {0, 0},
+        const conversation *dlg01_ = nullptr,
+        const conversation *dlg02_ = nullptr) : id(id_),
+                                                portrait(char_),
+                                                emotion(emotion_),
+                                                action(action_),
+                                                raw_text{line1, line2, line3},
+                                                shake(shake_),
+                                                size(size_),
+                                                speed(speed_),
+                                                index(index_),
+                                                anim(anim_),
+                                                navigate(navigate_),
+                                                dlg01(dlg01_),
+                                                dlg02(dlg02_)
+    {
+    }
+};
+
+typedef const dialogue_line conversation[128];
+
+enum ITEMS
+{
+    OBJ_LIME,
+    OBJ_DOCUMENT,
+    OBJ_ITEM1,
+    OBJ_ITEM2,
+    OBJ_ITEM3,
+    ITEMS_SIZE
+};
+
+extern const char *ITEM_LABELS[ITEMS_SIZE];
+extern const bool ITEM_DROP[ITEMS_SIZE];
+extern const conversation *ITEM_CONVOS[ITEMS_SIZE];
 
 struct letter
 {
@@ -143,53 +215,6 @@ struct toast
     toast();
 };
 
-struct dialogue_line
-{
-    int id = 0;
-    const sprite_item *portrait = nullptr;
-    int emotion = EM_DEFAULT;
-    int action = ACT_DEFAULT;
-    const char *raw_text[3] = {nullptr, nullptr, nullptr};
-
-    int branches[3] = {0, 0, 0};
-    bool shake = false;
-    int size = SIZE_DEFAULT;
-    int speed = SP_DEFAULT;
-
-    int index = 0;
-    const animation *anim = nullptr;
-    vector_2 navigate = {0, 0};
-
-    constexpr dialogue_line(
-        int id_ = 0,
-        const sprite_item *char_ = nullptr,
-        int emotion_ = EM_DEFAULT,
-        int action_ = ACT_DEFAULT,
-        const char *line1 = nullptr,
-        const char *line2 = nullptr,
-        const char *line3 = nullptr,
-        bool shake_ = false,
-        int size_ = SIZE_DEFAULT,
-        int speed_ = SP_DEFAULT,
-        int index_ = 0,
-        const animation *anim_ = nullptr,
-        vector_2 navigate_ = {0, 0}) : id(id_),
-                                       portrait(char_),
-                                       emotion(emotion_),
-                                       action(action_),
-                                       raw_text{line1, line2, line3},
-                                       shake(shake_),
-                                       size(size_),
-                                       speed(speed_),
-                                       index(index_),
-                                       anim(anim_),
-                                       navigate(navigate_)
-    {
-    }
-};
-
-typedef const dialogue_line conversation[128];
-
 struct dialogue_box
 {
     optional<sprite_ptr> portrait;
@@ -204,6 +229,11 @@ struct dialogue_box
         {nullptr, {-40, 48}},
         {nullptr, {-40, 64}}};
 
+    // Add these new members for branching dialogue
+    bool is_branching;
+    int branching_selection; // 0-2 for the three options
+    int num_options;         // 2 or 3 depending on dlg02
+
     dialogue_box();
     void load(conversation *new_conversation);
     void init(character_manager *ch_man);
@@ -214,6 +244,36 @@ struct dialogue_box
     void instant_complete_text();                          // Instantly complete current text
     void handle_a_button_press(character_manager *ch_man); // Handle A button input
     void advance(character_manager *ch_man);               // Advance to next dialogue
+
+    // Add these new methods for branching
+    void handle_branching_input(character_manager *ch_man);
+    void update_branching_selector();
+};
+
+struct items_box
+{
+    optional<regular_bg_ptr> box;
+    optional<sprite_ptr> selector; // The "*" selector sprite
+    text lines[3] = {
+        {nullptr, {-40, 32}},
+        {nullptr, {-40, 48}},
+        {nullptr, {-40, 64}}};
+    int cursor_position;          // Current selection (0-2 visible)
+    int scroll_offset;            // Offset for scrolling
+    int total_items;              // Total number of items in inventory
+    int item_indices[ITEMS_SIZE]; // Indices of items in inventory
+    bool active;
+
+    items_box();
+    void init();
+    void update();
+    void handle_input(character_manager *ch_man);
+    void close();
+    bool is_active() const { return active; }
+
+private:
+    void refresh_display();
+    int get_selected_item_index() const;
 };
 
 #endif // GE_TEXT_H
