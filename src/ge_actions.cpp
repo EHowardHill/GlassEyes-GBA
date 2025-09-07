@@ -121,42 +121,9 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case LAB_COMPUTER:
             {
-                if (global_data_ptr->action_iterations[LAB_COMPUTER] == 1)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&lab_03);
-                    ch_man->db->init(ch_man);
-                }
-                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 2)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&lab_03b);
-                    ch_man->db->init(ch_man);
-                }
-                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 3)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&lab_03c);
-                    ch_man->db->init(ch_man);
-                }
-                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 4)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&lab_03d);
-                    ch_man->db->init(ch_man);
-                }
-                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 5)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&lab_03e);
-                    ch_man->db->init(ch_man);
-                }
-                else if (global_data_ptr->action_iterations[LAB_COMPUTER] == 6)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&lab_03f);
-                    ch_man->db->init(ch_man);
-                }
+                ch_man->db.emplace();
+                ch_man->db->load(&lab_03);
+                ch_man->db->init(ch_man);
                 break;
             }
 
@@ -783,6 +750,10 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_forest_03;
                 global_data_ptr->entry_position = {14, 15};
                 global_data_ptr->ginger_position = {15, 15};
+                
+                // New BG track
+                music::stop();
+                global_data_ptr->bg_track->play(0.5);
                 return 1;
                 break;
             }

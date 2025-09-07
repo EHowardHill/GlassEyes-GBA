@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
+
+# generate-script.py
+
 import csv
-import re
-import sys
 import chardet
 import os
-
-# --- Helper Functions (No changes needed here) ---
-
 
 def parse_navigate_coords(nav_str):
     """Parse coordinate string like '{2, 6}' into tuple (2, 6)"""

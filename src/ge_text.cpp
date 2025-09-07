@@ -42,22 +42,17 @@ constexpr char alphabet[] = {
 
 const char *ITEM_LABELS[ITEMS_SIZE] = {
     "Lime",
-    "Document",
-    "Item1",
-    "Item2",
-    "Item3",
-};
+    "Photo (Croke)",
+    "Document"};
 
 const bool ITEM_DROP[ITEMS_SIZE] = {
     true,
     false,
-    true,
-    true,
-    true};
+    false};
 
 const conversation *ITEM_CONVOS[ITEMS_SIZE] = {
     &convo_lime,
-    nullptr};
+    &convo_photo};
 
 vector<toast, 16> text::toasts;
 
@@ -303,7 +298,7 @@ dialogue_box::dialogue_box()
     num_options = 0;
 }
 
-void dialogue_box::load(conversation *new_conversation)
+void dialogue_box::load(const conversation *new_conversation)
 {
     active_conversation = new_conversation;
     index = 0;
@@ -436,6 +431,7 @@ void dialogue_box::init(character_manager *ch_man)
         }
         case ACT_MUSIC_FADEOUT:
         {
+            music::stop();
             break;
         }
         case ACT_MUSIC_RESET:
@@ -591,7 +587,7 @@ void dialogue_box::handle_branching_input(character_manager *ch_man)
         {
             // Option 2: Switch to dlg01
             is_branching = false;
-            active_conversation = const_cast<conversation *>(line.dlg01);
+            active_conversation = line.dlg01;
             index = 0;
 
             // Recalculate size for new conversation
@@ -615,7 +611,7 @@ void dialogue_box::handle_branching_input(character_manager *ch_man)
         {
             // Option 3: Switch to dlg02
             is_branching = false;
-            active_conversation = const_cast<conversation *>(line.dlg02);
+            active_conversation = line.dlg02;
             index = 0;
 
             // Recalculate size for new conversation
@@ -976,7 +972,7 @@ void items_box::handle_input(character_manager *ch_man)
             {
                 // Create dialogue box and load conversation
                 ch_man->db = dialogue_box();
-                ch_man->db.value().load(const_cast<conversation *>(ITEM_CONVOS[selected_idx]));
+                ch_man->db.value().load(ITEM_CONVOS[selected_idx]);
                 ch_man->db.value().init(ch_man);
             }
 

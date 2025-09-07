@@ -129,9 +129,11 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
                 // Update z-order for both sprites
                 if (item->sprite_item_ptr != &sprite_items::spr_elements)
                 {
-                    item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 16);
-                    item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 16);
-                } else {
+                    item->sprite_ptr_raw[0].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 2);
+                    item->sprite_ptr_raw[1].value().set_z_order(10 - item->sprite_ptr_raw[1].value().y().integer() / 2);
+                }
+                else
+                {
                     item->sprite_ptr_raw[1].value().set_z_order(999);
                 }
 
@@ -314,55 +316,131 @@ void character::update(map_manager *current_map, bool db_inactive)
         }
     }
 
-    // Fixed move_to logic with proper directions
+    // Replace the move_to logic section with this improved version
     if (move_to.x != 0 && move_to.y != 0)
     {
         vector_2 move_to_exp = {
             (move_to.x * 32) + 16,
             (move_to.y * 32) + 16};
 
-        if (move_to_exp.x > v_sprite.bounds.position.x)
+        // Define tolerance - larger when moving fast, smaller when slow
+        int tolerance = keypad::b_held() ? 3 : 1; // 3 pixels tolerance with speed boost, 1 without
+
+        // Calculate the distance to target for each axis
+        int dist_x = (move_to_exp.x - v_sprite.bounds.position.x).integer();
+        int dist_y = (move_to_exp.y - v_sprite.bounds.position.y).integer();
+
+        // Only move if we're outside the tolerance zone
+        if (abs(dist_x) > tolerance)
         {
-            delta.x = 1;
-        }
-        else if (move_to_exp.x < v_sprite.bounds.position.x)
-        {
-            delta.x = -1;
+            if (dist_x > 0)
+            {
+                delta.x = 1;
+            }
+            else
+            {
+                delta.x = -1;
+            }
         }
 
-        if (move_to_exp.y > v_sprite.bounds.position.y)
+        if (abs(dist_y) > tolerance)
         {
-            delta.y = 1;
+            if (dist_y > 0)
+            {
+                delta.y = 1;
+            }
+            else
+            {
+                delta.y = -1;
+            }
         }
-        else if (move_to_exp.y < v_sprite.bounds.position.y)
+
+        if (abs(dist_x) <= tolerance && abs(dist_y) <= tolerance)
         {
-            delta.y = -1;
+            move_to.x = 0;
+            move_to.y = 0;
         }
     }
 
-    // Fixed facing direction
-    if (delta.y > 0)
-    {
-        face = DIR_DOWN;
-    }
-    else if (delta.y < 0)
-    {
-        face = DIR_UP;
-    }
-
-    if (delta.x > 0)
-    {
-        face = DIR_RIGHT;
-    }
-    else if (delta.x < 0)
-    {
-        face = DIR_LEFT;
-    }
-
+    // Apply speed boost if B is held
     if (keypad::b_held())
     {
         delta.x = delta.x * 2;
         delta.y = delta.y * 2;
+    }
+
+    // Decrement cooldown if active
+    if (face_change_cooldown > 0)
+    {
+        face_change_cooldown--;
+    }
+
+    // Simplified facing direction logic
+    int old_face = face;
+
+    // Get integer values for comparison
+    int dx = delta.x.integer();
+    int dy = delta.y.integer();
+
+    if (dx != 0 || dy != 0) // If we're moving at all
+    {
+        // For following characters, only update direction if cooldown is done
+        // and movement is significant
+        if (is_follow)
+        {
+            if (face_change_cooldown == 0)
+            {
+                // Only change if movement is clear in one direction
+                if (abs(dy) > abs(dx))
+                {
+                    if (dy > 0)
+                        face = DIR_DOWN;
+                    else if (dy < 0)
+                        face = DIR_UP;
+                }
+                else if (abs(dx) > abs(dy))
+                {
+                    if (dx > 0)
+                        face = DIR_RIGHT;
+                    else if (dx < 0)
+                        face = DIR_LEFT;
+                }
+
+                // If we changed direction, add a small cooldown
+                if (old_face != face)
+                {
+                    face_change_cooldown = 4; // 4 frames of cooldown for followers
+                }
+            }
+        }
+        else
+        {
+            // Player character - more responsive but with tiny cooldown to prevent flickering
+            if (face_change_cooldown == 0)
+            {
+                // Update based on strongest movement direction
+                if (abs(dy) > abs(dx))
+                {
+                    if (dy > 0)
+                        face = DIR_DOWN;
+                    else if (dy < 0)
+                        face = DIR_UP;
+                }
+                else if (dx != 0) // Prioritize horizontal if equal or only horizontal movement
+                {
+                    if (dx > 0)
+                        face = DIR_RIGHT;
+                    else if (dx < 0)
+                        face = DIR_LEFT;
+                }
+
+                // Minimal cooldown for player to prevent rapid flickering
+                if (old_face != face)
+                {
+                    face_change_cooldown = 2; // Just 2 frames for player
+                }
+            }
+        }
     }
 
     // Pixel-perfect collision detection

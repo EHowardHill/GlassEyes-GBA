@@ -53,7 +53,7 @@ enum actions
     ACT_MUSIC_VISKER,
     ACT_MUSIC_GINGER,
     ACT_MUSIC_FADEOUT,
-    ACT_MUSIC_RESET
+    ACT_MUSIC_RESET,
 };
 
 enum speed
@@ -150,6 +150,7 @@ typedef const dialogue_line conversation[128];
 enum ITEMS
 {
     OBJ_LIME,
+    OBJ_PHOTO,
     OBJ_DOCUMENT,
     OBJ_ITEM1,
     OBJ_ITEM2,
@@ -221,7 +222,7 @@ struct dialogue_box
     optional<regular_bg_ptr> box;
     optional<sprite_ptr> pointer;
     int ticker;
-    conversation *active_conversation;
+    const conversation *active_conversation;
     int index;
     int size;
     text lines[3] = {
@@ -235,7 +236,7 @@ struct dialogue_box
     int num_options;         // 2 or 3 depending on dlg02
 
     dialogue_box();
-    void load(conversation *new_conversation);
+    void load(const conversation *new_conversation);
     void init(character_manager *ch_man);
     void update();
     bool is_ended();

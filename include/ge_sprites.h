@@ -114,6 +114,11 @@ struct character
     bool is_sticky = false;
     bool is_pressed = false;
 
+    int face_lock_timer = 0;
+    int last_significant_x = 0;
+    int last_significant_y = 0;
+    int face_change_cooldown = 0;
+
     character(int index_, vector_2 start_);
 
     void update(map_manager *current_map, bool character_box_ended);

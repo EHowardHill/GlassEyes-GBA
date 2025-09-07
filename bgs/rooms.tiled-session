@@ -36,8 +36,8 @@
             "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 512,
-                "y": 512.5
+                "x": 370,
+                "y": 311.5
             }
         },
         "maps/cave_04.tmx": {
@@ -61,23 +61,23 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 2057.333333333333,
-                "y": 191.66666666666666
+                "y": 191.66666666666663
             }
         },
         "maps/forest_02.tmx": {
-            "scale": 1,
-            "selectedLayer": 2,
+            "scale": 0.75,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 448,
-                "y": 352.5
+                "x": 470.66666666666663,
+                "y": 412.6666666666667
             }
         },
         "maps/forest_03.tmx": {
             "scale": 1,
-            "selectedLayer": 1,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 490,
-                "y": 555.5
+                "x": 496,
+                "y": 416.5
             }
         },
         "maps/garbage_01.tmx": {
@@ -121,11 +121,11 @@
             }
         },
         "maps/lab_01.tmx": {
-            "scale": 1.5,
-            "selectedLayer": 3,
+            "scale": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 215.33333333333331,
-                "y": 272.3333333333333
+                "x": 155,
+                "y": 182.5
             }
         },
         "maps/room01.tmx": {
@@ -200,12 +200,12 @@
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
+        "maps/forest_03.tmx",
+        "maps/forest_02.tmx",
         "maps/forest_01.tmx",
         "maps/cave_02.tmx",
-        "maps/forest_02.tmx",
         "maps/cave_04.tmx",
         "maps/cave_03.tmx",
-        "maps/forest_03.tmx",
         "maps/cave_cowbemmie.tmx",
         "tilesets/cowbemmie01.tsx",
         "maps/cave_01.tmx",

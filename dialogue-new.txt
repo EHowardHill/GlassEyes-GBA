@@ -15,8 +15,8 @@ test_convo
 	db_ch_vista	EM_DEFAULT	ACT_WALK	Yes?	Who is it?					CHAR_VISTA	&vista_pickup	"{1, 3}"		
 	db_ch_vista	EM_SULLEN		"Hmm,"	What could this be?									
 	db_ch_vista	EM_HAPPY		"""Dear Vista,"	I don't know if you	"remember me.."""								
-	db_ch_vista	EM_DEFAULT		"""It's been years"	"and years.."""									
-	db_ch_vista	EM_DEFAULT		I don't..	remember..	anyone else..								
+	db_ch_vista	EM_DEFAULT		"""I was your"	"daughter, years"	"and years ago."""								
+	db_ch_vista	EM_DEFAULT		I don't..	remember..	"a daughter.."""								
 			ACT_PROGRESS							CUTSCENE_TO_GARBAGE				
 														
 intro_02														
@@ -45,8 +45,8 @@ garbage_01
 														
 garbage_01_alt_01														
 	db_ch_visker	EM_SULLEN		*sigh*	It okay.	I forgive you.								
-	db_ch_visker	EM_DEFAULT		But I WON'T	say where EXIT is									
-	db_ch_visker	EM_CONFUSED		Cos..	I want you to die	so I eat you.								
+	db_ch_jeremy	EM_SAD		I need to get out	of here.	Where's the exit?								
+	db_ch_visker	EM_CONFUSED		Why would I say?	I want you to die	so I eat you.								
 	db_ch_visker	EM_DEFAULT		"..Okay, I let you"	go but you have to	do me favor.								
 	db_ch_visker	EM_DEFAULT		Go to Avalon.	Send me TURKEY.	Hungry for turkey.								
 	db_ch_visker	EM_DEFAULT		Tell them it for	"""VISKER""."	"""King of TRASH""."								
@@ -223,10 +223,10 @@ lab_05
 		EM_SKIP	ACT_MUSIC_GINGER											
 	db_ch_ginger	EM_HAPPY		Oh! You're awake!	Thank goodness.									
 	db_ch_ginger	EM_EMBARRASSED		"You're not, like,"	"super injured,"	are you?								
-	db_ch_ginger	EM_EMBARRASSED		If you smell like	"limes, that's.."	uh..								
-	db_ch_ginger	EM_DEFAULT		Because I have	all these limes..									
-	db_ch_ginger	EM_DEFAULT		..Lime juice is an	"antiseptic, right?"									
-				NO?!	Yes. Of course.	..							&lab_05_alt_01	
+	db_ch_jeremy	EM_DEFAULT		I smell like limes.	"No, I'm fine."									
+	db_ch_ginger	EM_DEFAULT		"Well yeah, "	I dressed your	cuts with juice.								
+	db_ch_ginger	EM_DEFAULT		"It's antiseptic,"	right?									
+				NO??!?	Yes. Of course.	..							&lab_05_alt_01	&lab_05_alt_01
 	db_ch_ginger	EM_DEFAULT		Oh.		Uh..								
 	db_ch_ginger	EM_DEFAULT				You want a lime?								
 				Yes.	…Yes.								&lab_05_alt_02	
@@ -240,14 +240,14 @@ lab_05
 	db_ch_ginger	EM_HAPPY		I'm heading to	Canterbury.									
 	db_ch_ginger	EM_DEFAULT		I figured that since	"you were a human,"	you were too.								
 	db_ch_ginger	EM_HAPPY		Do you know	how to get there?									
-				Not a clue.	I know everything.								&lab_05_alt_03	
+	db_ch_jeremy	EM_DEFAULT		Not a clue.	I know everything.								&lab_05_alt_03	
 	db_ch_ginger	EM_SIDE_EYE		Uh.. Well..	There are signs	everywhere..								
-	db_ch_ginger	EM_DEFAULT		I'm sure we'll	figure it out.									
+	db_ch_jeremy	EM_DEFAULT		I'm sure we'll	figure it out.									
 		EM_SKIP	ACT_MUSIC_RESET											
 		EM_SKIP	ACT_CUE_GINGER											
 														
 lab_05_alt_01														
-	db_ch_ginger	EM_HAPPY		Whew..	Thank goodness!									
+	db_ch_ginger	EM_DEFAULT		Whew..	Thank goodness!									
 	db_ch_ginger	EM_DEFAULT		So..		You want a lime?								
 				Yes.	…Yes.								&lab_05_alt_02	
 				LIME has been	added to your	inventory!								
@@ -260,13 +260,13 @@ lab_05_alt_01
 	db_ch_ginger	EM_HAPPY		I'm heading to	Canterbury.									
 	db_ch_ginger	EM_DEFAULT		I figured that since	"you were a human,"	you were too.								
 	db_ch_ginger	EM_HAPPY		Do you know	how to get there?									
-				Not a clue.	I know everything.								&lab_05_alt_03	
+	db_ch_jeremy	EM_DEFAULT		Not a clue.	I know everything.								&lab_05_alt_03	
 	db_ch_ginger	EM_SIDE_EYE		Uh.. Well..	There are signs	everywhere..								
-	db_ch_ginger	EM_DEFAULT		I'm sure we'll	figure it out.									
+	db_ch_jeremy	EM_DEFAULT		I'm sure we'll	figure it out.									
 		EM_SKIP	ACT_MUSIC_RESET											
 		EM_SKIP	ACT_CUE_GINGER											
 														
-lab_05_alt_02														
+&lab_05_alt_02														
 				LIME has been	added to your	inventory!								
 				Press START	to view your	inventory items.								
 		EM_SKIP	ACT_ITEM							OBJ_LIME				
@@ -277,15 +277,15 @@ lab_05_alt_02
 	db_ch_ginger	EM_HAPPY		I'm heading to	Canterbury.									
 	db_ch_ginger	EM_DEFAULT		I figured that since	"you were a human,"	you were too.								
 	db_ch_ginger	EM_HAPPY		Do you know	how to get there?									
-				Not a clue.	I know everything.								&lab_05_alt_03	
+	db_ch_jeremy	EM_DEFAULT		Not a clue.	I know everything.								&lab_05_alt_03	
 	db_ch_ginger	EM_SIDE_EYE		Uh.. Well..	There are signs	everywhere..								
-	db_ch_ginger	EM_DEFAULT		I'm sure we'll	figure it out.									
+	db_ch_jeremy	EM_DEFAULT		I'm sure we'll	figure it out.									
 		EM_SKIP	ACT_MUSIC_RESET											
 		EM_SKIP	ACT_CUE_GINGER											
 														
-lab_05_alt_03														
+&lab_05_alt_03														
 	db_ch_ginger	EM_HAPPY		YAY!	This'll be easy!									
-	db_ch_ginger	EM_HAPPY		Lead the way!										
+	db_ch_jeremy	EM_HAPPY		Lead the way!										
 		EM_SKIP	ACT_MUSIC_RESET											
 		EM_SKIP	ACT_CUE_GINGER											
 														
@@ -306,19 +306,19 @@ lab_08
 														
 leaving_lab														
 	db_ch_ginger	EM_DEFAULT		You don't mind	"if I follow you,"	right?								
-				You're fine.	Yes I do mind.								&leaving_lab_alt_01	
+				You're fine.	Yes I do mind.					leaving_lab_alt_01				
 	db_ch_ginger	EM_SIDE_EYE		"Thank you,"	"I just, uh.."	Nevermind.								
 	db_ch_ginger	EM_DEFAULT		It's scary	out there.									
-				True.	It's not that bad.								&leaving_lab_alt_02	
+				True.	It's not that bad.					leaving_lab_alt_02				
 	db_ch_ginger	EM_DEFAULT		Alright..	I'm ready.	Let's go.								
 			ACT_PROGRESS							FOREST_01				
 														
 leaving_lab_alt_01														
 	db_ch_ginger	EM_EMBARRASSED		Was that sarcasm?	"I'm sorry, I can't"	really tell.								
-				Yes.	No.								&leaving_lab_alt_03	
+				Yes.	No.					leaving_lab_alt_03				
 	db_ch_ginger	EM_HAPPY		Oh..	Thank goodness.									
 	db_ch_ginger	EM_DEFAULT		It's scary	out there.									
-				True.	It's not that bad.								&leaving_lab_alt_02	
+				True.	It's not that bad.					leaving_lab_alt_02				
 	db_ch_ginger	EM_DEFAULT		Alright..	I'm ready.	Let's go.								
 			ACT_PROGRESS							FOREST_01				
 														
@@ -344,7 +344,7 @@ forest_dlg_01
 	db_ch_ginger	EM_SIDE_EYE		..I can read	"your face, I know"	it's tough.								
 	db_ch_ginger	EM_DEFAULT		Canterbury isn't	too far though.									
 														
-forest_dlg_01_alt_01														
+&forest_dlg_01_alt_01														
 	db_ch_ginger	EM_DEFAULT		I know it's right	"there, but.."									
 	db_ch_ginger	EM_DEFAULT		"Plus, with the war"	and all that..									
 	db_ch_ginger	EM_SIDE_EYE		..I can read	"your face, I know"	it's tough.								
@@ -356,10 +356,10 @@ forest_dlg_02
 	db_ch_ginger	EM_SIDE_EYE		they see a human.										
 														
 croke_01														
-														
-	db_ch_croke	EM_DEFAULT	ACT_MUSIC_FADEOUT	"HALT NOW,"	FILTHY GLABBER!									
-	db_ch_ginger	EM_WAT	ACT_WALK	Don't hurt us!!	Please!					CHAR_CROKE		"{41, 8}"		
-	db_ch_croke	EM_DEFAULT		Filthy Glabber 	can die!					CHAR_CROKE	&croke_accuse			
+		EM_SKIP								CHAR_CROKE	&croke_accuse			
+	db_ch_croke	EM_DEFAULT	ACT_WALK	"HALT NOW,"	FILTHY GLABBER!					CHAR_CROKE		"{41, 8}"		
+	db_ch_ginger	EM_WAT		Don't hurt us!!	Please!									
+	db_ch_croke	EM_DEFAULT		Filthy Glabber 	can die!									
 	db_ch_croke	EM_DEFAULT		..with the mueto	who is a glabber	by association!								
 				"""Glabber""?"	Hey. Chill out.								&croke_01_alt_01	
 	db_ch_ginger	EM_SIDE_EYE		It's a slur for	"humans, it means"	"""bald."""								
@@ -388,8 +388,8 @@ croke_03
 														
 croke_04														
 	db_ch_ginger	EM_CONFUSED		..										
+	db_ch_jeremy	EM_DEFAULT		..										
 	db_ch_ginger	EM_WAT		D-Did he just..										
-														
 														
 croke_05														
 		EM_SKIP								CHAR_CROKE	&croke_lay_down			
@@ -431,139 +431,3 @@ cave_01_alt_01
 forest_dlg_sign_02														
 	db_ch_ginger	EM_CONFUSED		I can't.. Read this..	I think it's for	"sale, though."								
 				You can't read?	Got it.								&forest_dlg_sign_02_alt_01	
-				"No, I can read,"	just not.. That.									
-														
-forest_dlg_sign_02_alt_01														
-	db_ch_ginger	EM_DEFAULT		Cute house though.	Real shame.									
-														
-forest_dlg_03														
-	db_ch_ginger	EM_SIDE_EYE		I don't know if	trying to get in	is wise.								
-														
-forest_dlg_paper														
-				You found:	DOCUMENT									
-				Nothing on it	makes much	"sense, though."								
-		EM_SKIP	ACT_ITEM							OBJ_DOCUMENT				
-														
-bridge_01														
-	db_ch_ginger	EM_DEFAULT		Yes.	Avalon is	that way.								
-	db_ch_ginger	EM_DEFAULT		It probably won't	"get fixed for a while,"	though..								
-	db_ch_ginger	EM_DEFAULT		Muetos have	a joke:									
-	db_ch_ginger	EM_EMBARRASSED		"""Mueto bridges"	"are human bridges,"	"but broken."""								
-	db_ch_ginger	EM_DEFAULT		..but there's a	tunnel around here	somewhere.								
-	db_ch_ginger	EM_DEFAULT		You can get most	places through the	tunnels.								
-														
-tunnel_01														
-	db_ch_ginger	EM_DEFAULT		"Hey- Just, uh.."	Before we go in..									
-	db_ch_ginger	EM_SIDE_EYE		Just..	"Be careful, okay?"									
-														
-final_msg														
-				Thanks for	trying out the	demo so far!								
-				I've only been	working on this	"for a month,"								
-				so I'm sure I'll	make lots of	progress.								
-				Discord / X:		"""@cinemint"""								
-														
-temmie_sign														
-				COWBEMMIE	VILLAGE									
-														
-temmie_01														
-				HOIDY AND	WELCOM TO	COWBEMMIE LAND								
-				COM EXPERENCE	OUR VIBRANT	CULTURE								
-														
-														
-temmie_02														
-	db_ch_temmie	EM_HAPPY		hoi-dy!!	im cowbemmie									
-	db_ch_temmie	EM_DEFAULT		wat r you	cowpokes doin	round these parts								
-	db_ch_ginger	EM_HAPPY		Oh hi!!	I've heard all	about y'all!								
-	db_ch_temmie	EM_DEFAULT		we surviv on	butter from	da churn								
-	db_ch_ginger	EM_DEFAULT		What?										
-	db_ch_temmie	EM_EXCITED		butter from	da churn									
-														
-temmie_03														
-				"""The beautiful"	blue tunnel flower	can be found								
-				all over the	tunnels of the	Old World.								
-				It's toxic and	everyone is	"slightly allergic."""								
-														
-temmie_04														
-	db_ch_temmie	EM_DEFAULT		hoi cowbemmie										
-	db_ch_temmie	EM_HAPPY		hoi to you too	cowbemmie									
-	db_ch_temmie	EM_DEFAULT		this ton aint	big nough for da	two of us								
-	db_ch_temmie	EM_EXCITED		okay		..then draw								
-	db_ch_temmie	EM_DEFAULT		i cant draw										
-	db_ch_temmie	EM_EXCITED		oh ok ok										
-	db_ch_temmie	EM_EXCITED		maybe it is	big nough then									
-														
-temmie_05														
-				"""AR HISTORY"""	~ cowbemmie									
-				The cowbemmie	next to it appears	to be painted on.								
-														
-temmie_06														
-	db_ch_temmie	EM_DEFAULT		in da olden days	cowbemmies rode	da hose								
-	db_ch_temmie	EM_ANGRY		MOO										
-	db_ch_temmie	EM_DEFAULT		good hose										
-														
-temmie_07														
-	db_ch_temmie	EM_HAPPY		no good culture	is withot a	CULT								
-	db_ch_temmie	EM_DEFAULT		if u wanna be	honorary cow-	bemmie								
-	db_ch_temmie	EM_EXCITED		u gotta partake	in da frot	of da churn								
-	db_ch_ginger	EM_DEFAULT		Fruit?										
-	db_ch_temmie	EM_EXCITED		frot of da churn	yes									
-	db_ch_temmie	EM_DEFAULT		u gotta churn	ur life around	yknow								
-	db_ch_temmie	EM_DEFAULT		then we mail u	yor honorary	cowbemmie hat								
-	db_ch_temmie	EM_DEFAULT		an u can come	to secret meetings									
-														
-cave_sign_01														
-				WARNING:	SKULL WORMS									
-	db_ch_ginger	EM_SIDE_EYE		Eww..										
-														
-cave_sign_02														
-				If you make	"a mistake,"									
-				go back to where	you came from and	get a breath of air.								
-				You'll come back	with fresh ideas.									
-														
-new_berlin_sign														
-				"They call it,"	"""New Berlin""."									
-				Airplanes come in	through the slit at	the top.								
-				Most of the lower	levels are destroyed	because of the war.								
-				Humans who leave	don't tend to make	it back alive.								
-														
-avalon_sign_01														
-	db_ch_ginger	EM_DEFAULT		That's a lot of	trash down there.									
-	db_ch_ginger	EM_DEFAULT		Yeah..	I'mma stand	back here.								
-	db_ch_ginger	EM_DEFAULT		I don't like	anything about that	ledge.								
-														
-avalon_sign_02														
-				WELCOME TO	AVALON VILLAGE									
-	db_ch_ginger	EM_EMBARRASSED		I think I smell	something rotting.	*retch*								
-	db_ch_ginger	EM_DEFAULT		I don't want	to stay long.									
-														
-avalon_sign_03														
-				GRAND MASTER	SENATRIX									
-				Who is she?	You look similar.								&avalon_sign_03_alt_01	
-	db_ch_ginger	EM_DEFAULT		Muetos don't live	very long. Maybe a	decade at most.								
-	db_ch_ginger	EM_DEFAULT		The Senatrix has	lived for two-	hundred years.								
-	db_ch_ginger	EM_DEFAULT		Many muetos see	her like a fixture of	the world.								
-	db_ch_ginger	EM_DEFAULT		Many see her	"as a demigod, the"	daughter of Losus.								
-	db_ch_ginger	EM_DEFAULT		She rules as our	queen.									
-														
-avalon_sign_03_alt_01														
-	db_ch_ginger	EM_SIDE_EYE		Yeah..	I get that a lot.									
-														
-avalon_sign_04														
-				AVALON TAVERN		BYOB								
-														
-avalon_sign_05														
-	db_ch_ginger	EM_DEFAULT		"Give me a moment,"	I think I can	read this..								
-	db_ch_ginger	EM_DEFAULT		"""Ma.. Ma.. Sel.."""		Uh..								
-	db_ch_ginger	EM_DEFAULT		Yeah..	I got nothing.									
-														
-avalon_sign_06														
-	db_ch_ginger	EM_DEFAULT		No idea what	that says.									
-	db_ch_ginger	EM_SIDE_EYE		All the blood	all over the ground	"is really, uh.."								
-	db_ch_ginger	EM_DEFAULT		Giving me a warm	"fuzzy feeling,"	though.								
-														
-convo_lime														
-				It tastes sour.	"Lots of Vitamin C,"	though.								
-				HP INCREASED	BY 5									
-														
-convo_document														
-				None of this	makes any sense.									
