@@ -538,15 +538,23 @@ avalon_sign_02
 														
 avalon_sign_03														
 				GRAND MASTER	SENATRIX									
-				Who is she?	You look similar.								&avalon_sign_03_alt_01	
-	db_ch_ginger	EM_DEFAULT		Muetos don't live	very long. Maybe a	decade at most.								
+				Who is she?	You look similar.									
+	db_ch_ginger	EM_DEFAULT		Muetos don't live	very long. Maybe	five years at most.								
 	db_ch_ginger	EM_DEFAULT		The Senatrix has	lived for two-	hundred years.								
 	db_ch_ginger	EM_DEFAULT		Many muetos see	her as a fixture of	the world.								
 	db_ch_ginger	EM_DEFAULT		Many see her	"as a demigod, the"	daughter of Losus.								
 	db_ch_ginger	EM_DEFAULT		She rules as our	queen.									
+				She looks like you.	"Dang, she's old."								&avalon_sign_03_alt_01	
+	db_ch_ginger	EM_SIDE_EYE		Yeah..	I get that a lot.									
 														
 avalon_sign_03_alt_01														
-	db_ch_ginger	EM_SIDE_EYE		Yeah..	I get that a lot.									
+	db_ch_ginger	EM_DEFAULT		She goes through a	ritual where she	"sheds her skin,"								
+	db_ch_ginger	EM_DEFAULT		And then she looks	"young again, but"	different.								
+				Eww.	Cool.								&avalon_sign_03_alt_02	
+	db_ch_ginger	EM_SIDE_EYE		"Yeah, it's kinda"	gross.									
+														
+avalon_sign_03_alt_01														
+	db_ch_ginger	EM_DEFAULT		Only problem is	then they gotta go	replace the statues.								
 														
 avalon_sign_04														
 				AVALON TAVERN		BYOB								

@@ -32,7 +32,8 @@ enum foes
 {
     FOE_VISKERS_01,
     FOE_VISKERS_02,
-    FOE_CROKE_01
+    FOE_CROKE_01,
+    FOE_TEST
 };
 
 enum actions

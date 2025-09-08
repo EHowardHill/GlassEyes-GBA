@@ -22,92 +22,6 @@
 
 using namespace bn;
 
-static constexpr int MAX_PARTY_SIZE = 4;
-
-static constexpr int JEREMY_IDLE_START = 10;
-static constexpr int JEREMY_HURT_START = 11;
-static constexpr int JEREMY_HURT_END = 14;
-static constexpr int JEREMY_ATK_START = 15;
-static constexpr int JEREMY_ATK_END = 21;
-
-static constexpr int GINGER_IDLE_START = 8;
-static constexpr int GINGER_IDLE_END = 11;
-static constexpr int GINGER_HURT_START = 12;
-static constexpr int GINGER_HURT_END = 14;
-static constexpr int GINGER_ATK_START = 15;
-static constexpr int GINGER_ATK_END = 17;
-
-static constexpr int ACTION_NONE = -1;
-static constexpr int ACTION_ATTACK = 0;
-static constexpr int ACTION_ITEM = 1;
-static constexpr int ACTION_SPARE = 2;
-
-struct battle_state
-{
-    const sprite_item *enemy_sprite_item;
-    int party_size = 1;
-    int current_actor = -1;
-    int selected_menu = STATUS_BAR_NONE;
-    int stage = stage_talking;
-    int result = RESULT_FIRST;
-    int y_delta = 0;
-
-    // Action tracking
-    int character_actions[MAX_PARTY_SIZE] = {ACTION_NONE, ACTION_NONE, ACTION_NONE, ACTION_NONE};
-    int choosing_for = 0; // Which character is currently choosing
-    bool has_acted[MAX_PARTY_SIZE];
-
-    // Reusable dialogue state
-    conversation *active_conv = nullptr;
-    int dlg_index = 0;
-    int dlg_size = 0;
-    int dlg_ticker = 0;
-    text dlg_lines[3] = {{nullptr, {-40, 32}}, {nullptr, {-40, 48}}, {nullptr, {-40, 64}}};
-    optional<sprite_ptr> portrait;
-    optional<regular_bg_ptr> bg_ptr;
-
-    // Combat entities
-    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE];
-    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-
-    optional<sprite_ptr> enemy_sprite;
-    int enemy_state = 0;
-    int enemy_ticker = 0;
-
-    // Menu state
-    int menu_index = 0;
-
-    // Attack bars - now arrays for multiple characters
-    optional<sprite_ptr> attack_headers[MAX_PARTY_SIZE];
-    optional<sprite_ptr> attack_recvs[MAX_PARTY_SIZE];
-    optional<sprite_ptr> attack_units[MAX_PARTY_SIZE];
-    int attack_damages[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    bool attack_pressed[MAX_PARTY_SIZE] = {false, false, false, false};
-    int num_attackers = 0;
-
-    // Individual attack timing parameters
-    fixed attack_speeds[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    int attack_launch_delays[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    int attack_launch_timers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    bool attack_launched[MAX_PARTY_SIZE] = {false, false, false, false};
-
-    // Recv state
-    optional<sprite_ptr> heart;
-    vector_2 heart_pos = {0, 0};
-    int recv_ticker = 0;
-    vector<bullet, 16> bullets;
-
-    // UI elements
-    optional<sprite_ptr> char_img;
-    optional<sprite_ptr> battle_icons[3];
-    optional<text> labels[5];
-
-    // Special Croke battle tracking
-    int croke_conv_index = 0; // Which conversation (0=croke_02, 1=croke_03, 2=croke_04)
-    int croke_anim_frame = 0; // Current animation frame for Croke
-};
-
 // Helper functions
 static bool is_alive(int idx, battle_state *bs)
 {
@@ -453,7 +367,7 @@ int battle_map()
         bs.enemy_sprite_item = &sprite_items::visker_battle;
         global_data_ptr->enemy_max_hp[0] = 12;
         global_data_ptr->enemy_hp[0] = 12;
-        global_data_ptr->enemy_allowed_moveset = 3;
+        bs.moveset = 3;
 
         // Just Jeremy for this battle
         bs.party_size = 1;
@@ -474,7 +388,7 @@ int battle_map()
         bs.enemy_sprite_item = &sprite_items::visker_battle;
         global_data_ptr->enemy_max_hp[0] = 99;
         global_data_ptr->enemy_hp[0] = 99;
-        global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
+        bs.moveset = BULLET_SIZE;
 
         bs.party_size = 1;
         bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
@@ -495,6 +409,19 @@ int battle_map()
         // We'll handle his sequence specially
         bs.croke_conv_index = 0;
         bs.croke_anim_frame = 0;
+        break;
+
+    case FOE_TEST:
+        bs.enemy_sprite_item = &sprite_items::visker_battle;
+        global_data_ptr->enemy_max_hp[0] = 99;
+        global_data_ptr->enemy_hp[0] = 99;
+        bs.moveset = BULLET_SIZE;
+
+        bs.party_size = 2;
+        bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
+        bs.character_sprites[1] = sprite_items::ginger_battle.create_sprite(-96, get_character_y_position(1), 0);
+
+        convos[RESULT_FIRST].push_back(&garbage_fight_05);
         break;
 
     default:
@@ -603,8 +530,6 @@ int battle_map()
         // Y offset for dialogue
         bs.y_delta += is_dialogue_active(&bs) ? (bs.y_delta > -32 ? -4 : 0) : (bs.y_delta < 0 ? 4 : 0);
 
-        BN_LOG("STAGE: ", bs.stage);
-
         // Stage: Talking
         if (bs.stage == stage_talking)
         {
@@ -702,8 +627,9 @@ int battle_map()
             {
                 bs.enemy_state = 2;
                 bs.enemy_ticker = 0;
-                int type = global_data_ptr->bn_random.get_int(0, global_data_ptr->enemy_allowed_moveset);
-                bullet::populate(&bs.bullets, type);
+                bullet::populate(&bs.bullets, bs.selected_moveset);
+                BN_LOG("MOVESET: ", bs.selected_moveset);
+                bs.selected_moveset = (bs.selected_moveset + 1) % bs.moveset;
             }
 
             if (next_living(-1, &bs) < 0 || global_data_ptr->enemy_hp[0] <= 0)

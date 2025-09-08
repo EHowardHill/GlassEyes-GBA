@@ -219,6 +219,48 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 ch_man->db->init(ch_man);
                 break;
             }
+            case AVALON_SIGN_01:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_01);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_02:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_VISTA:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_03);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_03:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_04);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_04:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_05);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_05:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_06);
+                ch_man->db->init(ch_man);
+                break;
+            }
             default:
             {
                 break;
@@ -815,92 +857,6 @@ ge_battle.cpp:
 
 using namespace bn;
 
-static constexpr int MAX_PARTY_SIZE = 4;
-
-static constexpr int JEREMY_IDLE_START = 10;
-static constexpr int JEREMY_HURT_START = 11;
-static constexpr int JEREMY_HURT_END = 14;
-static constexpr int JEREMY_ATK_START = 15;
-static constexpr int JEREMY_ATK_END = 21;
-
-static constexpr int GINGER_IDLE_START = 8;
-static constexpr int GINGER_IDLE_END = 11;
-static constexpr int GINGER_HURT_START = 12;
-static constexpr int GINGER_HURT_END = 14;
-static constexpr int GINGER_ATK_START = 15;
-static constexpr int GINGER_ATK_END = 17;
-
-static constexpr int ACTION_NONE = -1;
-static constexpr int ACTION_ATTACK = 0;
-static constexpr int ACTION_ITEM = 1;
-static constexpr int ACTION_SPARE = 2;
-
-struct battle_state
-{
-    const sprite_item *enemy_sprite_item;
-    int party_size = 1;
-    int current_actor = -1;
-    int selected_menu = STATUS_BAR_NONE;
-    int stage = stage_talking;
-    int result = RESULT_FIRST;
-    int y_delta = 0;
-
-    // Action tracking
-    int character_actions[MAX_PARTY_SIZE] = {ACTION_NONE, ACTION_NONE, ACTION_NONE, ACTION_NONE};
-    int choosing_for = 0; // Which character is currently choosing
-    bool has_acted[MAX_PARTY_SIZE];
-
-    // Reusable dialogue state
-    conversation *active_conv = nullptr;
-    int dlg_index = 0;
-    int dlg_size = 0;
-    int dlg_ticker = 0;
-    text dlg_lines[3] = {{nullptr, {-40, 32}}, {nullptr, {-40, 48}}, {nullptr, {-40, 64}}};
-    optional<sprite_ptr> portrait;
-    optional<regular_bg_ptr> bg_ptr;
-
-    // Combat entities
-    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE];
-    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-
-    optional<sprite_ptr> enemy_sprite;
-    int enemy_state = 0;
-    int enemy_ticker = 0;
-
-    // Menu state
-    int menu_index = 0;
-
-    // Attack bars - now arrays for multiple characters
-    optional<sprite_ptr> attack_headers[MAX_PARTY_SIZE];
-    optional<sprite_ptr> attack_recvs[MAX_PARTY_SIZE];
-    optional<sprite_ptr> attack_units[MAX_PARTY_SIZE];
-    int attack_damages[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    bool attack_pressed[MAX_PARTY_SIZE] = {false, false, false, false};
-    int num_attackers = 0;
-
-    // Individual attack timing parameters
-    fixed attack_speeds[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    int attack_launch_delays[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    int attack_launch_timers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
-    bool attack_launched[MAX_PARTY_SIZE] = {false, false, false, false};
-
-    // Recv state
-    optional<sprite_ptr> heart;
-    vector_2 heart_pos = {0, 0};
-    int recv_ticker = 0;
-    vector<bullet, 16> bullets;
-
-    // UI elements
-    optional<sprite_ptr> char_img;
-    optional<sprite_ptr> battle_icons[3];
-    optional<text> labels[5];
-
-    // Special Croke battle tracking
-    int croke_conv_index = 0; // Which conversation (0=croke_02, 1=croke_03, 2=croke_04)
-    int croke_anim_frame = 0; // Current animation frame for Croke
-};
-
 // Helper functions
 static bool is_alive(int idx, battle_state *bs)
 {
@@ -1246,7 +1202,7 @@ int battle_map()
         bs.enemy_sprite_item = &sprite_items::visker_battle;
         global_data_ptr->enemy_max_hp[0] = 12;
         global_data_ptr->enemy_hp[0] = 12;
-        global_data_ptr->enemy_allowed_moveset = 3;
+        bs.moveset = 3;
 
         // Just Jeremy for this battle
         bs.party_size = 1;
@@ -1267,7 +1223,7 @@ int battle_map()
         bs.enemy_sprite_item = &sprite_items::visker_battle;
         global_data_ptr->enemy_max_hp[0] = 99;
         global_data_ptr->enemy_hp[0] = 99;
-        global_data_ptr->enemy_allowed_moveset = BULLET_SIZE;
+        bs.moveset = BULLET_SIZE;
 
         bs.party_size = 1;
         bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
@@ -1288,6 +1244,19 @@ int battle_map()
         // We'll handle his sequence specially
         bs.croke_conv_index = 0;
         bs.croke_anim_frame = 0;
+        break;
+
+    case FOE_TEST:
+        bs.enemy_sprite_item = &sprite_items::visker_battle;
+        global_data_ptr->enemy_max_hp[0] = 99;
+        global_data_ptr->enemy_hp[0] = 99;
+        bs.moveset = BULLET_SIZE;
+
+        bs.party_size = 2;
+        bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
+        bs.character_sprites[1] = sprite_items::ginger_battle.create_sprite(-96, get_character_y_position(1), 0);
+
+        convos[RESULT_FIRST].push_back(&garbage_fight_05);
         break;
 
     default:
@@ -1396,8 +1365,6 @@ int battle_map()
         // Y offset for dialogue
         bs.y_delta += is_dialogue_active(&bs) ? (bs.y_delta > -32 ? -4 : 0) : (bs.y_delta < 0 ? 4 : 0);
 
-        BN_LOG("STAGE: ", bs.stage);
-
         // Stage: Talking
         if (bs.stage == stage_talking)
         {
@@ -1495,8 +1462,9 @@ int battle_map()
             {
                 bs.enemy_state = 2;
                 bs.enemy_ticker = 0;
-                int type = global_data_ptr->bn_random.get_int(0, global_data_ptr->enemy_allowed_moveset);
-                bullet::populate(&bs.bullets, type);
+                bullet::populate(&bs.bullets, bs.selected_moveset);
+                BN_LOG("MOVESET: ", bs.selected_moveset);
+                bs.selected_moveset = (bs.selected_moveset + 1) % bs.moveset;
             }
 
             if (next_living(-1, &bs) < 0 || global_data_ptr->enemy_hp[0] <= 0)
@@ -1979,7 +1947,7 @@ int battle_map()
 }
 
 ge_bullet.cpp: 
-// ge_bullet.cpp - Optimized implementation
+// ge_bullet.cpp - Optimized implementation with improved spread
 #include "ge_bullet.h"
 #include "ge_globals.h"
 #include "bn_sprite_items_hearts.h"
@@ -1987,28 +1955,21 @@ ge_bullet.cpp:
 
 using namespace bn;
 
-// Pre-computed patterns in ROM (no RAM usage)
-// Order must match BULLET_ANIM_TYPES enum
 const bullet_pattern PATTERNS[BULLET_SIZE] = {
     // vx    vy   amp  per  acc  flags
-    { 0,  2,   0,   0,   0,  0x00}, // BULLET_FALL
-    { 0, -4,   0,   0,   0,  0x00}, // BULLET_RISE
-    { 0,  24,  28,  20,   0,  0x01}, // BULLET_ZIGZAG - flag 0x01 = use zigzag
-    { 0,  20,  40,  36,   0,  0x02}, // BULLET_WAVE - flag 0x02 = use wave
-    { 0,   5,   0,   0,  10,  0x04}, // BULLET_ACCEL - flag 0x04 = accelerate
-    {32,  22,   0,   0,   0,  0x08}, // BULLET_BOUNCE - flag 0x08 = bounce
-    {12,  12,   0,   0,   0,  0x10}, // BULLET_HOMING - flag 0x10 = home
-    { 0,  19,  30,  64,   0,  0x20}, // BULLET_ORBIT - flag 0x20 = orbit (amp=radius)
-    { 0,  16,  45,  64,  -3,  0x40}, // BULLET_SPIRAL - flag 0x40 = spiral (acc=drift)
+    {0, 2, 0, 0, 0, 0x00},  // BULLET_FALL
+    {0, -2, 0, 0, 0, 0x00}, // BULLET_RISE
+    {0, 2, 2, 2, 0, 0x00},  // BULLET_WAVE - flag 0x02 = use wave
+    {0, 2, 0, 0, 3, 0x04}, // BULLET_ACCEL - flag 0x04 = accelerate
+    {2, 2, 0, 0, 0, 0x08},  // BULLET_BOUNCE - flag 0x08 = bounce
+    {2, 2, 0, 0, 0, 0x10},  // BULLET_HOMING - flag 0x10 = home
 };
 
-// Simple sine approximation table (64 entries = full period)
-const int8_t SINE_TABLE[64] = {
+const int SINE_TABLE[64] = {
     0, 6, 12, 18, 24, 30, 35, 40, 45, 49, 53, 56, 59, 61, 63, 64,
     64, 64, 63, 61, 59, 56, 53, 49, 45, 40, 35, 30, 24, 18, 12, 6,
     0, -6, -12, -18, -24, -30, -35, -40, -45, -49, -53, -56, -59, -61, -63, -64,
-    -64, -64, -63, -61, -59, -56, -53, -49, -45, -40, -35, -30, -24, -18, -12, -6
-};
+    -64, -64, -63, -61, -59, -56, -53, -49, -45, -40, -35, -30, -24, -18, -12, -6};
 
 bullet::bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type)
 {
@@ -2018,27 +1979,23 @@ bullet::bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type)
     compact.type = anim_type;
     compact.state1 = 0;
     compact.state2 = 0;
-    
+
     // Create sprite at actual position
     item = sprite_items::hearts.create_sprite(
-        fixed(x_pos) / 4, 
-        fixed(y_pos) / 4, 
-        4
-    );
-    
+        fixed(x_pos) / 4,
+        fixed(y_pos) / 4,
+        4);
+
     // Initialize type-specific state
-    switch(anim_type)
+    switch (anim_type)
     {
-    case BULLET_ZIGZAG:
-        compact.state1 = (global_data_ptr->bn_random.get_int(2) ? 1 : -1); // direction
-        break;
     case BULLET_BOUNCE:
         compact.state1 = (global_data_ptr->bn_random.get_int(2) ? 1 : -1); // x direction
         break;
-    case BULLET_ORBIT:
-    case BULLET_SPIRAL:
-        compact.state1 = global_data_ptr->bn_random.get_int(64); // starting angle
-        compact.state2 = PATTERNS[anim_type].amplitude; // radius
+    case BULLET_HOMING:
+        // Initialize with a random target position across the screen width
+        compact.state1 = global_data_ptr->bn_random.get_int(-50, 50); // Target x (-50 to 50 in normal coords)
+        compact.state2 = 0;                                           // Frame counter for target switching
         break;
     default:
         break;
@@ -2047,96 +2004,108 @@ bullet::bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type)
 
 void bullet::update()
 {
-    if (!item.has_value()) return;
-    
-    const bullet_pattern& pattern = PATTERNS[compact.type];
-    
+    if (!item.has_value())
+        return;
+
+    const bullet_pattern &pattern = PATTERNS[compact.type];
+
     // Get current position
     int16_t x = compact.x;
     int16_t y = compact.y;
-    
+
     // Apply movement based on type
     uint8_t flags = pattern.flags;
-    
-    if (flags & 0x01) // ZIGZAG
+
+    if (flags & 0x02) // WAVE
     {
-        // Sharp zigzag movement
-        x += compact.state1 * 14; // Move horizontally
-        
-        // Check bounds and flip direction (using amplitude as bound)
-        int16_t bound = pattern.amplitude * 4; // Convert to our scale
-        if (abs(x) > bound) {
-            x = (x > 0) ? bound : -bound;
-            compact.state1 = -compact.state1;
-        }
-        y += pattern.vy_base;
-    }
-    else if (flags & 0x02) // WAVE
-    {
-        // Use sine table for smooth wave
+        // Use sine table for smooth wave - keep original implementation as it works well
         uint8_t phase = (compact.ticker * 64) / pattern.period;
         int8_t sine = SINE_TABLE[phase & 63];
-        x = compact.x + (sine * pattern.amplitude) / 32; // Scale sine to amplitude
+        x = compact.x + (sine * pattern.amplitude) / 32;
         y += pattern.vy_base;
     }
     else if (flags & 0x04) // ACCEL
     {
-        // Accelerating bullet
+        // Accelerating bullet - keep original
         int16_t current_vy = pattern.vy_base + (compact.ticker * pattern.accel) / 128;
-        if (current_vy > 56) current_vy = 56; // Max speed cap
+        if (current_vy > 56)
+            current_vy = 56;
         y += current_vy;
     }
     else if (flags & 0x08) // BOUNCE
     {
-        // Bouncing movement
+        // Bouncing movement - keep original as it uses full width
         x += pattern.vx_base * compact.state1;
         y += pattern.vy_base;
-        
-        // Bounce off walls (character box bounds)
-        if (x < -240 || x > 240) { // -60 to 60 in normal coords
+
+        if (x < -240 || x > 240)
+        {
             compact.state1 = -compact.state1;
             x = (x < 0) ? -240 : 240;
         }
     }
     else if (flags & 0x10) // HOMING
     {
-        // Simplified homing - just move toward player position
-        // Assume player is at (0, 0) or get from global
-        int16_t dx = -x / 16; // Simple proportional control
-        int16_t dy = -y / 16;
-        
-        // Add to base velocity
-        x += pattern.vx_base + dx;
-        y += pattern.vy_base + dy;
+        // Enhanced homing with target switching
+        compact.state2++; // Increment frame counter
+
+        // Switch target every 48 frames
+        if (compact.state2 >= 48)
+        {
+            compact.state2 = 0;
+            // New random target position across screen width
+            compact.state1 = global_data_ptr->bn_random.get_int(-50, 50);
+        }
+
+        // Home toward current target (state1 stores target x in normal coords)
+        int16_t target_x = compact.state1 * 4; // Convert to our scale
+        int16_t dx = (target_x - x) / 20;      // Smoother homing
+        int16_t dy = pattern.vy_base;
+
+        // Limit horizontal speed for better gameplay
+        if (dx > 8)
+            dx = 8;
+        if (dx < -8)
+            dx = -8;
+
+        x += dx;
+        y += dy;
     }
     else if (flags & 0x20) // ORBIT
     {
-        // Use sine/cosine table for circular motion
+        // Orbit with varying center points
         uint8_t angle = compact.state1;
-        int8_t cos_val = SINE_TABLE[(angle + 16) & 63]; // cos is sine shifted by 90°
+        int8_t cos_val = SINE_TABLE[(angle + 16) & 63];
         int8_t sin_val = SINE_TABLE[angle & 63];
-        
+
         // Update angle for next frame
-        compact.state1 = (angle + 2) & 63; // Rotate ~5.6 degrees per frame
-        
-        // Calculate position from center
-        x = (compact.state2 * cos_val) / 32;
+        compact.state1 = (angle + 2) & 63;
+
+        // Use initial x position as orbit center (stored during creation)
+        int16_t center_x = compact.x - (compact.state2 * cos_val) / 32;
+
+        // Calculate position from center with larger radius
+        x = center_x + (compact.state2 * cos_val) / 32;
         y = (compact.state2 * sin_val) / 32 + compact.y + pattern.vy_base;
     }
     else if (flags & 0x40) // SPIRAL
     {
-        // Similar to orbit but with shrinking radius
+        // Spiral with varying center points
         uint8_t angle = compact.state1;
         int8_t cos_val = SINE_TABLE[(angle + 16) & 63];
         int8_t sin_val = SINE_TABLE[angle & 63];
-        
+
         // Update angle and radius
-        compact.state1 = (angle + 3) & 63; // Faster rotation
-        if (compact.state2 > 8) {
-            compact.state2 += pattern.accel; // accel is negative for inward spiral
+        compact.state1 = (angle + 3) & 63;
+        if (compact.state2 > 12)
+        {
+            compact.state2 += pattern.accel; // Shrink inward
         }
-        
-        x = (compact.state2 * cos_val) / 32;
+
+        // Use initial x position as spiral center
+        int16_t center_x = compact.x - (120 * cos_val) / 32; // Use initial radius
+
+        x = center_x + (compact.state2 * cos_val) / 32;
         y = (compact.state2 * sin_val) / 32 + compact.y + pattern.vy_base;
     }
     else // FALL, RISE, or default
@@ -2145,47 +2114,85 @@ void bullet::update()
         x += pattern.vx_base;
         y += pattern.vy_base;
     }
-    
+
     // Update stored position
     compact.x = x;
     compact.y = y;
     compact.ticker++;
-    
+
     // Update sprite position
     item.value().set_position(fixed(x) / 4, fixed(y) / 4);
 }
 
-void bullet::populate(bn::vector<bullet, bullet_count>* bullets, int anim_type)
+void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type)
 {
     bullets->clear();
-    
+
     for (int b = 0; b < bullet_count; b++)
     {
-        // Starting positions in our compact format (x4 scale)
-        int16_t x = (global_data_ptr->bn_random.get_int(-60, 60)) * 4;
-        int16_t y = (-70 - (b * 15)) * 4; // Spread them out vertically
-        
-        // Adjust starting position based on type
-        switch(anim_type)
+        int16_t x, y;
+
+        // Type-specific starting positions for better spread
+        switch (anim_type)
         {
         case BULLET_RISE:
-            y = (70 + (b * 16)) * 4;
+            // Spread across full width for rising bullets
+            y = (70 + (b * 8)) * 4;
             break;
+
         case BULLET_HOMING:
-            // Start from edges
-            if (b % 2) x = (b % 4 < 2) ? -240 : 240;
+            // Start from edges and corners for more interesting patterns
+            if (b < 4)
+            {
+                x = -240; // Left edge
+                y = (-60 + (b * 30)) * 4;
+            }
+            else if (b < 8)
+            {
+                x = 240; // Right edge
+                y = (-60 + ((b - 4) * 30)) * 4;
+            }
+            else if (b < 12)
+            {
+                x = (-30 + ((b - 8) * 15)) * 4; // Top middle
+                y = -280;
+            }
+            else
+            {
+                x = (-30 + ((b - 12) * 15)) * 4; // Random middle
+                y = (-70 - ((b - 12) * 20)) * 4;
+            }
             break;
+
+        case BULLET_WAVE:
+            // Better spread for wave pattern
+            x = (-55 + (b * 7)) * 4;
+            y = (-70 - (b * 12)) * 4;
+            break;
+
+        case BULLET_BOUNCE:
+            // Start from various x positions
+            x = (-50 + global_data_ptr->bn_random.get_int(100)) * 4;
+            y = (-70 - (b * 10)) * 4;
+            break;
+
         default:
+            // Default spread
+            x = (global_data_ptr->bn_random.get_int(-55, 55)) * 4;
+            y = (-70 - (b * 15)) * 4;
             break;
         }
-        
+
         bullet nb(x, y, anim_type);
-        
-        // Add some variation
-        if (anim_type == BULLET_ZIGZAG || anim_type == BULLET_WAVE) {
-            nb.compact.state2 = 15 + global_data_ptr->bn_random.get_int(30); // Vary amplitude
+
+        // Add type-specific variations
+        if (anim_type == BULLET_WAVE)
+        {
+            // Vary wave phase for more interesting patterns
+            nb.compact.ticker = global_data_ptr->bn_random.get_int(16);
+            nb.compact.state2 = 35 + global_data_ptr->bn_random.get_int(45); // Larger amplitude
         }
-        
+
         bullets->push_back(nb);
     }
 }
@@ -2498,16 +2505,18 @@ const conversation avalon_sign_02 = {
 
 const conversation avalon_sign_03 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "GRAND MASTER", "SENATRIX", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Who is she?", "You look similar.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_sign_03_alt_01, static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Muetos don't live", "very long. Maybe a", "decade at most.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Who is she?", "You look similar.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Muetos don't live", "very long. Maybe", "five years at most.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "The Senatrix has", "lived for two-", "hundred years.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Many muetos see", "her as a fixture of", "the world.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Many see her", "as a demigod, the", "daughter of Losus.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "She rules as our", "queen.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She looks like you.", "Dang, she's old.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_sign_03_alt_01, static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Yeah..", "I get that a lot.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation avalon_sign_03_alt_01 = {
-    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Yeah..", "I get that a lot.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Only problem is", "then they gotta go", "replace the statues.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation avalon_sign_04 = {
@@ -5063,7 +5072,6 @@ int navigate_map()
             {
                 if (ch->index == ITEM_BUTTON)
                 {
-                    BN_LOG(ch->id, " - ", ch->is_pressed);
                     if (ch->id == 1 && !ch->is_pressed)
                     {
                         correct_up = false;
@@ -5264,12 +5272,10 @@ int main()
     global_data_ptr->process_stage = BLACK_TO_LAB; // BLACK_TO_LAB;
 
     // Test battle before game begins
-    /*
-    global_data_ptr->battle_foe = FOE_CROKE_01;
+    global_data_ptr->battle_foe = FOE_TEST;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
-    */
 
     while (true)
     {
@@ -5404,6 +5410,16 @@ constexpr int is_interactive_array[999] = {
     TEMMIE_07,
     CONVO_CAVE_02_SIGN,
     CAVE_04_SIGN,
+	AVALON_SIGN_01,
+	AVALON_SIGN_02,
+	TO_AVALON_TAVERN,
+	AVALON_SIGN_VISTA,
+	AVALON_SIGN_03,
+	AVALON_SIGN_04,
+	TO_AVALON_BUTCHER,
+	AVALON_SIGN_05,
+	TO_AVALON_SHOP_01,
+	TO_AVALON_SHOP_02,
     -1};
 
 ge_animations.h: 
@@ -5478,6 +5494,26 @@ ge_battle.h:
 #include "ge_bullet.h"
 
 using namespace bn;
+
+static constexpr int MAX_PARTY_SIZE = 4;
+
+static constexpr int JEREMY_IDLE_START = 10;
+static constexpr int JEREMY_HURT_START = 11;
+static constexpr int JEREMY_HURT_END = 14;
+static constexpr int JEREMY_ATK_START = 15;
+static constexpr int JEREMY_ATK_END = 21;
+
+static constexpr int GINGER_IDLE_START = 8;
+static constexpr int GINGER_IDLE_END = 11;
+static constexpr int GINGER_HURT_START = 12;
+static constexpr int GINGER_HURT_END = 14;
+static constexpr int GINGER_ATK_START = 15;
+static constexpr int GINGER_ATK_END = 17;
+
+static constexpr int ACTION_NONE = -1;
+static constexpr int ACTION_ATTACK = 0;
+static constexpr int ACTION_ITEM = 1;
+static constexpr int ACTION_SPARE = 2;
 
 enum BATTLE_STAGE
 {
@@ -5567,20 +5603,6 @@ struct status_bar_items
     void update();
 };
 
-// New struct for ACT menu
-struct status_bar_act
-{
-    optional<text> icon_labels[4];
-    int index = 0;
-    int action_count = 0;
-    battle_action *actions[4]; // Pointers to available actions
-
-    status_bar_act();
-    void init();
-    void update_labels();
-    void update();
-};
-
 struct status_bar_menu
 {
     optional<sprite_ptr> battle_icons[5];
@@ -5604,11 +5626,10 @@ struct status_bar
     static int current_party_size;
     static int current_enemy_size;
     static int selected_menu;
-    static vector<battle_action, 4> available_actions; // Pointer to the available actions
+    static vector<battle_action, 4> available_actions;
 
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
-    optional<status_bar_act> sb_act;
 
     status_bar(int actor_index_ = 0);
     void update();
@@ -5635,10 +5656,79 @@ struct recv
 vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed);
 int battle_map();
 
+struct battle_state
+{
+    const sprite_item *enemy_sprite_item;
+    int party_size = 1;
+    int current_actor = -1;
+    int selected_menu = STATUS_BAR_NONE;
+    int stage = stage_talking;
+    int result = RESULT_FIRST;
+    int y_delta = 0;
+    int moveset = 2;
+    int selected_moveset = 0;
+    int speed = 1;
+
+    // Action tracking
+    int character_actions[MAX_PARTY_SIZE] = {ACTION_NONE, ACTION_NONE, ACTION_NONE, ACTION_NONE};
+    int choosing_for = 0; // Which character is currently choosing
+    bool has_acted[MAX_PARTY_SIZE];
+
+    // Reusable dialogue state
+    conversation *active_conv = nullptr;
+    int dlg_index = 0;
+    int dlg_size = 0;
+    int dlg_ticker = 0;
+    text dlg_lines[3] = {{nullptr, {-40, 32}}, {nullptr, {-40, 48}}, {nullptr, {-40, 64}}};
+    optional<sprite_ptr> portrait;
+    optional<regular_bg_ptr> bg_ptr;
+
+    // Combat entities
+    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE];
+    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+
+    optional<sprite_ptr> enemy_sprite;
+    int enemy_state = 0;
+    int enemy_ticker = 0;
+
+    // Menu state
+    int menu_index = 0;
+
+    // Attack bars - now arrays for multiple characters
+    optional<sprite_ptr> attack_headers[MAX_PARTY_SIZE];
+    optional<sprite_ptr> attack_recvs[MAX_PARTY_SIZE];
+    optional<sprite_ptr> attack_units[MAX_PARTY_SIZE];
+    int attack_damages[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    bool attack_pressed[MAX_PARTY_SIZE] = {false, false, false, false};
+    int num_attackers = 0;
+
+    // Individual attack timing parameters
+    fixed attack_speeds[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int attack_launch_delays[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int attack_launch_timers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    bool attack_launched[MAX_PARTY_SIZE] = {false, false, false, false};
+
+    // Recv state
+    optional<sprite_ptr> heart;
+    vector_2 heart_pos = {0, 0};
+    int recv_ticker = 0;
+    vector<bullet, 16> bullets;
+
+    // UI elements
+    optional<sprite_ptr> char_img;
+    optional<sprite_ptr> battle_icons[3];
+    optional<text> labels[5];
+
+    // Special Croke battle tracking
+    int croke_conv_index = 0; // Which conversation (0=croke_02, 1=croke_03, 2=croke_04)
+    int croke_anim_frame = 0; // Current animation frame for Croke
+};
+
 #endif
 
 ge_bullet.h: 
-// ge_bullet.h - Memory-optimized version
+// ge_bullet.h
 #ifndef GE_BULLET_H
 #define GE_BULLET_H
 
@@ -5653,13 +5743,10 @@ enum BULLET_ANIM_TYPES : uint8_t
 {
     BULLET_FALL,
     BULLET_RISE,
-    BULLET_ZIGZAG,
     BULLET_WAVE,
     BULLET_ACCEL,
     BULLET_BOUNCE,
     BULLET_HOMING,
-    BULLET_ORBIT,
-    BULLET_SPIRAL,
     BULLET_SIZE
 };
 
@@ -5681,42 +5768,46 @@ extern const bullet_pattern PATTERNS[BULLET_SIZE];
 struct bullet
 {
     bn::optional<bn::sprite_ptr> item;
-    
+
     // Only 8 bytes of state data using union
-    union {
-        struct {
-            int16_t x;        // Position * 4 (gives us -8192 to 8191 range)
-            int16_t y;        // Position * 4
-            uint8_t ticker;   // 0-255 frames
-            uint8_t type;     // Animation type
-            int8_t state1;    // Generic state (zig direction, orbit angle, etc.)
-            int8_t state2;    // Generic state (speed modifier, radius, etc.)
+    union
+    {
+        struct
+        {
+            int16_t x;      // Position * 4 (gives us -8192 to 8191 range)
+            int16_t y;      // Position * 4
+            uint8_t ticker; // 0-255 frames
+            uint8_t type;   // Animation type
+            int8_t state1;  // Generic state (zig direction, orbit angle, etc.)
+            int8_t state2;  // Generic state (speed modifier, radius, etc.)
         } compact;
-        
+
         // Alternative view for patterns that need it
-        struct {
+        struct
+        {
             int16_t x;
             int16_t y;
             uint16_t ticker_and_type; // Combined ticker (lower 8) and type (upper 8)
-            int16_t velocity;          // Combined vx/vy for some patterns
+            int16_t velocity;         // Combined vx/vy for some patterns
         } alt;
     };
-    
+
     bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type);
     void update();
-    static void populate(bn::vector<bullet, bullet_count>* bullets, int anim_type);
-    
+    static void populate(bn::vector<bullet, bullet_count> *bullets, int anim_type);
+
     // Helper to get actual position
     bn::fixed get_x() const { return bn::fixed(compact.x) / 4; }
     bn::fixed get_y() const { return bn::fixed(compact.y) / 4; }
-    void set_pos(bn::fixed x, bn::fixed y) {
+    void set_pos(bn::fixed x, bn::fixed y)
+    {
         compact.x = (x * 4).integer();
         compact.y = (y * 4).integer();
     }
 };
 
 // Global lookup tables (stored in ROM, shared by all bullets)
-extern const int8_t SINE_TABLE[64];  // Pre-computed sine wave values
+extern const int SINE_TABLE[64]; // Pre-computed sine wave values
 
 #endif
 
@@ -5993,6 +6084,16 @@ enum action_list
 	TO_CAVE_04,
 	TO_FOREST_02b,
 	NEW_BERLIN_SIGN,
+	AVALON_SIGN_01 = 87,
+	AVALON_SIGN_02,
+	TO_AVALON_TAVERN,
+	AVALON_SIGN_VISTA,
+	AVALON_SIGN_03,
+	AVALON_SIGN_04,
+	TO_AVALON_BUTCHER,
+	AVALON_SIGN_05,
+	TO_AVALON_SHOP_01,
+	TO_AVALON_SHOP_02,
 	ACTIONS_SIZE
 };
 
@@ -6016,7 +6117,6 @@ struct global_data
 	int max_hp[4] = {20, 20, 20, 20};
 	int enemy_hp[4] = {20, 20, 20, 20};
 	int enemy_max_hp[4] = {20, 20, 20, 20};
-	int enemy_allowed_moveset = 2;
 	bool progress_cue = false;
 	int process_stage = 0;
 	bool items[ITEMS_SIZE] = {0};
@@ -6352,7 +6452,7 @@ inline constexpr map map_forest_01 = {
 	80,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,82,83,83,29,29,83,82,82,83,82,83,82,83,82,83,82,83,83,83,82,83,82,83,82,83,82,83,82,83,82,83,83,32,43,47,43,47,43,47,43,47,43,47,46,45,49,45,49,1,32,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,43,47,34,20,18,18,18,18,21,21,19,0,0,0,23,23,18,21,21,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,41,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,49,0,0,45,0,0,0,0,0,0,46,0,0,0,0,0,38,37,0,0,0,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,44,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,0,0,0,0,0,0,46,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,47,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,41,41,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,48,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,43,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,49,0,0,45,0,0,0,0,0,0,46,0,0,0,0,0,38,37,0,0,0,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,45,0,0,0,0,0,0,46,0,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,47,0,0,0,0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,39,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,-319,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -6432,7 +6532,7 @@ inline constexpr map map_forest_03 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,49,49,49,49,49,49,49,49,49,49,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96,96,0,0,0,0,0,95,95,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,89,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,86,86,0,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,0,0,0,0,0,0,91,0,0,0,0,0,0,0,0,0,93,93,0,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,0,0,0,0,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,0,0,0,0,0,0,91,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,49,49,49,49,49,49,49,49,49,49,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96,96,0,0,0,0,0,95,95,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,89,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,0,0,0,0,0,0,91,0,0,0,0,0,0,0,0,0,93,93,0,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,0,0,0,0,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,0,0,0,0,0,0,91,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -6934,7 +7034,8 @@ enum foes
 {
     FOE_VISKERS_01,
     FOE_VISKERS_02,
-    FOE_CROKE_01
+    FOE_CROKE_01,
+    FOE_TEST
 };
 
 enum actions

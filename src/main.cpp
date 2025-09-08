@@ -115,7 +115,6 @@ int navigate_map()
             {
                 if (ch->index == ITEM_BUTTON)
                 {
-                    BN_LOG(ch->id, " - ", ch->is_pressed);
                     if (ch->id == 1 && !ch->is_pressed)
                     {
                         correct_up = false;
@@ -316,12 +315,10 @@ int main()
     global_data_ptr->process_stage = BLACK_TO_LAB; // BLACK_TO_LAB;
 
     // Test battle before game begins
-    /*
-    global_data_ptr->battle_foe = FOE_CROKE_01;
+    global_data_ptr->battle_foe = FOE_TEST;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
-    */
 
     while (true)
     {

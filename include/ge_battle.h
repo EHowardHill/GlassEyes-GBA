@@ -37,6 +37,26 @@
 
 using namespace bn;
 
+static constexpr int MAX_PARTY_SIZE = 4;
+
+static constexpr int JEREMY_IDLE_START = 10;
+static constexpr int JEREMY_HURT_START = 11;
+static constexpr int JEREMY_HURT_END = 14;
+static constexpr int JEREMY_ATK_START = 15;
+static constexpr int JEREMY_ATK_END = 21;
+
+static constexpr int GINGER_IDLE_START = 8;
+static constexpr int GINGER_IDLE_END = 11;
+static constexpr int GINGER_HURT_START = 12;
+static constexpr int GINGER_HURT_END = 14;
+static constexpr int GINGER_ATK_START = 15;
+static constexpr int GINGER_ATK_END = 17;
+
+static constexpr int ACTION_NONE = -1;
+static constexpr int ACTION_ATTACK = 0;
+static constexpr int ACTION_ITEM = 1;
+static constexpr int ACTION_SPARE = 2;
+
 enum BATTLE_STAGE
 {
     stage_heart_moving,
@@ -125,20 +145,6 @@ struct status_bar_items
     void update();
 };
 
-// New struct for ACT menu
-struct status_bar_act
-{
-    optional<text> icon_labels[4];
-    int index = 0;
-    int action_count = 0;
-    battle_action *actions[4]; // Pointers to available actions
-
-    status_bar_act();
-    void init();
-    void update_labels();
-    void update();
-};
-
 struct status_bar_menu
 {
     optional<sprite_ptr> battle_icons[5];
@@ -162,11 +168,10 @@ struct status_bar
     static int current_party_size;
     static int current_enemy_size;
     static int selected_menu;
-    static vector<battle_action, 4> available_actions; // Pointer to the available actions
+    static vector<battle_action, 4> available_actions;
 
     optional<status_bar_menu> sb_menu;
     optional<status_bar_items> sb_items;
-    optional<status_bar_act> sb_act;
 
     status_bar(int actor_index_ = 0);
     void update();
@@ -192,5 +197,74 @@ struct recv
 
 vector_2 moveTowards(vector_2 from, vector_2 towards, fixed_t<4> speed);
 int battle_map();
+
+struct battle_state
+{
+    const sprite_item *enemy_sprite_item;
+    int party_size = 1;
+    int current_actor = -1;
+    int selected_menu = STATUS_BAR_NONE;
+    int stage = stage_talking;
+    int result = RESULT_FIRST;
+    int y_delta = 0;
+    int moveset = 2;
+    int selected_moveset = 0;
+    int speed = 1;
+
+    // Action tracking
+    int character_actions[MAX_PARTY_SIZE] = {ACTION_NONE, ACTION_NONE, ACTION_NONE, ACTION_NONE};
+    int choosing_for = 0; // Which character is currently choosing
+    bool has_acted[MAX_PARTY_SIZE];
+
+    // Reusable dialogue state
+    conversation *active_conv = nullptr;
+    int dlg_index = 0;
+    int dlg_size = 0;
+    int dlg_ticker = 0;
+    text dlg_lines[3] = {{nullptr, {-40, 32}}, {nullptr, {-40, 48}}, {nullptr, {-40, 64}}};
+    optional<sprite_ptr> portrait;
+    optional<regular_bg_ptr> bg_ptr;
+
+    // Combat entities
+    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE];
+    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+
+    optional<sprite_ptr> enemy_sprite;
+    int enemy_state = 0;
+    int enemy_ticker = 0;
+
+    // Menu state
+    int menu_index = 0;
+
+    // Attack bars - now arrays for multiple characters
+    optional<sprite_ptr> attack_headers[MAX_PARTY_SIZE];
+    optional<sprite_ptr> attack_recvs[MAX_PARTY_SIZE];
+    optional<sprite_ptr> attack_units[MAX_PARTY_SIZE];
+    int attack_damages[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    bool attack_pressed[MAX_PARTY_SIZE] = {false, false, false, false};
+    int num_attackers = 0;
+
+    // Individual attack timing parameters
+    fixed attack_speeds[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int attack_launch_delays[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int attack_launch_timers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    bool attack_launched[MAX_PARTY_SIZE] = {false, false, false, false};
+
+    // Recv state
+    optional<sprite_ptr> heart;
+    vector_2 heart_pos = {0, 0};
+    int recv_ticker = 0;
+    vector<bullet, 16> bullets;
+
+    // UI elements
+    optional<sprite_ptr> char_img;
+    optional<sprite_ptr> battle_icons[3];
+    optional<text> labels[5];
+
+    // Special Croke battle tracking
+    int croke_conv_index = 0; // Which conversation (0=croke_02, 1=croke_03, 2=croke_04)
+    int croke_anim_frame = 0; // Current animation frame for Croke
+};
 
 #endif

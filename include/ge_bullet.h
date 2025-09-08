@@ -1,4 +1,4 @@
-// ge_bullet.h - Memory-optimized version
+// ge_bullet.h
 #ifndef GE_BULLET_H
 #define GE_BULLET_H
 
@@ -13,13 +13,10 @@ enum BULLET_ANIM_TYPES : uint8_t
 {
     BULLET_FALL,
     BULLET_RISE,
-    BULLET_ZIGZAG,
     BULLET_WAVE,
     BULLET_ACCEL,
     BULLET_BOUNCE,
     BULLET_HOMING,
-    BULLET_ORBIT,
-    BULLET_SPIRAL,
     BULLET_SIZE
 };
 
@@ -41,41 +38,45 @@ extern const bullet_pattern PATTERNS[BULLET_SIZE];
 struct bullet
 {
     bn::optional<bn::sprite_ptr> item;
-    
+
     // Only 8 bytes of state data using union
-    union {
-        struct {
-            int16_t x;        // Position * 4 (gives us -8192 to 8191 range)
-            int16_t y;        // Position * 4
-            uint8_t ticker;   // 0-255 frames
-            uint8_t type;     // Animation type
-            int8_t state1;    // Generic state (zig direction, orbit angle, etc.)
-            int8_t state2;    // Generic state (speed modifier, radius, etc.)
+    union
+    {
+        struct
+        {
+            int16_t x;      // Position * 4 (gives us -8192 to 8191 range)
+            int16_t y;      // Position * 4
+            uint8_t ticker; // 0-255 frames
+            uint8_t type;   // Animation type
+            int8_t state1;  // Generic state (zig direction, orbit angle, etc.)
+            int8_t state2;  // Generic state (speed modifier, radius, etc.)
         } compact;
-        
+
         // Alternative view for patterns that need it
-        struct {
+        struct
+        {
             int16_t x;
             int16_t y;
             uint16_t ticker_and_type; // Combined ticker (lower 8) and type (upper 8)
-            int16_t velocity;          // Combined vx/vy for some patterns
+            int16_t velocity;         // Combined vx/vy for some patterns
         } alt;
     };
-    
+
     bullet(int16_t x_pos, int16_t y_pos, uint8_t anim_type);
     void update();
-    static void populate(bn::vector<bullet, bullet_count>* bullets, int anim_type);
-    
+    static void populate(bn::vector<bullet, bullet_count> *bullets, int anim_type);
+
     // Helper to get actual position
     bn::fixed get_x() const { return bn::fixed(compact.x) / 4; }
     bn::fixed get_y() const { return bn::fixed(compact.y) / 4; }
-    void set_pos(bn::fixed x, bn::fixed y) {
+    void set_pos(bn::fixed x, bn::fixed y)
+    {
         compact.x = (x * 4).integer();
         compact.y = (y * 4).integer();
     }
 };
 
 // Global lookup tables (stored in ROM, shared by all bullets)
-extern const int8_t SINE_TABLE[64];  // Pre-computed sine wave values
+extern const int SINE_TABLE[64]; // Pre-computed sine wave values
 
 #endif

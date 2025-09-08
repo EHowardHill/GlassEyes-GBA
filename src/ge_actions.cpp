@@ -218,6 +218,48 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 ch_man->db->init(ch_man);
                 break;
             }
+            case AVALON_SIGN_01:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_01);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_02:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_02);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_VISTA:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_03);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_03:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_04);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_04:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_05);
+                ch_man->db->init(ch_man);
+                break;
+            }
+            case AVALON_SIGN_05:
+            {
+                ch_man->db.emplace();
+                ch_man->db->load(&avalon_sign_06);
+                ch_man->db->init(ch_man);
+                break;
+            }
             default:
             {
                 break;

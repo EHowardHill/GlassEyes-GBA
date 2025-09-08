@@ -101,6 +101,16 @@ enum action_list
 	TO_CAVE_04,
 	TO_FOREST_02b,
 	NEW_BERLIN_SIGN,
+	AVALON_SIGN_01 = 87,
+	AVALON_SIGN_02,
+	TO_AVALON_TAVERN,
+	AVALON_SIGN_VISTA,
+	AVALON_SIGN_03,
+	AVALON_SIGN_04,
+	TO_AVALON_BUTCHER,
+	AVALON_SIGN_05,
+	TO_AVALON_SHOP_01,
+	TO_AVALON_SHOP_02,
 	ACTIONS_SIZE
 };
 
@@ -124,7 +134,6 @@ struct global_data
 	int max_hp[4] = {20, 20, 20, 20};
 	int enemy_hp[4] = {20, 20, 20, 20};
 	int enemy_max_hp[4] = {20, 20, 20, 20};
-	int enemy_allowed_moveset = 2;
 	bool progress_cue = false;
 	int process_stage = 0;
 	bool items[ITEMS_SIZE] = {0};
