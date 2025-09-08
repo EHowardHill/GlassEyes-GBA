@@ -5,6 +5,8 @@
 import csv
 import chardet
 import os
+import sys
+
 
 def parse_navigate_coords(nav_str):
     """Parse coordinate string like '{2, 6}' into tuple (2, 6)"""
@@ -23,11 +25,24 @@ def parse_navigate_coords(nav_str):
 sprites = []
 
 
+def validate_line_length(line, line_name, convo_name, row_num):
+    """Validate that a dialogue line is 20 characters or less"""
+    if len(line) > 20:
+        print(f"ERROR: Line exceeds 20 character limit!")
+        print(f"Conversation: {convo_name}")
+        print(f"Row: {row_num}")
+        print(f"Field: {line_name}")
+        print(f"Line content: '{line}'")
+        print(f"Line length: {len(line)} characters")
+        sys.exit(1)
+
+
 def process_csv(filename):
     """Processes the dialogue.txt file into a dictionary of conversations."""
     conversations = {}
     current_convo = None
     current_entries = []
+    row_num = 0
 
     with open(filename, "rb") as f:
         raw_data = f.read()
@@ -38,6 +53,8 @@ def process_csv(filename):
         reader = csv.reader(csvfile, delimiter="\t")
 
         for row in reader:
+            row_num += 1
+
             if not any(cell.strip() for cell in row):
                 continue
 
@@ -57,9 +74,17 @@ def process_csv(filename):
                 portrait = row[1].strip() if row[1].strip() else "nullptr"
                 emotion = row[2].strip() if row[2].strip() else "EM_DEFAULT"
                 action = row[3].strip() if row[3].strip() else "ACT_DEFAULT"
+
+                # Extract lines
                 line1 = row[4].strip() if len(row) > 4 else ""
                 line2 = row[5].strip() if len(row) > 5 else ""
                 line3 = row[6].strip() if len(row) > 6 else ""
+
+                # Validate line lengths
+                validate_line_length(line1, "line1", current_convo, row_num)
+                validate_line_length(line2, "line2", current_convo, row_num)
+                validate_line_length(line3, "line3", current_convo, row_num)
+
                 shake = (
                     "true"
                     if (len(row) > 7 and row[7].strip().lower() == "true")
@@ -235,7 +260,15 @@ if __name__ == "__main__":
     output_source_path = "src/ge_dialogue.cpp"
 
     print(f"Processing '{input_file}'...")
-    conversations = process_csv(input_file)
+
+    try:
+        conversations = process_csv(input_file)
+    except SystemExit:
+        # Re-raise SystemExit to ensure the script exits with the proper code
+        raise
+    except Exception as e:
+        print(f"ERROR: An unexpected error occurred: {e}")
+        sys.exit(1)
 
     # Generate content for both files
     header_file_content = generate_header_content(conversations, sprites)
@@ -250,3 +283,5 @@ if __name__ == "__main__":
     with open(output_source_path, "w", encoding="utf-8") as f:
         f.write(cpp_file_content)
     print(f"Successfully generated source file: {output_source_path}")
+
+    print("All dialogue lines validated successfully (≤20 characters).")

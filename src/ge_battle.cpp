@@ -333,7 +333,8 @@ static void update_character_animation(int char_index, battle_state &bs)
 
     switch (state)
     {
-    case 0: // INTRO
+    case 0:
+    { // INTRO
         if (ticker < intro_frames)
         {
             // Intro animation
@@ -360,8 +361,10 @@ static void update_character_animation(int char_index, battle_state &bs)
             sprite->set_tiles(spr_item->tiles_item(), idle_start);
         }
         break;
+    }
 
-    case 1:                        // IDLE
+    case 1:
+    {                              // IDLE
         if (idle_end > idle_start) // Animated idle
         {
             int frame = idle_start + ((ticker / 8) % (idle_end - idle_start + 1));
@@ -373,6 +376,7 @@ static void update_character_animation(int char_index, battle_state &bs)
             sprite->set_tiles(spr_item->tiles_item(), idle_start);
         }
         break;
+    }
 
     case 2: // HURT
     {
@@ -391,8 +395,9 @@ static void update_character_animation(int char_index, battle_state &bs)
             sprite->set_tiles(spr_item->tiles_item(), frame);
             ticker++;
         }
+
+        break;
     }
-    break;
 
     case 3: // ATTACK
     {
@@ -411,8 +416,14 @@ static void update_character_animation(int char_index, battle_state &bs)
             sprite->set_tiles(spr_item->tiles_item(), frame);
             ticker++;
         }
+
+        break;
     }
-    break;
+
+    default:
+    {
+        break;
+    }
     }
 
     sprite->set_position(-96, y_offset);
@@ -581,6 +592,9 @@ int battle_map()
                 bs.enemy_sprite->set_tiles(sprite_items::visker_battle.tiles_item(),
                                            ((bs.enemy_ticker / 5) % 6) + 10);
                 bs.enemy_ticker++;
+                break;
+
+            default:
                 break;
             }
         }
@@ -874,6 +888,8 @@ int battle_map()
                         break;
                     case 2:
                         bs.character_actions[bs.choosing_for] = ACTION_SPARE;
+                        break;
+                    default:
                         break;
                     }
 

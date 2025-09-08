@@ -750,9 +750,10 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_forest_03;
                 global_data_ptr->entry_position = {14, 15};
                 global_data_ptr->ginger_position = {15, 15};
-                
+
                 // New BG track
                 music::stop();
+                global_data_ptr->bg_track = &music_items::bg_avalon;
                 global_data_ptr->bg_track->play(0.5);
                 return 1;
                 break;

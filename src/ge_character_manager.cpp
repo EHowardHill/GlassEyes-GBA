@@ -164,7 +164,7 @@ void character_manager::update(map_manager *current_map = nullptr)
     else if (db.has_value())
     {
         db_inactive = db.value().is_ended();
-        
+
         // Check if we're in branching mode
         if (db.value().is_branching)
         {

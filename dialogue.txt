@@ -429,7 +429,7 @@ cave_01_alt_01
 	db_ch_ginger	EM_DEFAULT		Don't put your	"guard down,"	down here.								
 														
 forest_dlg_sign_02														
-	db_ch_ginger	EM_CONFUSED		I can't.. Read this..	I think it's for	"sale, though."								
+	db_ch_ginger	EM_CONFUSED		I can't read this..	I think it's for	"sale, though."								
 				You can't read?	Got it.								&forest_dlg_sign_02_alt_01	
 				"No, I can read,"	just not.. That.									
 														
@@ -446,7 +446,7 @@ forest_dlg_paper
 														
 bridge_01														
 	db_ch_ginger	EM_DEFAULT		Yes.	Avalon is	that way.								
-	db_ch_ginger	EM_DEFAULT		It probably won't	"get fixed for a while,"	though..								
+	db_ch_ginger	EM_DEFAULT		It probably won't	get fixed for a	"while, though.."								
 	db_ch_ginger	EM_DEFAULT		Muetos have	a joke:									
 	db_ch_ginger	EM_EMBARRASSED		"""Mueto bridges"	"are human bridges,"	"but broken."""								
 	db_ch_ginger	EM_DEFAULT		..but there's a	tunnel around here	somewhere.								
@@ -541,7 +541,7 @@ avalon_sign_03
 				Who is she?	You look similar.								&avalon_sign_03_alt_01	
 	db_ch_ginger	EM_DEFAULT		Muetos don't live	very long. Maybe a	decade at most.								
 	db_ch_ginger	EM_DEFAULT		The Senatrix has	lived for two-	hundred years.								
-	db_ch_ginger	EM_DEFAULT		Many muetos see	her like a fixture of	the world.								
+	db_ch_ginger	EM_DEFAULT		Many muetos see	her as a fixture of	the world.								
 	db_ch_ginger	EM_DEFAULT		Many see her	"as a demigod, the"	daughter of Losus.								
 	db_ch_ginger	EM_DEFAULT		She rules as our	queen.									
 														
