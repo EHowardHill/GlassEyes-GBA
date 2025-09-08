@@ -416,6 +416,7 @@ int battle_map()
         global_data_ptr->enemy_max_hp[0] = 99;
         global_data_ptr->enemy_hp[0] = 99;
         bs.moveset = BULLET_SIZE;
+        bs.speed = 5;
 
         bs.party_size = 2;
         bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
@@ -627,7 +628,7 @@ int battle_map()
             {
                 bs.enemy_state = 2;
                 bs.enemy_ticker = 0;
-                bullet::populate(&bs.bullets, bs.selected_moveset);
+                bullet::populate(&bs.bullets, bs.selected_moveset, bs.speed);
                 BN_LOG("MOVESET: ", bs.selected_moveset);
                 bs.selected_moveset = (bs.selected_moveset + 1) % bs.moveset;
             }
@@ -683,7 +684,7 @@ int battle_map()
                 }
             }
 
-            if (++bs.recv_ticker > 250)
+            if (++bs.recv_ticker > 400)
             {
                 bs.recv_ticker = 0;
                 bs.current_actor = -1;
