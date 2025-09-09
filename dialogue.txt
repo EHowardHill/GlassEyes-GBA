@@ -538,13 +538,26 @@ avalon_sign_02
 														
 avalon_sign_03														
 				GRAND MASTER	SENATRIX									
-				Who is she?	You look similar.									
-	db_ch_ginger	EM_DEFAULT		Muetos don't live	very long. Maybe	five years at most.								
+				Who is she?	You look similar.								&avalon_sign_03_alt_03	
+	db_ch_ginger	EM_SIDE_EYE		Muetos don't live	very long. Maybe	five years at most.								
 	db_ch_ginger	EM_DEFAULT		The Senatrix has	lived for two-	hundred years.								
 	db_ch_ginger	EM_DEFAULT		Many muetos see	her as a fixture of	the world.								
-	db_ch_ginger	EM_DEFAULT		Many see her	"as a demigod, the"	daughter of Losus.								
+	db_ch_ginger	EM_DEFAULT		"Officially, she's"	"a demigoddess, the"	daughter of Losus.								
 	db_ch_ginger	EM_DEFAULT		She rules as our	queen.									
-				She looks like you.	"Dang, she's old."								&avalon_sign_03_alt_01	
+				..Losus?	200 years?								&avalon_sign_03_alt_01	
+	db_ch_ginger	EM_DEFAULT		Muetos believe	"in two goddesses,"	Losus and Genne.								
+	db_ch_ginger	EM_DEFAULT		"Losus is all-good,"	while Genne is	all-evil.								
+	db_ch_ginger	EM_DEFAULT		They say Losus is	"still creating life,"	which is why								
+	db_ch_ginger	EM_DEFAULT		muetos spring out	of holes in the	"ground,"								
+	db_ch_ginger	EM_DEFAULT		while humans come	"from Genne, which"	is the reason why								
+	db_ch_ginger	EM_DEFAULT		new humans come	from other humans.									
+				You believe that?	Interesting.								&avalon_sign_03_alt_04	
+	db_ch_ginger	EM_SIDE_EYE		"I.. don't, but it's"	unwise not to be	spiritual out here.								
+														
+avalon_sign_03_alt_04														
+	db_ch_ginger	EM_DEFAULT		"Yeah, that's one"	word for it.									
+														
+avalon_sign_03_alt_03														
 	db_ch_ginger	EM_SIDE_EYE		Yeah..	I get that a lot.									
 														
 avalon_sign_03_alt_01														
@@ -553,7 +566,7 @@ avalon_sign_03_alt_01
 				Eww.	Cool.								&avalon_sign_03_alt_02	
 	db_ch_ginger	EM_SIDE_EYE		"Yeah, it's kinda"	gross.									
 														
-avalon_sign_03_alt_01														
+avalon_sign_03_alt_02														
 	db_ch_ginger	EM_DEFAULT		Only problem is	then they gotta go	replace the statues.								
 														
 avalon_sign_04														

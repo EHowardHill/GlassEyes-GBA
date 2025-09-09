@@ -67,8 +67,8 @@ bullet::bullet(int16_t x_pos, int16_t y_pos, int anim_type, int speed_multiplier
         break;
 
     case BULLET_ORBIT:
-        compact.state1 = global_data_ptr->bn_random.get_int(64);      // Starting angle
-        compact.state2 = 40 + global_data_ptr->bn_random.get_int(30); // Radius
+        compact.state1 = global_data_ptr->bn_random.get_int(64);    // Starting angle
+        compact.state2 = 4 + global_data_ptr->bn_random.get_int(4); // Radius 25-45 (smaller)
         break;
 
     case BULLET_SPIRAL:
@@ -362,7 +362,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
         {
         case BULLET_RISE:
             x = (-50 + global_data_ptr->bn_random.get_int(100)) * 4;
-            y = (70 + (b * 8)) * 4;
+            y = (70 + (b * 6)) * 4;
             break;
 
         case BULLET_HOMING:
@@ -395,7 +395,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
                 int cos_val = SINE_TABLE[(angle + 16) & 63];
                 int sin_val = SINE_TABLE[angle & 63];
                 x = (cos_val * 40) / 64 * 4;
-                y = (-40 + (sin_val * 20) / 64) * 4;
+                y = (-40 + (sin_val / 2) / 64) - 64;
             }
             break;
 
@@ -407,7 +407,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
 
         case BULLET_ZIGZAG:
             // Line formation
-            x = (-60 + (b * 8)) * 4;
+            x = (-60 + (b * 6)) * 4;
             y = -280;
             break;
 
@@ -423,7 +423,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
                 x = -240 + global_data_ptr->bn_random.get_int(20);
             else
                 x = 240 - global_data_ptr->bn_random.get_int(20);
-            y = (-70 - (b * 8)) * 4;
+            y = (-70 - (b * 6)) * 4;
             break;
 
         case BULLET_HELIX:

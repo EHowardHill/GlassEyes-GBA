@@ -312,13 +312,16 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = BLACK_TO_LAB; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
 
     // Test battle before game begins
+    /*
+    global_data_ptr->items[OBJ_LIME] = true;
     global_data_ptr->battle_foe = FOE_TEST;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
+    */
 
     while (true)
     {
@@ -385,6 +388,15 @@ int main()
                 global_data_ptr->entry_position = {6, 8};
                 global_data_ptr->ginger_position = {5, 8};
                 global_data_ptr->bg_track = &music_items::forest_01;
+                break;
+            }
+            case AVALON:
+            {
+                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {12, 15};
+                global_data_ptr->ginger_position = {13, 15};
+                global_data_ptr->bg_track = &music_items::bg_avalon;
                 break;
             }
             case FINAL_MSG:

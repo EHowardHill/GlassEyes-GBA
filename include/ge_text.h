@@ -25,6 +25,7 @@ enum progress
     BLACK_TO_LAB,
     FOREST_01,
     FINAL_MSG,
+    AVALON,
     TEST_MAP
 };
 
@@ -273,7 +274,6 @@ struct items_box
     void close();
     bool is_active() const { return active; }
 
-private:
     void refresh_display();
     int get_selected_item_index() const;
 };

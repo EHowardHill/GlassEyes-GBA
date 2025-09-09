@@ -717,130 +717,268 @@ int battle_map()
                 return CONTINUE;
             }
 
-            // Setup for character if needed
-            if (!bs.char_img)
+            // Check if item menu is active
+            if (bs.item_menu.is_active())
             {
-                // Find next character who needs to choose
-                while (bs.choosing_for < bs.party_size && !is_alive(bs.choosing_for, &bs))
+                bs.item_menu.update();
+
+                if (keypad::a_pressed())
                 {
-                    bs.choosing_for++;
+                    // Get selected item
+                    int selected_item = bs.item_menu.get_selected_item_index();
+                    if (selected_item >= 0 && selected_item < ITEMS_SIZE)
+                    {
+                        // Check if item is available
+                        if (global_data_ptr->items[selected_item])
+                        {
+                            sound_items::snd_alert.play();
+
+                            // CHANGE: Instead of storing for later, use the item immediately
+
+                            // Close item menu first
+                            bs.item_menu.close();
+
+                            // Clean up current character's UI
+                            bs.char_img.reset();
+                            for (int i = 0; i < 5; ++i)
+                            {
+                                bs.labels[i].reset();
+                            }
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+
+                            // Load the item's conversation immediately
+                            if (ITEM_CONVOS[selected_item] != nullptr)
+                            {
+                                init_dialogue(const_cast<conversation *>(ITEM_CONVOS[selected_item]), &bs);
+
+                                // Store which item was used so we can remove it after dialogue if needed
+                                bs.used_item_index = selected_item;
+
+                                // Set a new stage to handle returning from item dialogue
+                                bs.stage = stage_item_dialogue;
+                            }
+                            else
+                            {
+                                // No conversation for this item, just remove it if needed and continue
+                                if (ITEM_DROP[selected_item])
+                                {
+                                    global_data_ptr->items[selected_item] = false;
+                                }
+
+                                // Record that this character used an item
+                                bs.character_actions[bs.choosing_for] = ACTION_ITEM;
+
+                                // Move to next character
+                                bs.choosing_for++;
+                            }
+                        }
+                    }
                 }
 
-                if (bs.choosing_for >= bs.party_size)
+                else if (keypad::b_pressed())
                 {
-                    // All characters have chosen, execute actions
-                    bs.choosing_for = 0;
+                    // Return to main menu
+                    sound_items::snd_dialogue_generic.play();
+                    bs.item_menu.close();
+                    bs.selected_menu = STATUS_BAR_NONE;
 
-                    // Check if anyone chose spare
-                    if (count_action(&bs, ACTION_SPARE) > 0)
+                    // Restore main menu UI
+                    bs.menu_index = 1; // Set to ITEM position
+                    int icon_indices[] = {0, 2, 3};
+                    for (int i = 0; i < 3; ++i)
                     {
-                        if (spare_convos.size() > 0)
+                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
+                    }
+                }
+
+                // Handle up/down navigation in item menu
+                if (keypad::up_pressed())
+                {
+                    if (bs.item_menu.cursor_position > 0)
+                    {
+                        bs.item_menu.cursor_position--;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (bs.item_menu.scroll_offset > 0)
+                    {
+                        bs.item_menu.scroll_offset--;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    bs.item_menu.refresh_display();
+                }
+                else if (keypad::down_pressed())
+                {
+                    int max_visible = min(3, bs.item_menu.total_items);
+                    if (bs.item_menu.cursor_position < max_visible - 1)
+                    {
+                        bs.item_menu.cursor_position++;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (bs.item_menu.scroll_offset + max_visible < bs.item_menu.total_items)
+                    {
+                        bs.item_menu.scroll_offset++;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    bs.item_menu.refresh_display();
+                }
+            }
+            else
+            {
+                // Setup for character if needed
+                if (!bs.char_img)
+                {
+                    // Find next character who needs to choose
+                    while (bs.choosing_for < bs.party_size && !is_alive(bs.choosing_for, &bs))
+                    {
+                        bs.choosing_for++;
+                    }
+
+                    if (bs.choosing_for >= bs.party_size)
+                    {
+                        // All characters have chosen, execute actions
+                        bs.choosing_for = 0;
+
+                        // Check if anyone chose spare
+                        if (count_action(&bs, ACTION_SPARE) > 0)
                         {
-                            conversation *spare_conv = spare_convos.front();
-                            spare_convos.erase(spare_convos.begin());
-                            init_dialogue(spare_conv, &bs);
+                            if (spare_convos.size() > 0)
+                            {
+                                conversation *spare_conv = spare_convos.front();
+                                spare_convos.erase(spare_convos.begin());
+                                init_dialogue(spare_conv, &bs);
+                                bs.stage = stage_talking_then_attack;
+                            }
+                            else
+                            {
+                                bs.stage = stage_execute_attacks;
+                            }
+                        }
+                        // Check if anyone used an item
+                        else if (count_action(&bs, ACTION_ITEM) > 0 && bs.pending_item_conv)
+                        {
+                            init_dialogue(bs.pending_item_conv, &bs);
+                            bs.pending_item_conv = nullptr;
                             bs.stage = stage_talking_then_attack;
                         }
                         else
                         {
                             bs.stage = stage_execute_attacks;
                         }
-                    }
-                    else
-                    {
-                        bs.stage = stage_execute_attacks;
+
+                        continue;
                     }
 
-                    continue;
-                }
+                    bs.current_actor = bs.choosing_for;
+                    bs.char_img = sprite_items::battle_chars.create_sprite(-42, -42, bs.choosing_for);
 
-                bs.current_actor = bs.choosing_for;
-                bs.char_img = sprite_items::battle_chars.create_sprite(-42, -42, bs.choosing_for);
+                    // Setup labels
+                    string<20> hp_str = "HP:";
+                    hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] / 10);
+                    hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] % 10);
+                    hp_str.push_back('/');
+                    hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] / 10);
+                    hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] % 10);
 
-                // Setup labels
-                string<20> hp_str = "HP:";
-                hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] / 10);
-                hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] % 10);
-                hp_str.push_back('/');
-                hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] / 10);
-                hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] % 10);
+                    bs.labels[0] = {get_name(bs.choosing_for), {0, -52}};
+                    bs.labels[1] = {hp_str, {0, -36}};
+                    bs.labels[0]->render();
+                    bs.labels[1]->render();
 
-                bs.labels[0] = {get_name(bs.choosing_for), {0, -52}};
-                bs.labels[1] = {hp_str, {0, -36}};
-                bs.labels[0]->render();
-                bs.labels[1]->render();
+                    // Setup main menu
+                    bs.menu_index = 0;
+                    bs.selected_menu = STATUS_BAR_NONE;
 
-                // Setup main menu
-                bs.menu_index = 0;
-                bs.selected_menu = STATUS_BAR_NONE;
-
-                // Create 3 menu icons
-                int icon_indices[] = {0, 2, 3};
-                for (int i = 0; i < 3; ++i)
-                {
-                    bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
-                }
-
-                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
-                bs.labels[2] = {menu_labels[0], {0, -12}};
-                bs.labels[2]->render();
-            }
-
-            // Handle menu selection
-            if (bs.selected_menu == STATUS_BAR_NONE)
-            {
-                if (keypad::up_pressed())
-                {
-                    bs.menu_index = (bs.menu_index + 2) % 3;
-                    sound_items::snd_dialogue_generic.play();
-                }
-                else if (keypad::down_pressed())
-                {
-                    bs.menu_index = (bs.menu_index + 1) % 3;
-                    sound_items::snd_dialogue_generic.play();
-                }
-                else if (keypad::a_pressed())
-                {
-                    sound_items::snd_alert.play();
-
-                    // Record the action choice
-                    switch (bs.menu_index)
-                    {
-                    case 0:
-                        bs.character_actions[bs.choosing_for] = ACTION_ATTACK;
-                        break;
-                    case 1:
-                        // For now, treat ITEM as a skip (since items aren't implemented)
-                        bs.character_actions[bs.choosing_for] = ACTION_ITEM;
-                        break;
-                    case 2:
-                        bs.character_actions[bs.choosing_for] = ACTION_SPARE;
-                        break;
-                    default:
-                        break;
-                    }
-
-                    // Clean up current character's UI
-                    bs.char_img.reset();
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        bs.labels[i].reset();
-                    }
+                    // Create 3 menu icons
+                    int icon_indices[] = {0, 2, 3};
                     for (int i = 0; i < 3; ++i)
                     {
-                        bs.battle_icons[i].reset();
+                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
                     }
 
-                    // Move to next character
-                    bs.choosing_for++;
+                    const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
+                    bs.labels[2] = {menu_labels[0], {0, -12}};
+                    bs.labels[2]->render();
                 }
 
-                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
-                bs.labels[2].reset();
-                bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
-                bs.labels[2]->render();
+                // Handle menu selection
+                if (bs.selected_menu == STATUS_BAR_NONE)
+                {
+                    if (keypad::up_pressed())
+                    {
+                        bs.menu_index = (bs.menu_index + 2) % 3;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (keypad::down_pressed())
+                    {
+                        bs.menu_index = (bs.menu_index + 1) % 3;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (keypad::a_pressed())
+                    {
+                        sound_items::snd_alert.play();
+
+                        switch (bs.menu_index)
+                        {
+                        case 0: // ATTACK
+                            bs.character_actions[bs.choosing_for] = ACTION_ATTACK;
+
+                            // Clean up and move to next character
+                            bs.char_img.reset();
+                            for (int i = 0; i < 5; ++i)
+                            {
+                                bs.labels[i].reset();
+                            }
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+                            bs.choosing_for++;
+                            break;
+
+                        case 1: // ITEM - Open item menu
+                            // Hide main menu icons
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+                            bs.labels[2].reset();
+
+                            // Initialize and open item menu
+                            bs.item_menu.init();
+                            break;
+
+                        case 2: // SPARE
+                            bs.character_actions[bs.choosing_for] = ACTION_SPARE;
+
+                            // Clean up and move to next character
+                            bs.char_img.reset();
+                            for (int i = 0; i < 5; ++i)
+                            {
+                                bs.labels[i].reset();
+                            }
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+                            bs.choosing_for++;
+                            break;
+                        }
+                    }
+
+                    if (!bs.item_menu.is_active())
+                    {
+                        const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
+                        bs.labels[2].reset();
+                        bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
+                        bs.labels[2]->render();
+                    }
+                }
             }
         }
+
         else if (bs.stage == stage_talking_then_attack)
         {
             if (!is_dialogue_active(&bs))
@@ -1104,6 +1242,42 @@ int battle_map()
                 }
 
                 bs.stage = stage_talking;
+            }
+        }
+
+        else if (bs.stage == stage_item_dialogue)
+        {
+            if (!is_dialogue_active(&bs))
+            {
+                // Dialogue finished, remove item if needed
+                if (bs.used_item_index >= 0 && bs.used_item_index < ITEMS_SIZE)
+                {
+                    if (ITEM_DROP[bs.used_item_index])
+                    {
+                        global_data_ptr->items[bs.used_item_index] = false;
+                    }
+                }
+
+                // Record that this character used an item
+                bs.character_actions[bs.choosing_for] = ACTION_ITEM;
+
+                // Move to next character
+                bs.choosing_for++;
+
+                // Return to status stage to continue character selection
+                bs.stage = stage_status;
+            }
+            else
+            {
+                update_dialogue(&bs);
+
+                if (keypad::a_pressed() && are_lines_complete(&bs))
+                {
+                    if (!advance_dialogue(&bs))
+                    {
+                        clear_dialogue(&bs);
+                    }
+                }
             }
         }
 

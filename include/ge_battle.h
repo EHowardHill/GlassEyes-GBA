@@ -66,6 +66,7 @@ enum BATTLE_STAGE
     stage_status,
     stage_attack,
     stage_talking_then_attack,
+    stage_item_dialogue,
     stage_execute_attacks,
     stage_act
 };
@@ -210,6 +211,10 @@ struct battle_state
     int moveset = 2;
     int selected_moveset = 0;
     int speed = 1;
+
+    items_box item_menu;
+    conversation *pending_item_conv = nullptr;
+    int used_item_index = -1;
 
     // Action tracking
     int character_actions[MAX_PARTY_SIZE] = {ACTION_NONE, ACTION_NONE, ACTION_NONE, ACTION_NONE};

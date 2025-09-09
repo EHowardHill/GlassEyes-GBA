@@ -1552,130 +1552,268 @@ int battle_map()
                 return CONTINUE;
             }
 
-            // Setup for character if needed
-            if (!bs.char_img)
+            // Check if item menu is active
+            if (bs.item_menu.is_active())
             {
-                // Find next character who needs to choose
-                while (bs.choosing_for < bs.party_size && !is_alive(bs.choosing_for, &bs))
+                bs.item_menu.update();
+
+                if (keypad::a_pressed())
                 {
-                    bs.choosing_for++;
+                    // Get selected item
+                    int selected_item = bs.item_menu.get_selected_item_index();
+                    if (selected_item >= 0 && selected_item < ITEMS_SIZE)
+                    {
+                        // Check if item is available
+                        if (global_data_ptr->items[selected_item])
+                        {
+                            sound_items::snd_alert.play();
+
+                            // CHANGE: Instead of storing for later, use the item immediately
+
+                            // Close item menu first
+                            bs.item_menu.close();
+
+                            // Clean up current character's UI
+                            bs.char_img.reset();
+                            for (int i = 0; i < 5; ++i)
+                            {
+                                bs.labels[i].reset();
+                            }
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+
+                            // Load the item's conversation immediately
+                            if (ITEM_CONVOS[selected_item] != nullptr)
+                            {
+                                init_dialogue(const_cast<conversation *>(ITEM_CONVOS[selected_item]), &bs);
+
+                                // Store which item was used so we can remove it after dialogue if needed
+                                bs.used_item_index = selected_item;
+
+                                // Set a new stage to handle returning from item dialogue
+                                bs.stage = stage_item_dialogue;
+                            }
+                            else
+                            {
+                                // No conversation for this item, just remove it if needed and continue
+                                if (ITEM_DROP[selected_item])
+                                {
+                                    global_data_ptr->items[selected_item] = false;
+                                }
+
+                                // Record that this character used an item
+                                bs.character_actions[bs.choosing_for] = ACTION_ITEM;
+
+                                // Move to next character
+                                bs.choosing_for++;
+                            }
+                        }
+                    }
                 }
 
-                if (bs.choosing_for >= bs.party_size)
+                else if (keypad::b_pressed())
                 {
-                    // All characters have chosen, execute actions
-                    bs.choosing_for = 0;
+                    // Return to main menu
+                    sound_items::snd_dialogue_generic.play();
+                    bs.item_menu.close();
+                    bs.selected_menu = STATUS_BAR_NONE;
 
-                    // Check if anyone chose spare
-                    if (count_action(&bs, ACTION_SPARE) > 0)
+                    // Restore main menu UI
+                    bs.menu_index = 1; // Set to ITEM position
+                    int icon_indices[] = {0, 2, 3};
+                    for (int i = 0; i < 3; ++i)
                     {
-                        if (spare_convos.size() > 0)
+                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
+                    }
+                }
+
+                // Handle up/down navigation in item menu
+                if (keypad::up_pressed())
+                {
+                    if (bs.item_menu.cursor_position > 0)
+                    {
+                        bs.item_menu.cursor_position--;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (bs.item_menu.scroll_offset > 0)
+                    {
+                        bs.item_menu.scroll_offset--;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    bs.item_menu.refresh_display();
+                }
+                else if (keypad::down_pressed())
+                {
+                    int max_visible = min(3, bs.item_menu.total_items);
+                    if (bs.item_menu.cursor_position < max_visible - 1)
+                    {
+                        bs.item_menu.cursor_position++;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (bs.item_menu.scroll_offset + max_visible < bs.item_menu.total_items)
+                    {
+                        bs.item_menu.scroll_offset++;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    bs.item_menu.refresh_display();
+                }
+            }
+            else
+            {
+                // Setup for character if needed
+                if (!bs.char_img)
+                {
+                    // Find next character who needs to choose
+                    while (bs.choosing_for < bs.party_size && !is_alive(bs.choosing_for, &bs))
+                    {
+                        bs.choosing_for++;
+                    }
+
+                    if (bs.choosing_for >= bs.party_size)
+                    {
+                        // All characters have chosen, execute actions
+                        bs.choosing_for = 0;
+
+                        // Check if anyone chose spare
+                        if (count_action(&bs, ACTION_SPARE) > 0)
                         {
-                            conversation *spare_conv = spare_convos.front();
-                            spare_convos.erase(spare_convos.begin());
-                            init_dialogue(spare_conv, &bs);
+                            if (spare_convos.size() > 0)
+                            {
+                                conversation *spare_conv = spare_convos.front();
+                                spare_convos.erase(spare_convos.begin());
+                                init_dialogue(spare_conv, &bs);
+                                bs.stage = stage_talking_then_attack;
+                            }
+                            else
+                            {
+                                bs.stage = stage_execute_attacks;
+                            }
+                        }
+                        // Check if anyone used an item
+                        else if (count_action(&bs, ACTION_ITEM) > 0 && bs.pending_item_conv)
+                        {
+                            init_dialogue(bs.pending_item_conv, &bs);
+                            bs.pending_item_conv = nullptr;
                             bs.stage = stage_talking_then_attack;
                         }
                         else
                         {
                             bs.stage = stage_execute_attacks;
                         }
-                    }
-                    else
-                    {
-                        bs.stage = stage_execute_attacks;
+
+                        continue;
                     }
 
-                    continue;
-                }
+                    bs.current_actor = bs.choosing_for;
+                    bs.char_img = sprite_items::battle_chars.create_sprite(-42, -42, bs.choosing_for);
 
-                bs.current_actor = bs.choosing_for;
-                bs.char_img = sprite_items::battle_chars.create_sprite(-42, -42, bs.choosing_for);
+                    // Setup labels
+                    string<20> hp_str = "HP:";
+                    hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] / 10);
+                    hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] % 10);
+                    hp_str.push_back('/');
+                    hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] / 10);
+                    hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] % 10);
 
-                // Setup labels
-                string<20> hp_str = "HP:";
-                hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] / 10);
-                hp_str.push_back('0' + global_data_ptr->hp[bs.choosing_for] % 10);
-                hp_str.push_back('/');
-                hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] / 10);
-                hp_str.push_back('0' + global_data_ptr->max_hp[bs.choosing_for] % 10);
+                    bs.labels[0] = {get_name(bs.choosing_for), {0, -52}};
+                    bs.labels[1] = {hp_str, {0, -36}};
+                    bs.labels[0]->render();
+                    bs.labels[1]->render();
 
-                bs.labels[0] = {get_name(bs.choosing_for), {0, -52}};
-                bs.labels[1] = {hp_str, {0, -36}};
-                bs.labels[0]->render();
-                bs.labels[1]->render();
+                    // Setup main menu
+                    bs.menu_index = 0;
+                    bs.selected_menu = STATUS_BAR_NONE;
 
-                // Setup main menu
-                bs.menu_index = 0;
-                bs.selected_menu = STATUS_BAR_NONE;
-
-                // Create 3 menu icons
-                int icon_indices[] = {0, 2, 3};
-                for (int i = 0; i < 3; ++i)
-                {
-                    bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
-                }
-
-                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
-                bs.labels[2] = {menu_labels[0], {0, -12}};
-                bs.labels[2]->render();
-            }
-
-            // Handle menu selection
-            if (bs.selected_menu == STATUS_BAR_NONE)
-            {
-                if (keypad::up_pressed())
-                {
-                    bs.menu_index = (bs.menu_index + 2) % 3;
-                    sound_items::snd_dialogue_generic.play();
-                }
-                else if (keypad::down_pressed())
-                {
-                    bs.menu_index = (bs.menu_index + 1) % 3;
-                    sound_items::snd_dialogue_generic.play();
-                }
-                else if (keypad::a_pressed())
-                {
-                    sound_items::snd_alert.play();
-
-                    // Record the action choice
-                    switch (bs.menu_index)
-                    {
-                    case 0:
-                        bs.character_actions[bs.choosing_for] = ACTION_ATTACK;
-                        break;
-                    case 1:
-                        // For now, treat ITEM as a skip (since items aren't implemented)
-                        bs.character_actions[bs.choosing_for] = ACTION_ITEM;
-                        break;
-                    case 2:
-                        bs.character_actions[bs.choosing_for] = ACTION_SPARE;
-                        break;
-                    default:
-                        break;
-                    }
-
-                    // Clean up current character's UI
-                    bs.char_img.reset();
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        bs.labels[i].reset();
-                    }
+                    // Create 3 menu icons
+                    int icon_indices[] = {0, 2, 3};
                     for (int i = 0; i < 3; ++i)
                     {
-                        bs.battle_icons[i].reset();
+                        bs.battle_icons[i] = sprite_items::battle_icons.create_sprite(-22, -12 + (18 * i), icon_indices[i]);
                     }
 
-                    // Move to next character
-                    bs.choosing_for++;
+                    const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
+                    bs.labels[2] = {menu_labels[0], {0, -12}};
+                    bs.labels[2]->render();
                 }
 
-                const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
-                bs.labels[2].reset();
-                bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
-                bs.labels[2]->render();
+                // Handle menu selection
+                if (bs.selected_menu == STATUS_BAR_NONE)
+                {
+                    if (keypad::up_pressed())
+                    {
+                        bs.menu_index = (bs.menu_index + 2) % 3;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (keypad::down_pressed())
+                    {
+                        bs.menu_index = (bs.menu_index + 1) % 3;
+                        sound_items::snd_dialogue_generic.play();
+                    }
+                    else if (keypad::a_pressed())
+                    {
+                        sound_items::snd_alert.play();
+
+                        switch (bs.menu_index)
+                        {
+                        case 0: // ATTACK
+                            bs.character_actions[bs.choosing_for] = ACTION_ATTACK;
+
+                            // Clean up and move to next character
+                            bs.char_img.reset();
+                            for (int i = 0; i < 5; ++i)
+                            {
+                                bs.labels[i].reset();
+                            }
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+                            bs.choosing_for++;
+                            break;
+
+                        case 1: // ITEM - Open item menu
+                            // Hide main menu icons
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+                            bs.labels[2].reset();
+
+                            // Initialize and open item menu
+                            bs.item_menu.init();
+                            break;
+
+                        case 2: // SPARE
+                            bs.character_actions[bs.choosing_for] = ACTION_SPARE;
+
+                            // Clean up and move to next character
+                            bs.char_img.reset();
+                            for (int i = 0; i < 5; ++i)
+                            {
+                                bs.labels[i].reset();
+                            }
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                bs.battle_icons[i].reset();
+                            }
+                            bs.choosing_for++;
+                            break;
+                        }
+                    }
+
+                    if (!bs.item_menu.is_active())
+                    {
+                        const char *menu_labels[] = {"ATTACK", "ITEM", "SPARE"};
+                        bs.labels[2].reset();
+                        bs.labels[2] = {menu_labels[bs.menu_index], {0, -12 + (18 * bs.menu_index)}};
+                        bs.labels[2]->render();
+                    }
+                }
             }
         }
+
         else if (bs.stage == stage_talking_then_attack)
         {
             if (!is_dialogue_active(&bs))
@@ -1942,6 +2080,42 @@ int battle_map()
             }
         }
 
+        else if (bs.stage == stage_item_dialogue)
+        {
+            if (!is_dialogue_active(&bs))
+            {
+                // Dialogue finished, remove item if needed
+                if (bs.used_item_index >= 0 && bs.used_item_index < ITEMS_SIZE)
+                {
+                    if (ITEM_DROP[bs.used_item_index])
+                    {
+                        global_data_ptr->items[bs.used_item_index] = false;
+                    }
+                }
+
+                // Record that this character used an item
+                bs.character_actions[bs.choosing_for] = ACTION_ITEM;
+
+                // Move to next character
+                bs.choosing_for++;
+
+                // Return to status stage to continue character selection
+                bs.stage = stage_status;
+            }
+            else
+            {
+                update_dialogue(&bs);
+
+                if (keypad::a_pressed() && are_lines_complete(&bs))
+                {
+                    if (!advance_dialogue(&bs))
+                    {
+                        clear_dialogue(&bs);
+                    }
+                }
+            }
+        }
+
         text::update_toasts();
         core::update();
     }
@@ -2017,8 +2191,8 @@ bullet::bullet(int16_t x_pos, int16_t y_pos, int anim_type, int speed_multiplier
         break;
 
     case BULLET_ORBIT:
-        compact.state1 = global_data_ptr->bn_random.get_int(64);      // Starting angle
-        compact.state2 = 40 + global_data_ptr->bn_random.get_int(30); // Radius
+        compact.state1 = global_data_ptr->bn_random.get_int(64);    // Starting angle
+        compact.state2 = 4 + global_data_ptr->bn_random.get_int(4); // Radius 25-45 (smaller)
         break;
 
     case BULLET_SPIRAL:
@@ -2312,7 +2486,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
         {
         case BULLET_RISE:
             x = (-50 + global_data_ptr->bn_random.get_int(100)) * 4;
-            y = (70 + (b * 8)) * 4;
+            y = (70 + (b * 6)) * 4;
             break;
 
         case BULLET_HOMING:
@@ -2345,7 +2519,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
                 int cos_val = SINE_TABLE[(angle + 16) & 63];
                 int sin_val = SINE_TABLE[angle & 63];
                 x = (cos_val * 40) / 64 * 4;
-                y = (-40 + (sin_val * 20) / 64) * 4;
+                y = (-40 + (sin_val / 2) / 64) - 64;
             }
             break;
 
@@ -2357,7 +2531,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
 
         case BULLET_ZIGZAG:
             // Line formation
-            x = (-60 + (b * 8)) * 4;
+            x = (-60 + (b * 6)) * 4;
             y = -280;
             break;
 
@@ -2373,7 +2547,7 @@ void bullet::populate(bn::vector<bullet, bullet_count> *bullets, int anim_type, 
                 x = -240 + global_data_ptr->bn_random.get_int(20);
             else
                 x = 240 - global_data_ptr->bn_random.get_int(20);
-            y = (-70 - (b * 8)) * 4;
+            y = (-70 - (b * 6)) * 4;
             break;
 
         case BULLET_HELIX:
@@ -2755,18 +2929,40 @@ const conversation avalon_sign_02 = {
 
 const conversation avalon_sign_03 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "GRAND MASTER", "SENATRIX", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Who is she?", "You look similar.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Muetos don't live", "very long. Maybe", "five years at most.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Who is she?", "You look similar.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_sign_03_alt_03, static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Muetos don't live", "very long. Maybe", "five years at most.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "The Senatrix has", "lived for two-", "hundred years.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Many muetos see", "her as a fixture of", "the world.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Many see her", "as a demigod, the", "daughter of Losus.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Officially, she's", "a demigoddess, the", "daughter of Losus.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "She rules as our", "queen.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "She looks like you.", "Dang, she's old.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_sign_03_alt_01, static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Yeah..", "I get that a lot.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "..Losus?", "200 years?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_sign_03_alt_01, static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Muetos believe", "in two goddesses,", "Losus and Genne.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Losus is all-good,", "while Genne is", "all-evil.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "They say Losus is", "still creating life,", "which is why", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "muetos spring out", "of holes in the", "ground,", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "while humans come", "from Genne, which", "is the reason why", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "new humans come", "from other humans.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "You believe that?", "Interesting.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_sign_03_alt_04, static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "I.. don't, but it's", "unwise not to be", "spiritual out here.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation avalon_sign_03_alt_01 = {
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "She goes through a", "ritual where she", "sheds her skin,", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "And then she looks", "young again, but", "different.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Eww.", "Cool.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_sign_03_alt_02, static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Yeah, it's kinda", "gross.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation avalon_sign_03_alt_02 = {
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Only problem is", "then they gotta go", "replace the statues.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation avalon_sign_03_alt_03 = {
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Yeah..", "I get that a lot.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation avalon_sign_03_alt_04 = {
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Yeah, that's one", "word for it.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation avalon_sign_04 = {
@@ -5519,13 +5715,16 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = BLACK_TO_LAB; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
 
     // Test battle before game begins
+    /*
+    global_data_ptr->items[OBJ_LIME] = true;
     global_data_ptr->battle_foe = FOE_TEST;
     value = battle_map();
     core::update();
     value = NEW_CHAPTER;
+    */
 
     while (true)
     {
@@ -5592,6 +5791,15 @@ int main()
                 global_data_ptr->entry_position = {6, 8};
                 global_data_ptr->ginger_position = {5, 8};
                 global_data_ptr->bg_track = &music_items::forest_01;
+                break;
+            }
+            case AVALON:
+            {
+                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {12, 15};
+                global_data_ptr->ginger_position = {13, 15};
+                global_data_ptr->bg_track = &music_items::bg_avalon;
                 break;
             }
             case FINAL_MSG:
@@ -5774,6 +5982,7 @@ enum BATTLE_STAGE
     stage_status,
     stage_attack,
     stage_talking_then_attack,
+    stage_item_dialogue,
     stage_execute_attacks,
     stage_act
 };
@@ -5918,6 +6127,10 @@ struct battle_state
     int moveset = 2;
     int selected_moveset = 0;
     int speed = 1;
+
+    items_box item_menu;
+    conversation *pending_item_conv = nullptr;
+    int used_item_index = -1;
 
     // Action tracking
     int character_actions[MAX_PARTY_SIZE] = {ACTION_NONE, ACTION_NONE, ACTION_NONE, ACTION_NONE};
@@ -6160,6 +6373,9 @@ extern const conversation avalon_sign_01;
 extern const conversation avalon_sign_02;
 extern const conversation avalon_sign_03;
 extern const conversation avalon_sign_03_alt_01;
+extern const conversation avalon_sign_03_alt_02;
+extern const conversation avalon_sign_03_alt_03;
+extern const conversation avalon_sign_03_alt_04;
 extern const conversation avalon_sign_04;
 extern const conversation avalon_sign_05;
 extern const conversation avalon_sign_06;
@@ -7300,6 +7516,7 @@ enum progress
     BLACK_TO_LAB,
     FOREST_01,
     FINAL_MSG,
+    AVALON,
     TEST_MAP
 };
 
@@ -7548,7 +7765,6 @@ struct items_box
     void close();
     bool is_active() const { return active; }
 
-private:
     void refresh_display();
     int get_selected_item_index() const;
 };
