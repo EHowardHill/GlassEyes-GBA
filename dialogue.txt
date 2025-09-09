@@ -585,6 +585,96 @@ avalon_sign_06
 convo_lime														
 				It tastes sour.	"Lots of Vitamin C,"	though.								
 				HP INCREASED	BY 5									
+		EM_SKIP	ACT_HP							5				
 														
 convo_document														
 				None of this	makes any sense.									
+														
+avalon_guy_01														
+	db_ch_ginger	EM_SAD		I-Is he dead?!										
+	db_ch_deadguy	EM_DEFAULT		"Nope, I just like"	sleeping face-down	in the snow.								
+	db_ch_deadguy	EM_DEFAULT		"It's nice, you"	should try it	sometime.								
+	db_ch_ginger	EM_DEFAULT		Do you know	how to get to	Canterbury?								
+	db_ch_deadguy	EM_DEFAULT		zzzzzzzzzzz										
+	db_ch_ginger	EM_SIDE_EYE		Time to ask	"around, I suppose."									
+														
+avalon_grandma_01														
+	db_ch_ginger	EM_DEFAULT		"Hello, ma'am?"										
+	db_ch_grandma	EM_DEFAULT		"Yes, what is it,"	sweetheart?									
+	db_ch_ginger	EM_DEFAULT		Do you know how	to get to Canterbury	from here?								
+	db_ch_grandma	EM_DEFAULT		Say.. You look *just*	like her majesty	Princess Semura.								
+	db_ch_ginger	EM_SIDE_EYE		"Hehe, I get that a"	"lot but I'm, uh, not"	the Princess.								
+	db_ch_grandma	EM_DEFAULT		What's the human	doing here?	Human..								
+	db_ch_grandma	EM_DEFAULT		"Please, cause some"	"mischief, I'd like"	entertainment.								
+	db_ch_grandma	EM_DEFAULT		We haven't had a	good hanging in	over a week.								
+	db_ch_ginger	EM_SIDE_EYE		We need to get	out of here.									
+														
+avalon_wormguy_01														
+	db_ch_wormguy	EM_DEFAULT		"HUMAN, would"	you be kind enough	to support								
+	db_ch_wormguy	EM_DEFAULT		"a poor, grieving"	father?									
+	db_ch_ginger	EM_DEFAULT		But muetos don't-										
+	db_ch_wormguy	EM_DEFAULT		(shush!!)	(human doesn't	know that!!)								
+	db_ch_wormguy	EM_DEFAULT		The wicked fairies	of the wood turned	by beloved daughter								
+	db_ch_wormguy	EM_DEFAULT		Into a statue!	(The horror!)									
+	db_ch_wormguy	EM_DEFAULT		If you pay me	"one $ however,"	I can show you								
+	db_ch_wormguy	EM_DEFAULT		her sorry fate.										
+				"No way, worm guy."	Sure. Why not.								&avalon_wormguy_01_alt_01	
+	db_ch_wormguy	EM_DEFAULT		You will regret it!	I hope YOU turn to	a statue as well!								
+														
+avalon_wormguy_01_alt_01														
+	db_ch_wormguy	EM_DEFAULT		What a fine choice!	Here is your ticket!									
+				You found:	WORM TICKET									
+				It was once a	fast food receipt.	Nice.								
+		EM_SKIP	ACT_ITEM							OBJ_TICKET				
+														
+avalon_courier_01														
+	db_ch_ginger	EM_DEFAULT		Do you know the	way to Canterbury?									
+	db_ch_courier	EM_DEFAULT		"..of course I do,"	do you not know	who I am?								
+	db_ch_ginger	EM_DEFAULT		No..?										
+	db_ch_courier	EM_DEFAULT		Every local knows	that this badge	"means ""courier""."								
+	db_ch_courier	EM_DEFAULT		I wouldn't expect	a princess to know	"that, though."								
+	db_ch_ginger	EM_SIDE_EYE		I don't know what	you're talking about.									
+	db_ch_courier	EM_DEFAULT		Oh.. Right.	Of course.	It's a secret.								
+	db_ch_courier	EM_DEFAULT		"Now, I am"	fascinated by the..	human here.								
+	db_ch_ginger	EM_DEFAULT		We just need to	get to Canterbury.									
+														
+avalon_courier_02														
+	db_ch_courier	EM_DEFAULT		If you need my	"services, just let"	me know.								
+														
+avalon_courier_03														
+	db_ch_ginger	EM_DEFAULT		"Sir, we need this"	turkey delivered to	the garbage pile.								
+	db_ch_courier	EM_HAPPY		"Oh.. Your highness,"	only humans and the	rich use that pile.								
+	db_ch_courier	EM_DEFAULT		Just throw your	trash off the cliff.									
+	db_ch_ginger	EM_SIDE_EYE		"No, it's for someone"	who lives there.									
+	db_ch_courier	EM_DEFAULT		..Visker?	What does he want	a turkey for?								
+	db_ch_ginger	EM_DEFAULT		Would you mind	explaining?									
+				He asked me to.	No reason.								&avalon_courier_03_alt_01	
+	db_ch_courier	EM_DEFAULT		A virtuous human..	imagine that.									
+				One full of..	patience.	Admirable.								
+				I will deliver it.										
+														
+avalon_courier_03_alt_01														
+				Is it poisoned?	I hope so. That rat	gets on my nerves.								
+														
+avalon_courier_04														
+	db_ch_ginger	EM_DEFAULT		"Sir, we need this"	turkey delivered to	the garbage pile.								
+	db_ch_courier	EM_DEFAULT		My fee is $5.										
+	db_ch_ginger	EM_DEFAULT		Oh.. Heheh..	I apologize then.									
+	db_ch_courier	EM_DEFAULT		I would deliver it	for free if my	client was royalty.								
+	db_ch_ginger	EM_SIDE_EYE		"Gee, it's a shame"	that I'm not royalty	"then, huh."								
+	db_ch_courier	EM_DEFAULT		"Whatever you say,"	princess.									
+														
+avalon_shop_01														
+	db_ch_primary	EM_DEFAULT		How'se you two	fine folks doin on a	day like today?								
+	db_ch_ginger	EM_HAPPY		I'm doing well!										
+	db_ch_primary	EM_DEFAULT		"I'm not, this"	town sucks so bad									
+	db_ch_primary	EM_DEFAULT		I'd move but I spent	"like $500,000 on this"	shop you see								
+	db_ch_primary	EM_DEFAULT		I need to pay it all	off first									
+	db_ch_primary	EM_DEFAULT		Well that sucks	You didn't rent?	I'll buy the shop.							&avalon_shop_01_alt_02	&avalon_shop_01_alt_03
+	db_ch_primary	EM_DEFAULT		You'se can buy	my things though									
+														
+avalon_shop_01_alt_02														
+	db_ch_primary	EM_DEFAULT		I value ownership										
+														
+avalon_shop_01_alt_03														
+	db_ch_primary	EM_DEFAULT		Come back with	"$500,000 and let's"	chat some more ok								
