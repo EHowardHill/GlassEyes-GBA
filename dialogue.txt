@@ -627,6 +627,12 @@ avalon_wormguy_01_alt_01
 				It was once a	fast food receipt.	Nice.								
 		EM_SKIP	ACT_ITEM							OBJ_TICKET				
 														
+avalon_wormguy_02														
+				It's definitely a	statue of a worm.									
+				It appears to have	been yard decor	at one point.								
+				Confusing.	New Berlin doesn't	have any yards.								
+				Maybe muetos	are into yard worms.									
+														
 avalon_courier_01														
 	db_ch_ginger	EM_DEFAULT		Do you know the	way to Canterbury?									
 	db_ch_courier	EM_DEFAULT		"..of course I do,"	do you not know	who I am?								
@@ -677,4 +683,4 @@ avalon_shop_01_alt_02
 	db_ch_primary	EM_DEFAULT		I value ownership										
 														
 avalon_shop_01_alt_03														
-	db_ch_primary	EM_DEFAULT		Come back with	"$500,000 and let's"	chat some more ok								
+	db_ch_primary	EM_DEFAULT		Come back with	"$500,000 and let's"	"chat some more, ok?"								
