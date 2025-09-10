@@ -602,7 +602,7 @@ avalon_grandma_01
 	db_ch_ginger	EM_DEFAULT		"Hello, ma'am?"										
 	db_ch_grandma	EM_DEFAULT		"Yes, what is it,"	sweetheart?									
 	db_ch_ginger	EM_DEFAULT		Do you know how	to get to Canterbury	from here?								
-	db_ch_grandma	EM_DEFAULT		Say.. You look *just*	like her majesty	Princess Semura.								
+	db_ch_grandma	EM_DEFAULT		Say.. You look just	like her majesty	Princess Semura.								
 	db_ch_ginger	EM_SIDE_EYE		"Hehe, I get that a"	"lot but I'm, uh, not"	the Princess.								
 	db_ch_grandma	EM_DEFAULT		What's the human	doing here?	Human..								
 	db_ch_grandma	EM_DEFAULT		"Please, cause some"	"mischief, I'd like"	entertainment.								
@@ -639,7 +639,7 @@ avalon_courier_01
 	db_ch_ginger	EM_DEFAULT		No..?										
 	db_ch_courier	EM_DEFAULT		Every local knows	that this badge	"means ""courier""."								
 	db_ch_courier	EM_DEFAULT		I wouldn't expect	a princess to know	"that, though."								
-	db_ch_ginger	EM_SIDE_EYE		I don't know what	you're talking about.									
+	db_ch_ginger	EM_SIDE_EYE		I don't know what	you're talking	about.								
 	db_ch_courier	EM_DEFAULT		Oh.. Right.	Of course.	It's a secret.								
 	db_ch_courier	EM_DEFAULT		"Now, I am"	fascinated by the..	human here.								
 	db_ch_ginger	EM_DEFAULT		We just need to	get to Canterbury.									
@@ -674,7 +674,7 @@ avalon_shop_01
 	db_ch_primary	EM_DEFAULT		How'se you two	fine folks doin on a	day like today?								
 	db_ch_ginger	EM_HAPPY		I'm doing well!										
 	db_ch_primary	EM_DEFAULT		"I'm not, this"	town sucks so bad									
-	db_ch_primary	EM_DEFAULT		I'd move but I spent	"like $500,000 on this"	shop you see								
+	db_ch_primary	EM_DEFAULT		I'd move but I spent	"like $500,000 on"	this shop								
 	db_ch_primary	EM_DEFAULT		I need to pay it all	off first									
 	db_ch_primary	EM_DEFAULT		Well that sucks	You didn't rent?	I'll buy the shop.							&avalon_shop_01_alt_02	&avalon_shop_01_alt_03
 	db_ch_primary	EM_DEFAULT		You'se can buy	my things though									

@@ -71,6 +71,12 @@ int navigate_map()
         char_mgr.add_character(CHAR_GINGER, global_data_ptr->ginger_position, 0);
     }
 
+    if (current_map.current_map == &map_forest_01 && global_data_ptr->action_iterations[CONVO_FOREST_01] > 1)
+    {
+        auto croke = char_mgr.find_by_index(CHAR_CROKE);
+        croke->idle_animation = &croke_lay_down;
+    }
+
     int loop_value = 0;
     bool handle_frame = true;
     while (loop_value == CONTINUE && char_mgr.status == CONTINUE)

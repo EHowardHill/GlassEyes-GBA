@@ -18,8 +18,23 @@ typedef const dialogue_line conversation[128];
 #include "bn_sprite_items_db_ch_ginger.h"
 #include "bn_sprite_items_db_ch_croke.h"
 #include "bn_sprite_items_db_ch_temmie.h"
+#include "bn_sprite_items_db_ch_deadguy.h"
+#include "bn_sprite_items_db_ch_grandma.h"
+#include "bn_sprite_items_db_ch_wormguy.h"
+#include "bn_sprite_items_db_ch_courier.h"
+#include "bn_sprite_items_db_ch_primary.h"
 
 // Forward declarations for conversations
+extern const conversation avalon_courier_01;
+extern const conversation avalon_courier_02;
+extern const conversation avalon_courier_03;
+extern const conversation avalon_courier_03_alt_01;
+extern const conversation avalon_courier_04;
+extern const conversation avalon_grandma_01;
+extern const conversation avalon_guy_01;
+extern const conversation avalon_shop_01;
+extern const conversation avalon_shop_01_alt_02;
+extern const conversation avalon_shop_01_alt_03;
 extern const conversation avalon_sign_01;
 extern const conversation avalon_sign_02;
 extern const conversation avalon_sign_03;
@@ -30,6 +45,9 @@ extern const conversation avalon_sign_03_alt_04;
 extern const conversation avalon_sign_04;
 extern const conversation avalon_sign_05;
 extern const conversation avalon_sign_06;
+extern const conversation avalon_wormguy_01;
+extern const conversation avalon_wormguy_01_alt_01;
+extern const conversation avalon_wormguy_02;
 extern const conversation bridge_01;
 extern const conversation cave_01;
 extern const conversation cave_01_alt_01;
