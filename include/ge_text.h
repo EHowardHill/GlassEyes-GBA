@@ -52,6 +52,7 @@ enum actions
     ACT_ITEM,
     ACT_CUE_GINGER,
     ACT_SFX_KNOCK,
+    ACT_HP,
     ACT_MUSIC_VISKER,
     ACT_MUSIC_GINGER,
     ACT_MUSIC_FADEOUT,
@@ -154,9 +155,7 @@ enum ITEMS
     OBJ_LIME,
     OBJ_PHOTO,
     OBJ_DOCUMENT,
-    OBJ_ITEM1,
-    OBJ_ITEM2,
-    OBJ_ITEM3,
+    OBJ_TICKET,
     ITEMS_SIZE
 };
 
