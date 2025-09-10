@@ -72,6 +72,11 @@ enum character_list
     ITEM_BUTTON,
     ITEM_SPIKE,
     ITEM_X,
+    CHAR_NOODLE,
+    CHAR_GRANDMA,
+    CHAR_WORMDUDE,
+    CHAR_COURIER,
+    CHAR_PRIMARY,
     CHAR_SIZE,
     CHAR_TYPEWRITER
 };

@@ -168,6 +168,8 @@ character::character(int index_, vector_2 start_) : index(index_)
         (start_.y * 32) + 16};
     v_sprite.bounds.width = 28;
     v_sprite.bounds.height = 28;
+    idle_animation = nullptr;
+    current_animation = &anim_stand;
 
     switch (index_)
     {
@@ -223,7 +225,6 @@ character::character(int index_, vector_2 start_) : index(index_)
     // Reset sprites
     v_sprite.sprite_ptr_raw[0].reset();
     v_sprite.sprite_ptr_raw[1].reset();
-    current_animation = &anim_stand;
 
     if (type() == CH_TYPE_PLAYER || (v_sprite_ptr::camera.x == 0 && v_sprite_ptr::camera.y == 0))
     {

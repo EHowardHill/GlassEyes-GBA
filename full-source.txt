@@ -4025,6 +4025,7 @@ character::character(int index_, vector_2 start_) : index(index_)
     case CHAR_GINGER:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_ginger_01;
+        idle_animation = nullptr;
         break;
     }
     case CHAR_CROKE:
@@ -7522,6 +7523,11 @@ enum character_list
     ITEM_BUTTON,
     ITEM_SPIKE,
     ITEM_X,
+    CHAR_NOODLE,
+    CHAR_GRANDMA,
+    CHAR_WORMDUDE,
+    CHAR_COURIER,
+    CHAR_PRIMARY,
     CHAR_SIZE,
     CHAR_TYPEWRITER
 };
