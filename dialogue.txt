@@ -598,6 +598,9 @@ avalon_guy_01
 	db_ch_deadguy	EM_DEFAULT		zzzzzzzzzzz										
 	db_ch_ginger	EM_SIDE_EYE		Time to ask	"around, I suppose."									
 														
+avalon_guy_02														
+	db_ch_deadguy	EM_DEFAULT		zzzzzzzzzzz	zzzzzzzzzzz	zzzzzzzzzzz								
+														
 avalon_grandma_01														
 	db_ch_ginger	EM_DEFAULT		"Hello, ma'am?"										
 	db_ch_grandma	EM_DEFAULT		"Yes, what is it,"	sweetheart?									
@@ -608,6 +611,10 @@ avalon_grandma_01
 	db_ch_grandma	EM_DEFAULT		"Please, cause some"	"mischief, I'd like"	entertainment.								
 	db_ch_grandma	EM_DEFAULT		We haven't had a	good hanging in	over a week.								
 	db_ch_ginger	EM_SIDE_EYE		We need to get	out of here.									
+														
+avalon_grandma_02														
+	db_ch_grandma	EM_DEFAULT		Hmm.. Hmm..	What a slow day..									
+	db_ch_ginger	EM_SIDE_EYE		Psst.. She kinda	freaks me out..	Let's go elsewhere..								
 														
 avalon_wormguy_01														
 	db_ch_wormguy	EM_DEFAULT		"HUMAN, would"	you be kind enough	to support								

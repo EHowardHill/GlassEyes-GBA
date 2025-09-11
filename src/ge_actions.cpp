@@ -260,6 +260,86 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 ch_man->db->init(ch_man);
                 break;
             }
+            case CHAT_NOODLE:
+            {
+                if (global_data_ptr->action_iterations[CHAT_NOODLE] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_guy_01);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_guy_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_GRANDMA:
+            {
+                if (global_data_ptr->action_iterations[CHAT_GRANDMA] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_grandma_01);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_grandma_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_COURIER:
+            {
+                if (global_data_ptr->action_iterations[CHAT_COURIER] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_courier_01);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_courier_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_PRIMARY:
+            {
+                if (global_data_ptr->action_iterations[CHAT_COURIER] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_courier_01);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_courier_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_WORMGUY:
+            {
+                if (global_data_ptr->action_iterations[CHAT_WORMGUY] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_wormguy_01);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_wormguy_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
             default:
             {
                 break;
@@ -814,26 +894,6 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_position = {27, 3};
                 global_data_ptr->ginger_position = {26, 3};
                 return 1;
-                break;
-            }
-            case CHAT_NOODLE:
-            {
-                if (global_data_ptr->action_iterations[CHAT_NOODLE] == 1)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&avalon_guy_01);
-                    ch_man->db->init(ch_man);
-                }
-                break;
-            }
-            case CHAT_GRANDMA:
-            {
-                if (global_data_ptr->action_iterations[CHAT_GRANDMA] == 1)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&avalon_grandma_01);
-                    ch_man->db->init(ch_man);
-                }
                 break;
             }
             default:
