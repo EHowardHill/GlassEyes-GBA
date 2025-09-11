@@ -24,6 +24,9 @@ const animation ginger_eat_lime = {{9}, 1, SP_DEFAULT, true};
 const animation croke_accuse = {{9}, 1, SP_DEFAULT, true};
 const animation croke_lay_down = {{10}, 1, SP_DEFAULT, true};
 
+// NPCs
+const animation noodle_go = {{0, 1, 2, 3, 3, 3, 3, 3, 3, 2, 1, 0}, 11, SP_DEFAULT, false};
+
 // Elements
 const animation elem_button_up = {{0}, 1, SP_DEFAULT, true};
 const animation elem_button_down = {{1}, 1, SP_DEFAULT, true};

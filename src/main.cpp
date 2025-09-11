@@ -318,7 +318,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = BLACK_TO_LAB; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*
@@ -400,8 +400,8 @@ int main()
             {
                 global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
                 global_data_ptr->entry_map = &map_forest_03;
-                global_data_ptr->entry_position = {12, 15};
-                global_data_ptr->ginger_position = {13, 15};
+                global_data_ptr->entry_position = {15, 15};
+                global_data_ptr->ginger_position = {14, 15};
                 global_data_ptr->bg_track = &music_items::bg_avalon;
                 break;
             }

@@ -10,6 +10,8 @@
 #include "bn_sprite_items_spr_visker_wife_01.h"
 #include "bn_sprite_items_spr_ginger_01.h"
 #include "bn_sprite_items_spr_croke_01.h"
+#include "bn_sprite_items_spr_deadguy_01.h"
+#include "bn_sprite_items_spr_grandma_01.h"
 #include "bn_sprite_items_spr_elements.h"
 
 #include "ge_structs.h"
@@ -108,7 +110,7 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
     for (auto *item : manager)
     {
         bound bounds = item->real_position();
-        bound acceptable = {screen.position, screen.width + 32, screen.height + 32};
+        bound acceptable = {screen.position, screen.width + 64, screen.height + 64};
 
         if (!dialogue_box_ended)
         {
@@ -201,6 +203,16 @@ character::character(int index_, vector_2 start_) : index(index_)
     case CHAR_CROKE:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_croke_01;
+        break;
+    }
+    case CHAR_NOODLE:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_deadguy_01;
+        break;
+    }
+    case CHAR_GRANDMA:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_grandma_01;
         break;
     }
     case ITEM_BUTTON:

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "maps/forest_03.tmx",
     "expandedProjectPaths": [
         "tilesets",
         "maps",
@@ -74,10 +74,10 @@
         },
         "maps/forest_03.tmx": {
             "scale": 1,
-            "selectedLayer": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 643,
-                "y": 417
+                "x": 737,
+                "y": 417.5
             }
         },
         "maps/garbage_01.tmx": {
@@ -191,14 +191,15 @@
     "map.tileWidth": 32,
     "map.width": 64,
     "openFiles": [
+        "maps/forest_03.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
+        "maps/forest_03.tmx",
         "maps/forest_01.tmx",
         "maps/lab_01.tmx",
         "maps/cave_03.tmx",
         "maps/cave_04.tmx",
-        "maps/forest_03.tmx",
         "maps/forest_02.tmx",
         "maps/cave_02.tmx",
         "maps/cave_cowbemmie.tmx",

@@ -593,7 +593,7 @@ convo_document
 avalon_guy_01														
 	db_ch_ginger	EM_SAD		I-Is he dead?!										
 	db_ch_deadguy	EM_DEFAULT		"Nope, I just like"	sleeping face-down	in the snow.								
-	db_ch_deadguy	EM_DEFAULT		"It's nice, you"	should try it	sometime.								
+	db_ch_deadguy	EM_DEFAULT		"It's nice, you"	should try it	sometime.				CHAR_NOODLE	&noodle_go			
 	db_ch_ginger	EM_DEFAULT		Do you know	how to get to	Canterbury?								
 	db_ch_deadguy	EM_DEFAULT		zzzzzzzzzzz										
 	db_ch_ginger	EM_SIDE_EYE		Time to ask	"around, I suppose."									

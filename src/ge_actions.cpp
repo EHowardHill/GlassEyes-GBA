@@ -816,6 +816,26 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return 1;
                 break;
             }
+            case CHAT_NOODLE:
+            {
+                if (global_data_ptr->action_iterations[CHAT_NOODLE] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_guy_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_GRANDMA:
+            {
+                if (global_data_ptr->action_iterations[CHAT_GRANDMA] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_grandma_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
             default:
             {
                 break;
