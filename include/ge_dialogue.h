@@ -23,6 +23,7 @@ typedef const dialogue_line conversation[128];
 #include "bn_sprite_items_db_ch_wormguy.h"
 #include "bn_sprite_items_db_ch_courier.h"
 #include "bn_sprite_items_db_ch_primary.h"
+#include "bn_sprite_items_db_ch_doll.h"
 
 // Forward declarations for conversations
 extern const conversation avalon_courier_01;
@@ -66,6 +67,7 @@ extern const conversation croke_03;
 extern const conversation croke_04;
 extern const conversation croke_05;
 extern const conversation croke_05_alt_01;
+extern const conversation doll_guy_01;
 extern const conversation final_msg;
 extern const conversation forest_dlg_01;
 extern const conversation forest_dlg_01_alt_01;

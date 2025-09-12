@@ -896,6 +896,30 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return 1;
                 break;
             }
+            case TO_AVALON_SHOP_01:
+            {
+                global_data_ptr->entry_map = &map_shop_01;
+                global_data_ptr->entry_position = {5, 8};
+                global_data_ptr->ginger_position = {4, 8};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::shop;
+                global_data_ptr->bg_track->play(0.5);
+                return 1;
+                break;
+            }
+            case OUT_AVALON_SHOP_01:
+            {
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {47, 8};
+                global_data_ptr->ginger_position = {46, 8};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::bg_avalon;
+                global_data_ptr->bg_track->play(0.5);
+                return 1;
+                break;
+            }
             default:
             {
                 break;

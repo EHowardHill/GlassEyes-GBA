@@ -118,7 +118,7 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             acceptable.position.y = 0 - (screen_height / 2) + 12;
         }
 
-        if (item->sprite_ptr_raw[0].has_value())
+        if (item->sprite_ptr_raw[0].has_value() && item->sprite_ptr_raw[1].has_value())
         {
             // Sprite exists - check if it should be removed or updated
             if (!within_bounds(bounds, acceptable))
@@ -164,11 +164,9 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
     }
 }
 
-character::character(int index_, vector_2 start_) : index(index_)
+character::character(int index_, vector_2 start_, character_manager *manager) : index(index_), ch_man(manager)
 {
-    v_sprite.bounds.position = {
-        (start_.x * 32) + 16,
-        (start_.y * 32) + 16};
+    v_sprite.bounds.position = {(start_.x * 32) + 16, (start_.y * 32) + 16};
     v_sprite.bounds.width = 28;
     v_sprite.bounds.height = 28;
     idle_animation = nullptr;
@@ -231,6 +229,7 @@ character::character(int index_, vector_2 start_) : index(index_)
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_elements;
         idle_animation = &elem_spike_up;
+        is_pressed = true;
         break;
     }
 
@@ -462,55 +461,59 @@ void character::update(map_manager *current_map, bool db_inactive)
         }
     }
 
-    // Pixel-perfect collision detection
-    // Check future position for each axis separately
-    bound future_bounds_x = v_sprite.bounds;
-    future_bounds_x.position.x = future_bounds_x.position.x + delta.x;
-
-    bound future_bounds_y = v_sprite.bounds;
-    future_bounds_y.position.y = future_bounds_y.position.y + delta.y;
-
-    // Check X movement
-    if (current_map->check_box_collision(future_bounds_x))
+    // OPTIMIZED: Only perform collision detection if character is actually moving
+    if (delta.x != 0 || delta.y != 0)
     {
-        delta.x = 0;
-    }
+        // Pixel-perfect collision detection
+        // Check future position for each axis separately
+        bound future_bounds_x = v_sprite.bounds;
+        future_bounds_x.position.x = future_bounds_x.position.x + delta.x;
 
-    // Check Y movement
-    if (current_map->check_box_collision(future_bounds_y))
-    {
-        delta.y = 0;
-    }
+        bound future_bounds_y = v_sprite.bounds;
+        future_bounds_y.position.y = future_bounds_y.position.y + delta.y;
 
-    // For diagonal movement, also check the combined movement
-    if (delta.x != 0 && delta.y != 0)
-    {
-        bound future_bounds_both = v_sprite.bounds;
-        future_bounds_both.position.x = future_bounds_both.position.x + delta.x;
-        future_bounds_both.position.y = future_bounds_both.position.y + delta.y;
-
-        if (current_map->check_box_collision(future_bounds_both))
+        // Check X movement
+        if (current_map->check_box_collision(future_bounds_x, ch_man))
         {
-            // Try to slide along walls
-            // If diagonal fails but individual axes might work, keep the working axis
-            if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x))
+            delta.x = 0;
+        }
+
+        // Check Y movement
+        if (current_map->check_box_collision(future_bounds_y, ch_man))
+        {
+            delta.y = 0;
+        }
+
+        // For diagonal movement, also check the combined movement
+        if (delta.x != 0 && delta.y != 0)
+        {
+            bound future_bounds_both = v_sprite.bounds;
+            future_bounds_both.position.x = future_bounds_both.position.x + delta.x;
+            future_bounds_both.position.y = future_bounds_both.position.y + delta.y;
+
+            if (current_map->check_box_collision(future_bounds_both, ch_man))
             {
-                delta.y = 0; // Can move X but not Y
-            }
-            else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y))
-            {
-                delta.x = 0; // Can move Y but not X
-            }
-            else
-            {
-                // Can't move in either direction
-                delta.x = 0;
-                delta.y = 0;
+                // Try to slide along walls
+                // If diagonal fails but individual axes might work, keep the working axis
+                if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x, ch_man))
+                {
+                    delta.y = 0; // Can move X but not Y
+                }
+                else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y, ch_man))
+                {
+                    delta.x = 0; // Can move Y but not X
+                }
+                else
+                {
+                    // Can't move in either direction
+                    delta.x = 0;
+                    delta.y = 0;
+                }
             }
         }
     }
 
-    // Apply movement with fixed direction
+    // Apply movement with fixed direction (always do this, even if delta is 0)
     v_sprite.bounds.position.x = v_sprite.bounds.position.x + delta.x;
     v_sprite.bounds.position.y = v_sprite.bounds.position.y + delta.y;
 
@@ -614,7 +617,7 @@ void character::update(map_manager *current_map, bool db_inactive)
     ticker++;
 }
 
-void character::add(list<character, 32> *characters, int character_id, vector_2 location)
+void character::add(list<character, 32> *characters, int character_id, vector_2 location, character_manager *manager)
 {
-    characters->emplace_back(character_id, location);
+    characters->emplace_back(character_id, location, manager);
 };

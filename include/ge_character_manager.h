@@ -10,6 +10,12 @@
 #include "ge_text.h"
 #include "main.h"
 
+// Forward declarations to break circular dependencies
+struct character;
+struct map_manager;
+struct dialogue_box;
+struct items_box;
+
 struct character_manager
 {
     list<unique_ptr<character>, 32> characters;

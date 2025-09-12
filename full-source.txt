@@ -897,6 +897,30 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return 1;
                 break;
             }
+            case TO_AVALON_SHOP_01:
+            {
+                global_data_ptr->entry_map = &map_shop_01;
+                global_data_ptr->entry_position = {5, 8};
+                global_data_ptr->ginger_position = {4, 8};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::shop;
+                global_data_ptr->bg_track->play(0.5);
+                return 1;
+                break;
+            }
+            case OUT_AVALON_SHOP_01:
+            {
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {47, 8};
+                global_data_ptr->ginger_position = {46, 8};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::bg_avalon;
+                global_data_ptr->bg_track->play(0.5);
+                return 1;
+                break;
+            }
             default:
             {
                 break;
@@ -2732,7 +2756,7 @@ character *character_manager::add_character(int index, vector_2 position, int id
         return nullptr;
 
     // Create new character
-    characters.push_back(make_unique<character>(index, position));
+    characters.push_back(make_unique<character>(index, position, this));
     character *new_char = characters.back().get();
     new_char->id = id;
 
@@ -2845,7 +2869,7 @@ void character_manager::alert()
 }
 
 // Modified character_manager::update method to handle branching dialogue
-void character_manager::update(map_manager *current_map = nullptr, bool allow_movement)
+void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
     bool ib_inactive = true;
@@ -2999,6 +3023,7 @@ ge_dialogue.cpp:
 #include "bn_sprite_items_db_ch_wormguy.h"
 #include "bn_sprite_items_db_ch_courier.h"
 #include "bn_sprite_items_db_ch_primary.h"
+#include "bn_sprite_items_db_ch_doll.h"
 
 const conversation avalon_courier_01 = {
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Do you know the", "way to Canterbury?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
@@ -3078,7 +3103,7 @@ const conversation avalon_shop_01 = {
     {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "I'm not, this", "town sucks so bad", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "I'd move but I spent", "like $500,000 on", "this shop", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "I need to pay it all", "off first", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "Well that sucks", "You didn't rent?", "I'll buy the shop.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_shop_01_alt_02, &avalon_shop_01_alt_03},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Well that sucks", "You didn't rent?", "I'll buy the shop.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &avalon_shop_01_alt_02, &avalon_shop_01_alt_03},
     {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "You'se can buy", "my things though", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
@@ -3289,6 +3314,18 @@ const conversation croke_05 = {
 
 const conversation croke_05_alt_01 = {
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Rest in peace..", "Whoever you were..", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation doll_guy_01 = {
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Hey, check this", "doll, it's kinda", "cute.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "Look, babe, I don't", "know where you're", "from,", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "But in this town,", "that's considered", "\"harrassment\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "I, uh.. I'm sorry,", "I didn't know you", "were.. uh.. alive.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "That's extremely", "disrespectful,", "toots.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "I'm just a shopper", "like any other.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "We're, uh..", "We're gonna go now.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_primary, EM_HAPPY, ACT_DEFAULT, "Hehehehe", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "By the way, I do", "ventriloquism", "lessons.", false, SIZE_SMALL, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation final_msg = {
@@ -3817,7 +3854,7 @@ ge_maps.cpp:
 #include "ge_globals.h"
 #include "ge_maps.h"
 #include "ge_sprites.h"
-#include "ge_character_manager.h"
+#include "ge_animations.h"
 
 map_manager::map_manager(const map *current_map_)
     : current_map(current_map_)
@@ -3842,10 +3879,9 @@ void map_manager::update()
     collider_ptr.value().set_position(-cam->x + offset.x, -cam->y + offset.y);
 }
 
-int map_manager::collision(vector_2 location)
+int map_manager::collision(vector_2 location, character_manager *ch_man)
 {
-    // Get the tile coordinates - no arbitrary offsets
-    // We need to check multiple points for the character's bounding box
+    // Get the tile coordinates
     int tile_x = location.x.integer() / 32;
     int tile_y = location.y.integer() / 32;
 
@@ -3853,11 +3889,46 @@ int map_manager::collision(vector_2 location)
     if (tile_x < 0 || tile_x >= current_map->size.x.integer() ||
         tile_y < 0 || tile_y >= current_map->size.y.integer())
     {
-        return 1; // Out of bounds is considered a collision
+        return 1; // Out of bounds is a collision
     }
 
     int tile_index = tile_x + (tile_y * current_map->size.x.integer());
-    return current_map->collisions[tile_index];
+
+    // 1. Get the collision value from the static map as a default.
+    int collision_value = current_map->collisions[tile_index];
+
+    // 2. Check for a spike to override the default.
+    if (current_map->characters[tile_index] - 1 == ITEM_SPIKE)
+    {
+        // Find the character at this tile position
+        vector_2 tile_pos = {tile_x * 32 + 16, tile_y * 32 + 16}; // Center of tile
+
+        if (ch_man != nullptr)
+        {
+            // Look for a spike character at this position
+            for (auto &ch : ch_man->characters)
+            {
+                if (ch && ch->index == ITEM_SPIKE)
+                {
+                    // Check if this spike is at the current tile
+                    int ch_tile_x = ch->v_sprite.bounds.position.x.integer() / 32;
+                    int ch_tile_y = ch->v_sprite.bounds.position.y.integer() / 32;
+
+                    if (ch_tile_x == tile_x && ch_tile_y == tile_y)
+                    {
+                        if (ch->is_pressed)
+                        {
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Return the final collision value.
+    return collision_value;
 }
 
 int map_manager::action(vector_2 location)
@@ -3877,7 +3948,7 @@ int map_manager::action(vector_2 location)
     return current_map->actions[tile_index];
 }
 
-bool map_manager::check_box_collision(bound box)
+bool map_manager::check_box_collision(bound box, character_manager *ch_man)
 {
     // Check all four corners of the bounding box
     int left = (box.position.x.integer() - box.width.integer() / 2);
@@ -3886,31 +3957,31 @@ bool map_manager::check_box_collision(bound box)
     int bottom = (box.position.y.integer() + box.height.integer() / 2 - 1);
 
     // Check corners
-    if (collision({left, top}) > 0)
+    if (collision({left, top}, ch_man) > 0)
         return true;
-    if (collision({right, top}) > 0)
+    if (collision({right, top}, ch_man) > 0)
         return true;
-    if (collision({left, bottom}) > 0)
+    if (collision({left, bottom}, ch_man) > 0)
         return true;
-    if (collision({right, bottom}) > 0)
+    if (collision({right, bottom}, ch_man) > 0)
         return true;
 
     // For wider sprites, also check middle points
     if (box.width.integer() > 32)
     {
         int mid_x = box.position.x.integer();
-        if (collision({mid_x, top}) > 0)
+        if (collision({mid_x, top}, ch_man) > 0)
             return true;
-        if (collision({mid_x, bottom}) > 0)
+        if (collision({mid_x, bottom}, ch_man) > 0)
             return true;
     }
 
     if (box.height.integer() > 32)
     {
         int mid_y = box.position.y.integer();
-        if (collision({left, mid_y}) > 0)
+        if (collision({left, mid_y}, ch_man) > 0)
             return true;
-        if (collision({right, mid_y}) > 0)
+        if (collision({right, mid_y}, ch_man) > 0)
             return true;
     }
 
@@ -4038,7 +4109,7 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
             acceptable.position.y = 0 - (screen_height / 2) + 12;
         }
 
-        if (item->sprite_ptr_raw[0].has_value())
+        if (item->sprite_ptr_raw[0].has_value() && item->sprite_ptr_raw[1].has_value())
         {
             // Sprite exists - check if it should be removed or updated
             if (!within_bounds(bounds, acceptable))
@@ -4084,11 +4155,9 @@ void v_sprite_ptr::update(bool dialogue_box_ended)
     }
 }
 
-character::character(int index_, vector_2 start_) : index(index_)
+character::character(int index_, vector_2 start_, character_manager *manager) : index(index_), ch_man(manager)
 {
-    v_sprite.bounds.position = {
-        (start_.x * 32) + 16,
-        (start_.y * 32) + 16};
+    v_sprite.bounds.position = {(start_.x * 32) + 16, (start_.y * 32) + 16};
     v_sprite.bounds.width = 28;
     v_sprite.bounds.height = 28;
     idle_animation = nullptr;
@@ -4151,6 +4220,7 @@ character::character(int index_, vector_2 start_) : index(index_)
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_elements;
         idle_animation = &elem_spike_up;
+        is_pressed = true;
         break;
     }
 
@@ -4171,34 +4241,7 @@ character::character(int index_, vector_2 start_) : index(index_)
     }
 }
 
-// New method to check collision with spike characters
-bool character::check_spike_collision(const bound &test_bounds, character *exclude_char,
-                                      list<character, 32> *all_characters)
-{
-    if (!all_characters)
-        return false;
-
-    for (auto &other_char : *all_characters)
-    {
-        // Skip self
-        if (&other_char == exclude_char)
-            continue;
-
-        // Check if this character is a spike
-        if (other_char.idle_animation == &elem_spike_up)
-        {
-            // Check collision with the spike character's bounds
-            if (within_bounds(test_bounds, other_char.v_sprite.bounds))
-            {
-                return true; // Collision detected
-            }
-        }
-    }
-
-    return false; // No collision
-}
-
-void character::update(map_manager *current_map, bool db_inactive, list<character, 32> *all_characters)
+void character::update(map_manager *current_map, bool db_inactive)
 {
     vector_2 delta = {0, 0};
 
@@ -4282,7 +4325,7 @@ void character::update(map_manager *current_map, bool db_inactive, list<characte
         }
     }
 
-    // Move_to logic with improved tolerance
+    // Replace the move_to logic section with this improved version
     if (move_to.x != 0 && move_to.y != 0)
     {
         vector_2 move_to_exp = {
@@ -4409,60 +4452,59 @@ void character::update(map_manager *current_map, bool db_inactive, list<characte
         }
     }
 
-    // Pixel-perfect collision detection with walls AND spikes
-    // Check future position for each axis separately
-    bound future_bounds_x = v_sprite.bounds;
-    future_bounds_x.position.x = future_bounds_x.position.x + delta.x;
-
-    bound future_bounds_y = v_sprite.bounds;
-    future_bounds_y.position.y = future_bounds_y.position.y + delta.y;
-
-    // Check X movement against walls AND spikes
-    if (current_map->check_box_collision(future_bounds_x) ||
-        check_spike_collision(future_bounds_x, this, all_characters))
+    // OPTIMIZED: Only perform collision detection if character is actually moving
+    if (delta.x != 0 || delta.y != 0)
     {
-        delta.x = 0;
-    }
+        // Pixel-perfect collision detection
+        // Check future position for each axis separately
+        bound future_bounds_x = v_sprite.bounds;
+        future_bounds_x.position.x = future_bounds_x.position.x + delta.x;
 
-    // Check Y movement against walls AND spikes
-    if (current_map->check_box_collision(future_bounds_y) ||
-        check_spike_collision(future_bounds_y, this, all_characters))
-    {
-        delta.y = 0;
-    }
+        bound future_bounds_y = v_sprite.bounds;
+        future_bounds_y.position.y = future_bounds_y.position.y + delta.y;
 
-    // For diagonal movement, also check the combined movement
-    if (delta.x != 0 && delta.y != 0)
-    {
-        bound future_bounds_both = v_sprite.bounds;
-        future_bounds_both.position.x = future_bounds_both.position.x + delta.x;
-        future_bounds_both.position.y = future_bounds_both.position.y + delta.y;
-
-        if (current_map->check_box_collision(future_bounds_both) ||
-            check_spike_collision(future_bounds_both, this, all_characters))
+        // Check X movement
+        if (current_map->check_box_collision(future_bounds_x, ch_man))
         {
-            // Try to slide along walls/spikes
-            // If diagonal fails but individual axes might work, keep the working axis
-            if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x) &&
-                !check_spike_collision(future_bounds_x, this, all_characters))
+            delta.x = 0;
+        }
+
+        // Check Y movement
+        if (current_map->check_box_collision(future_bounds_y, ch_man))
+        {
+            delta.y = 0;
+        }
+
+        // For diagonal movement, also check the combined movement
+        if (delta.x != 0 && delta.y != 0)
+        {
+            bound future_bounds_both = v_sprite.bounds;
+            future_bounds_both.position.x = future_bounds_both.position.x + delta.x;
+            future_bounds_both.position.y = future_bounds_both.position.y + delta.y;
+
+            if (current_map->check_box_collision(future_bounds_both, ch_man))
             {
-                delta.y = 0; // Can move X but not Y
-            }
-            else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y) &&
-                     !check_spike_collision(future_bounds_y, this, all_characters))
-            {
-                delta.x = 0; // Can move Y but not X
-            }
-            else
-            {
-                // Can't move in either direction
-                delta.x = 0;
-                delta.y = 0;
+                // Try to slide along walls
+                // If diagonal fails but individual axes might work, keep the working axis
+                if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x, ch_man))
+                {
+                    delta.y = 0; // Can move X but not Y
+                }
+                else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y, ch_man))
+                {
+                    delta.x = 0; // Can move Y but not X
+                }
+                else
+                {
+                    // Can't move in either direction
+                    delta.x = 0;
+                    delta.y = 0;
+                }
             }
         }
     }
 
-    // Apply movement with fixed direction
+    // Apply movement with fixed direction (always do this, even if delta is 0)
     v_sprite.bounds.position.x = v_sprite.bounds.position.x + delta.x;
     v_sprite.bounds.position.y = v_sprite.bounds.position.y + delta.y;
 
@@ -4566,9 +4608,9 @@ void character::update(map_manager *current_map, bool db_inactive, list<characte
     ticker++;
 }
 
-void character::add(list<character, 32> *characters, int character_id, vector_2 location)
+void character::add(list<character, 32> *characters, int character_id, vector_2 location, character_manager *manager)
 {
-    characters->emplace_back(character_id, location);
+    characters->emplace_back(character_id, location, manager);
 };
 
 ge_structs.cpp: 
@@ -5706,14 +5748,7 @@ int navigate_map()
                 int id = current_map.current_map->metadata[tile];
                 int index = current_map.current_map->characters[tile] - 1;
 
-                if (index == ITEM_BUTTON)
-                {
-                }
-
-                if (index > -1 && index < CHAR_SIZE)
-                {
-                    char_mgr.add_character(index, {x, y}, id);
-                }
+                char_mgr.add_character(index, {x, y}, id);
             }
         }
     }
@@ -5738,7 +5773,7 @@ int navigate_map()
     bool handle_frame = true;
     while (loop_value == CONTINUE && char_mgr.status == CONTINUE)
     {
-        char_mgr.update(&current_map, true);
+        char_mgr.update(&current_map);
         loop_value = action_listener(&current_map, &char_mgr);
         current_map.update();
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
@@ -5762,6 +5797,7 @@ int navigate_map()
                     {
                         if (ch->id == 2)
                         {
+                            ch->is_pressed = false;
                             ch->idle_animation = &elem_spike_down;
                         }
                     }
@@ -5791,7 +5827,9 @@ int navigate_map()
 
             if (correct_up && incorrect_down)
             {
-                char_mgr.find_by_id(3)->idle_animation = &elem_spike_down;
+                auto spike = char_mgr.find_by_id(3);
+                spike->is_pressed = false;
+                spike->idle_animation = &elem_spike_down;
             }
         }
 
@@ -5820,6 +5858,7 @@ enum TYPEWRITER_SCENES
     TYPEWRITER_TITLE,
     TYPEWRITER_GARBAGE,
     TYPEWRITER_MSG,
+    TYPEWRITER_GAME_OVER,
     TYPEWRITER_BUFFER
 };
 
@@ -5975,7 +6014,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = FOREST_01; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = TEST_MAP; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*
@@ -6001,10 +6040,9 @@ int main()
             {
             case TEST_MAP:
             {
-                global_data_ptr->entry_map = &map_shop_01;
-                global_data_ptr->entry_position = {5, 8};
-                global_data_ptr->ginger_position = {4, 8};
-                global_data_ptr->bg_track = &music_items::shop;
+                global_data_ptr->entry_map = &map_cave_02;
+                global_data_ptr->entry_position = {3, 30};
+                global_data_ptr->ginger_position = {2, 30};
                 break;
             }
             case CUTSCENE_01:
@@ -6071,6 +6109,18 @@ int main()
                 }
                 break;
             }
+            case GAME_OVER:
+            {
+                music::stop();
+                music_items::intro.play(1);
+                typewriter(TYPEWRITER_GAME_OVER);
+                value = NEW_CHAPTER;
+                global_data_ptr->hp[0] = 20;
+                global_data_ptr->hp[1] = 20;
+                global_data_ptr->hp[2] = 20;
+                global_data_ptr->hp[3] = 20;
+                break;
+            }
             default:
             {
                 global_data_ptr->entry_map = &map_garbage_01;
@@ -6129,19 +6179,19 @@ constexpr int is_interactive_array[999] = {
     CAVE_04_SIGN,
     AVALON_SIGN_01,
     AVALON_SIGN_02,
-    TO_AVALON_TAVERN,
     AVALON_SIGN_VISTA,
     AVALON_SIGN_03,
     AVALON_SIGN_04,
-    TO_AVALON_BUTCHER,
     AVALON_SIGN_05,
-    TO_AVALON_SHOP_01,
-    TO_AVALON_SHOP_02,
     CHAT_NOODLE,
     CHAT_GRANDMA,
     CHAT_COURIER,
     CHAT_PRIMARY,
     CHAT_WORMGUY,
+    BUY_TIRE,
+    BUY_ENOKI,
+    BUY_BANANA,
+    BUY_LIME,
     -1};
 
 ge_animations.h: 
@@ -6577,6 +6627,12 @@ ge_character_manager.h:
 #include "ge_text.h"
 #include "main.h"
 
+// Forward declarations to break circular dependencies
+struct character;
+struct map_manager;
+struct dialogue_box;
+struct items_box;
+
 struct character_manager
 {
     list<unique_ptr<character>, 32> characters;
@@ -6594,7 +6650,7 @@ struct character_manager
     character *find_at_position(vector_2 pos, int tolerance = 32);
     character *find_by_index(int index);
     character *find_by_id(int id);
-    void update(map_manager *current_map, bool allow_movement);
+    void update(map_manager *current_map);
     void alert();
     int size() const { return characters.size(); }
 
@@ -6639,6 +6695,7 @@ typedef const dialogue_line conversation[128];
 #include "bn_sprite_items_db_ch_wormguy.h"
 #include "bn_sprite_items_db_ch_courier.h"
 #include "bn_sprite_items_db_ch_primary.h"
+#include "bn_sprite_items_db_ch_doll.h"
 
 // Forward declarations for conversations
 extern const conversation avalon_courier_01;
@@ -6682,6 +6739,7 @@ extern const conversation croke_03;
 extern const conversation croke_04;
 extern const conversation croke_05;
 extern const conversation croke_05_alt_01;
+extern const conversation doll_guy_01;
 extern const conversation final_msg;
 extern const conversation forest_dlg_01;
 extern const conversation forest_dlg_01_alt_01;
@@ -6875,6 +6933,12 @@ enum action_list
 	CHAT_COURIER,
 	CHAT_PRIMARY,
 	CHAT_WORMGUY,
+	OUT_AVALON_SHOP_01,
+	CHAT_DOLL,
+	BUY_TIRE,
+	BUY_ENOKI,
+	BUY_BANANA,
+	BUY_LIME,
 	ACTIONS_SIZE
 };
 
@@ -6923,9 +6987,7 @@ ge_maps.h:
 #include "bn_optional.h"
 
 #include "ge_structs.h"
-
-// Floors
-#include "bn_regular_bg_items_floor_wood01.h"
+#include "ge_character_manager.h"
 
 // Using bn namespace types
 using bn::array;
@@ -6968,8 +7030,8 @@ struct map_manager
   map_manager(const map *current_map_);
 
   void update();
-  int collision(vector_2 location);
-  bool check_box_collision(bound box);
+  int collision(vector_2 location, character_manager *ch_man);
+  bool check_box_collision(bound box, character_manager *ch_man);
   int action(vector_2 location); // Added this declaration
 };
 
@@ -7065,7 +7127,7 @@ inline constexpr map map_cave_02 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,3,3,3,3,3,10,7,0,0,9,0,0,
 	0,0,31,31,31,31,31,31,31,31,31,31,31,31,9,6,9,6,9,6,182,180,9,6,178,9,6,0,0,9,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
-	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
+	0,6,0,0,146,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
 	0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,
 	0,6,0,0,10,7,180,178,81,81,81,81,35,38,9,6,9,6,9,6,81,36,9,6,184,182,180,178,81,9,0,0,
@@ -7295,7 +7357,7 @@ inline constexpr map map_forest_03 = {
 	0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,213,215,0,0,0,0,0,0,0,213,215,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,27,27,27,27,27,
 	0,0,0,0,23,18,18,18,0,0,0,0,0,0,0,0,0,0,0,0,214,216,0,0,213,215,0,85,0,214,216,0,1,1,0,0,0,165,157,165,161,165,169,165,161,165,169,157,169,165,157,0,0,0,0,0,0,0,22,17,0,0,0,0,
 	0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,190,190,165,161,214,216,165,161,165,171,172,0,0,0,0,0,0,167,190,179,183,190,171,171,171,190,179,183,190,171,171,0,0,0,0,0,0,0,23,22,0,0,0,0,
-	0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,190,190,190,190,171,172,190,190,171,167,168,157,0,0,0,0,0,168,190,180,184,190,171,171,171,190,180,184,190,171,171,0,0,0,0,0,0,0,23,23,22,0,0,0,
+	0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,190,190,190,190,171,172,190,190,171,167,168,157,0,0,0,0,0,168,190,0,0,190,171,171,171,190,0,0,190,171,171,0,0,0,0,0,0,0,23,23,22,0,0,0,
 	0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,187,191,0,0,0,0,0,0,0,0,199,172,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,23,23,18,0,0,
 	0,0,0,0,0,0,0,0,23,19,22,0,0,0,0,0,0,0,0,0,188,192,0,0,0,0,0,0,0,0,200,168,153,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,23,23,19,0,0,
 	0,0,0,0,0,0,0,0,23,0,23,22,33,35,0,0,0,0,0,0,190,213,0,0,0,0,0,0,0,0,168,213,215,0,0,0,0,217,221,0,0,0,0,0,0,0,165,169,173,153,1,1,0,0,0,0,0,0,23,23,0,0,0,0,
@@ -7581,19 +7643,19 @@ inline constexpr map map_shop_01 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	10,6,6,6,6,6,38,6,38,9,
+	10,6,55,56,57,58,38,6,38,9,
 	7,54,50,52,53,0,39,0,39,8,
-	7,0,0,0,0,0,32,34,36,8,
+	7,1,1,1,1,0,32,34,36,8,
 	7,0,0,0,0,0,33,35,37,8,
 	7,0,0,0,0,0,0,0,45,8,
 	7,0,0,0,0,0,0,0,0,8,
 	7,0,0,48,0,0,0,0,0,8,
-	7,0,0,0,0,0,0,45,0,8,
+	7,0,0,0,0,0,0,0,0,8,
 	7,0,0,0,0,0,0,0,0,8,
 	11,5,5,5,0,0,5,5,5,12
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,104,105,106,107,0,0,0,0,0,0,0,0,0,0,0,108,108,108,0,0,0,0,0,0,0,0,0,0,0,0,103,0,0,0,0,0,0,0,0,0,103,103,0,0,0,0,0,0,0,0,103,0,0,0,0,0,0,0,0,0,0,0,0,102,102,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -7643,10 +7705,15 @@ ge_sprites.h:
 #include "bn_keypad.h"
 #include "bn_list.h"
 
+// Do NOT include ge_character_manager.h or ge_maps.h here
 #include "ge_structs.h"
-#include "ge_maps.h"
 
 using namespace bn;
+
+// --- FIX: Forward declare these structs ---
+// This tells the compiler these types exist without needing the full file.
+struct character_manager;
+struct map_manager;
 
 bool within_bounds(bound me, bound you);
 
@@ -7692,6 +7759,7 @@ struct v_sprite_ptr
     }
 };
 
+// ... (enum definitions are fine) ...
 enum character_list
 {
     CHAR_DEFAULT,
@@ -7737,9 +7805,10 @@ struct character
     v_sprite_ptr v_sprite;
     const animation *current_animation;
     const animation *idle_animation;
+    character_manager *ch_man; // Now the compiler knows this is a pointer to a type
 
     int id = 0;
-    int index = CHAR_VISTA;
+    int index;
     int ticker = 0;
     int frame = 0;
     int face = DIR_DOWN;
@@ -7756,14 +7825,9 @@ struct character
     int last_significant_y = 0;
     int face_change_cooldown = 0;
 
-    character(int index_, vector_2 start_);
+    character(int index_, vector_2 start_, character_manager *manager);
 
-    // Updated update method signature to include character list
-    void update(map_manager *current_map, bool character_box_ended, list<character, 32> *all_characters);
-
-    // New static method for checking spike collisions
-    static bool check_spike_collision(const bound &test_bounds, character *exclude_char,
-                                      list<character, 32> *all_characters);
+    void update(map_manager *current_map, bool character_box_ended); // This is also fine now
 
     static void add(list<character, 32> *characters, int character_id, vector_2 location);
 
@@ -7779,6 +7843,8 @@ struct character
             return CH_TYPE_NPC;
         }
     }
+
+    static void add(list<character, 32> *characters, int character_id, vector_2 location, character_manager *manager);
 };
 
 #endif // GE_SPRITES_H
@@ -7847,6 +7913,7 @@ enum progress
     FOREST_01,
     FINAL_MSG,
     AVALON,
+    GAME_OVER,
     TEST_MAP
 };
 

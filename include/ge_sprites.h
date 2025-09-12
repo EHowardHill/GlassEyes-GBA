@@ -11,10 +11,15 @@
 #include "bn_keypad.h"
 #include "bn_list.h"
 
+// Do NOT include ge_character_manager.h or ge_maps.h here
 #include "ge_structs.h"
-#include "ge_maps.h"
 
 using namespace bn;
+
+// --- FIX: Forward declare these structs ---
+// This tells the compiler these types exist without needing the full file.
+struct character_manager;
+struct map_manager;
 
 bool within_bounds(bound me, bound you);
 
@@ -60,6 +65,7 @@ struct v_sprite_ptr
     }
 };
 
+// ... (enum definitions are fine) ...
 enum character_list
 {
     CHAR_DEFAULT,
@@ -105,9 +111,10 @@ struct character
     v_sprite_ptr v_sprite;
     const animation *current_animation;
     const animation *idle_animation;
+    character_manager *ch_man; // Now the compiler knows this is a pointer to a type
 
     int id = 0;
-    int index = CHAR_VISTA;
+    int index;
     int ticker = 0;
     int frame = 0;
     int face = DIR_DOWN;
@@ -124,9 +131,9 @@ struct character
     int last_significant_y = 0;
     int face_change_cooldown = 0;
 
-    character(int index_, vector_2 start_);
+    character(int index_, vector_2 start_, character_manager *manager);
 
-    void update(map_manager *current_map, bool character_box_ended);
+    void update(map_manager *current_map, bool character_box_ended); // This is also fine now
 
     static void add(list<character, 32> *characters, int character_id, vector_2 location);
 
@@ -142,6 +149,8 @@ struct character
             return CH_TYPE_NPC;
         }
     }
+
+    static void add(list<character, 32> *characters, int character_id, vector_2 location, character_manager *manager);
 };
 
 #endif // GE_SPRITES_H

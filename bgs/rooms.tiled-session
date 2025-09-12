@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "maps/shop_01.tmx",
+    "activeFile": "maps/cave_02.tmx",
     "expandedProjectPaths": [
         "maps",
         "tilesets",
@@ -25,11 +25,11 @@
             }
         },
         "maps/cave_02.tmx": {
-            "scale": 1,
-            "selectedLayer": 0,
+            "scale": 4,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 501,
-                "y": 512.5
+                "x": 167.5,
+                "y": 869.875
             }
         },
         "maps/cave_03.tmx": {
@@ -73,11 +73,11 @@
             }
         },
         "maps/forest_03.tmx": {
-            "scale": 1,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1983,
-                "y": 375.5
+                "x": 1533.3333333333333,
+                "y": 316.3333333333333
             }
         },
         "maps/garbage_01.tmx": {
@@ -137,11 +137,11 @@
             }
         },
         "maps/shop_01.tmx": {
-            "scale": 1.5,
+            "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 146,
-                "y": 142.33333333333334
+                "x": 238.5,
+                "y": 165.75
             }
         },
         "maps/viskers_house.tmx": {
@@ -205,20 +205,21 @@
     "openFiles": [
         "maps/forest_03.tmx",
         "maps/shop_01.tmx",
-        "tilesets/room02.tsx"
+        "tilesets/room02.tsx",
+        "maps/cave_02.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
         "maps/forest_03.tmx",
-        "tilesets/room02.tsx",
         "maps/shop_01.tmx",
+        "tilesets/room02.tsx",
+        "maps/cave_02.tmx",
         "maps/cave_04.tmx",
         "tilesets/room01.tsx",
         "maps/forest_01.tmx",
         "maps/lab_01.tmx",
         "maps/cave_03.tmx",
         "maps/forest_02.tmx",
-        "maps/cave_02.tmx",
         "maps/cave_cowbemmie.tmx",
         "tilesets/cowbemmie01.tsx"
     ],

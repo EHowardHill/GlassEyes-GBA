@@ -466,8 +466,8 @@ temmie_sign
 				COWBEMMIE	VILLAGE									
 														
 temmie_01														
-				HOIDY AND	WELCOM TO	COWBEMMIE LAND								
-				COM EXPERENCE	OUR VIBRANT	CULTURE								
+	db_ch_temmie	EM_DEFAULT		HOIDY AND	WELCOM TO	COWBEMMIE LAND								
+	db_ch_temmie	EM_DEFAULT		COM EXPERENCE	OUR VIBRANT	CULTURE								
 														
 														
 temmie_02														
@@ -683,7 +683,7 @@ avalon_shop_01
 	db_ch_primary	EM_DEFAULT		"I'm not, this"	town sucks so bad									
 	db_ch_primary	EM_DEFAULT		I'd move but I spent	"like $500,000 on"	this shop								
 	db_ch_primary	EM_DEFAULT		I need to pay it all	off first									
-	db_ch_primary	EM_DEFAULT		Well that sucks	You didn't rent?	I'll buy the shop.							&avalon_shop_01_alt_02	&avalon_shop_01_alt_03
+				Well that sucks	You didn't rent?	I'll buy the shop.							&avalon_shop_01_alt_02	&avalon_shop_01_alt_03
 	db_ch_primary	EM_DEFAULT		You'se can buy	my things though									
 														
 avalon_shop_01_alt_02														
@@ -691,3 +691,14 @@ avalon_shop_01_alt_02
 														
 avalon_shop_01_alt_03														
 	db_ch_primary	EM_DEFAULT		Come back with	"$500,000 and let's"	"chat some more, ok?"								
+														
+doll_guy_01														
+	db_ch_ginger	EM_HAPPY		"Hey, check this"	"doll, it's kinda"	cute.								
+	db_ch_doll	EM_DEFAULT		"Look, babe, I don't"	know where you're	"from,"								
+	db_ch_doll	EM_DEFAULT		"But in this town,"	that's considered	"""harrassment""."								
+	db_ch_ginger	EM_DEFAULT		"I, uh.. I'm sorry,"	I didn't know you	were.. uh.. alive.								
+	db_ch_doll	EM_DEFAULT		That's extremely	"disrespectful,"	toots.								
+	db_ch_doll	EM_DEFAULT		I'm just a shopper	like any other.									
+	db_ch_ginger	EM_DEFAULT		"We're, uh.."	We're gonna go now.									
+	db_ch_primary	EM_HAPPY		Hehehehe										
+	db_ch_primary	EM_DEFAULT		"By the way, I do"	ventriloquism	lessons.		SIZE_SMALL						

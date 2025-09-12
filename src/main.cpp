@@ -49,14 +49,7 @@ int navigate_map()
                 int id = current_map.current_map->metadata[tile];
                 int index = current_map.current_map->characters[tile] - 1;
 
-                if (index == ITEM_BUTTON)
-                {
-                }
-
-                if (index > -1 && index < CHAR_SIZE)
-                {
-                    char_mgr.add_character(index, {x, y}, id);
-                }
+                char_mgr.add_character(index, {x, y}, id);
             }
         }
     }
@@ -105,6 +98,7 @@ int navigate_map()
                     {
                         if (ch->id == 2)
                         {
+                            ch->is_pressed = false;
                             ch->idle_animation = &elem_spike_down;
                         }
                     }
@@ -134,7 +128,9 @@ int navigate_map()
 
             if (correct_up && incorrect_down)
             {
-                char_mgr.find_by_id(3)->idle_animation = &elem_spike_down;
+                auto spike = char_mgr.find_by_id(3);
+                spike->is_pressed = false;
+                spike->idle_animation = &elem_spike_down;
             }
         }
 
@@ -163,6 +159,7 @@ enum TYPEWRITER_SCENES
     TYPEWRITER_TITLE,
     TYPEWRITER_GARBAGE,
     TYPEWRITER_MSG,
+    TYPEWRITER_GAME_OVER,
     TYPEWRITER_BUFFER
 };
 
@@ -344,10 +341,9 @@ int main()
             {
             case TEST_MAP:
             {
-                global_data_ptr->entry_map = &map_shop_01;
-                global_data_ptr->entry_position = {5, 8};
-                global_data_ptr->ginger_position = {4, 8};
-                global_data_ptr->bg_track = &music_items::shop;
+                global_data_ptr->entry_map = &map_cave_02;
+                global_data_ptr->entry_position = {3, 30};
+                global_data_ptr->ginger_position = {2, 30};
                 break;
             }
             case CUTSCENE_01:
@@ -412,6 +408,18 @@ int main()
                 {
                     core::update();
                 }
+                break;
+            }
+            case GAME_OVER:
+            {
+                music::stop();
+                music_items::intro.play(1);
+                typewriter(TYPEWRITER_GAME_OVER);
+                value = NEW_CHAPTER;
+                global_data_ptr->hp[0] = 20;
+                global_data_ptr->hp[1] = 20;
+                global_data_ptr->hp[2] = 20;
+                global_data_ptr->hp[3] = 20;
                 break;
             }
             default:

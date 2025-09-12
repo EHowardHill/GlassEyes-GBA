@@ -10,9 +10,7 @@
 #include "bn_optional.h"
 
 #include "ge_structs.h"
-
-// Floors
-#include "bn_regular_bg_items_floor_wood01.h"
+#include "ge_character_manager.h"
 
 // Using bn namespace types
 using bn::array;
@@ -55,8 +53,8 @@ struct map_manager
   map_manager(const map *current_map_);
 
   void update();
-  int collision(vector_2 location);
-  bool check_box_collision(bound box);
+  int collision(vector_2 location, character_manager *ch_man);
+  bool check_box_collision(bound box, character_manager *ch_man);
   int action(vector_2 location); // Added this declaration
 };
 

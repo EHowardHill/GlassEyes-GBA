@@ -26,6 +26,7 @@ enum progress
     FOREST_01,
     FINAL_MSG,
     AVALON,
+    GAME_OVER,
     TEST_MAP
 };
 
