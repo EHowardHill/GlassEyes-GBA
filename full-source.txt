@@ -2845,7 +2845,7 @@ void character_manager::alert()
 }
 
 // Modified character_manager::update method to handle branching dialogue
-void character_manager::update(map_manager *current_map = nullptr)
+void character_manager::update(map_manager *current_map = nullptr, bool allow_movement)
 {
     bool db_inactive = true;
     bool ib_inactive = true;
@@ -4171,7 +4171,34 @@ character::character(int index_, vector_2 start_) : index(index_)
     }
 }
 
-void character::update(map_manager *current_map, bool db_inactive)
+// New method to check collision with spike characters
+bool character::check_spike_collision(const bound &test_bounds, character *exclude_char,
+                                      list<character, 32> *all_characters)
+{
+    if (!all_characters)
+        return false;
+
+    for (auto &other_char : *all_characters)
+    {
+        // Skip self
+        if (&other_char == exclude_char)
+            continue;
+
+        // Check if this character is a spike
+        if (other_char.idle_animation == &elem_spike_up)
+        {
+            // Check collision with the spike character's bounds
+            if (within_bounds(test_bounds, other_char.v_sprite.bounds))
+            {
+                return true; // Collision detected
+            }
+        }
+    }
+
+    return false; // No collision
+}
+
+void character::update(map_manager *current_map, bool db_inactive, list<character, 32> *all_characters)
 {
     vector_2 delta = {0, 0};
 
@@ -4255,7 +4282,7 @@ void character::update(map_manager *current_map, bool db_inactive)
         }
     }
 
-    // Replace the move_to logic section with this improved version
+    // Move_to logic with improved tolerance
     if (move_to.x != 0 && move_to.y != 0)
     {
         vector_2 move_to_exp = {
@@ -4382,7 +4409,7 @@ void character::update(map_manager *current_map, bool db_inactive)
         }
     }
 
-    // Pixel-perfect collision detection
+    // Pixel-perfect collision detection with walls AND spikes
     // Check future position for each axis separately
     bound future_bounds_x = v_sprite.bounds;
     future_bounds_x.position.x = future_bounds_x.position.x + delta.x;
@@ -4390,14 +4417,16 @@ void character::update(map_manager *current_map, bool db_inactive)
     bound future_bounds_y = v_sprite.bounds;
     future_bounds_y.position.y = future_bounds_y.position.y + delta.y;
 
-    // Check X movement
-    if (current_map->check_box_collision(future_bounds_x))
+    // Check X movement against walls AND spikes
+    if (current_map->check_box_collision(future_bounds_x) ||
+        check_spike_collision(future_bounds_x, this, all_characters))
     {
         delta.x = 0;
     }
 
-    // Check Y movement
-    if (current_map->check_box_collision(future_bounds_y))
+    // Check Y movement against walls AND spikes
+    if (current_map->check_box_collision(future_bounds_y) ||
+        check_spike_collision(future_bounds_y, this, all_characters))
     {
         delta.y = 0;
     }
@@ -4409,15 +4438,18 @@ void character::update(map_manager *current_map, bool db_inactive)
         future_bounds_both.position.x = future_bounds_both.position.x + delta.x;
         future_bounds_both.position.y = future_bounds_both.position.y + delta.y;
 
-        if (current_map->check_box_collision(future_bounds_both))
+        if (current_map->check_box_collision(future_bounds_both) ||
+            check_spike_collision(future_bounds_both, this, all_characters))
         {
-            // Try to slide along walls
+            // Try to slide along walls/spikes
             // If diagonal fails but individual axes might work, keep the working axis
-            if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x))
+            if (delta.x != 0 && !current_map->check_box_collision(future_bounds_x) &&
+                !check_spike_collision(future_bounds_x, this, all_characters))
             {
                 delta.y = 0; // Can move X but not Y
             }
-            else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y))
+            else if (delta.y != 0 && !current_map->check_box_collision(future_bounds_y) &&
+                     !check_spike_collision(future_bounds_y, this, all_characters))
             {
                 delta.x = 0; // Can move Y but not X
             }
@@ -5706,7 +5738,7 @@ int navigate_map()
     bool handle_frame = true;
     while (loop_value == CONTINUE && char_mgr.status == CONTINUE)
     {
-        char_mgr.update(&current_map);
+        char_mgr.update(&current_map, true);
         loop_value = action_listener(&current_map, &char_mgr);
         current_map.update();
         bool dialogue_is_active = char_mgr.db.has_value() && !char_mgr.db.value().is_ended();
@@ -5943,7 +5975,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = TEST_MAP; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = FOREST_01; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*
@@ -6562,7 +6594,7 @@ struct character_manager
     character *find_at_position(vector_2 pos, int tolerance = 32);
     character *find_by_index(int index);
     character *find_by_id(int id);
-    void update(map_manager *current_map);
+    void update(map_manager *current_map, bool allow_movement);
     void alert();
     int size() const { return characters.size(); }
 
@@ -7726,7 +7758,12 @@ struct character
 
     character(int index_, vector_2 start_);
 
-    void update(map_manager *current_map, bool character_box_ended);
+    // Updated update method signature to include character list
+    void update(map_manager *current_map, bool character_box_ended, list<character, 32> *all_characters);
+
+    // New static method for checking spike collisions
+    static bool check_spike_collision(const bound &test_bounds, character *exclude_char,
+                                      list<character, 32> *all_characters);
 
     static void add(list<character, 32> *characters, int character_id, vector_2 location);
 
