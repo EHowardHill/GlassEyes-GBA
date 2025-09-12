@@ -76,8 +76,8 @@
             "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1578,
-                "y": 286.5
+                "x": 1983,
+                "y": 375.5
             }
         },
         "maps/garbage_01.tmx": {
@@ -137,11 +137,11 @@
             }
         },
         "maps/shop_01.tmx": {
-            "scale": 1.31181640625,
-            "selectedLayer": 3,
+            "scale": 1.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 255.752251916921,
-                "y": 127.68555050993822
+                "x": 146,
+                "y": 142.33333333333334
             }
         },
         "maps/viskers_house.tmx": {
@@ -193,20 +193,20 @@
         }
     },
     "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
-    "map.height": 8,
+    "map.height": 10,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,
     "map.tileWidth": 32,
-    "map.width": 16,
+    "map.width": 10,
     "openFiles": [
         "maps/forest_03.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
+        "maps/shop_01.tmx",
         "maps/forest_03.tmx",
         "maps/cave_04.tmx",
         "tilesets/room01.tsx",
-        "maps/shop_01.tmx",
         "maps/forest_01.tmx",
         "maps/lab_01.tmx",
         "maps/cave_03.tmx",

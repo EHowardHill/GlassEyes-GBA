@@ -12,6 +12,7 @@
 #include "bn_sprite_items_spr_croke_01.h"
 #include "bn_sprite_items_spr_deadguy_01.h"
 #include "bn_sprite_items_spr_grandma_01.h"
+#include "bn_sprite_items_spr_primary_01.h"
 #include "bn_sprite_items_spr_elements.h"
 
 #include "ge_structs.h"
@@ -213,6 +214,11 @@ character::character(int index_, vector_2 start_) : index(index_)
     case CHAR_GRANDMA:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_grandma_01;
+        break;
+    }
+    case CHAR_PRIMARY:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_primary_01;
         break;
     }
     case ITEM_BUTTON:

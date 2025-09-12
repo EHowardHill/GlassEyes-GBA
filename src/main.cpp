@@ -318,7 +318,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = TEST_MAP; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*
@@ -344,11 +344,10 @@ int main()
             {
             case TEST_MAP:
             {
-                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
-                global_data_ptr->entry_map = &map_forest_03;
-                global_data_ptr->entry_position = {14, 15};
-                global_data_ptr->ginger_position = {15, 15};
-                global_data_ptr->bg_track = &music_items::bg_avalon;
+                global_data_ptr->entry_map = &map_shop_01;
+                global_data_ptr->entry_position = {5, 8};
+                global_data_ptr->ginger_position = {4, 8};
+                global_data_ptr->bg_track = &music_items::shop;
                 break;
             }
             case CUTSCENE_01:
