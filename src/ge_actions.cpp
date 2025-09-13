@@ -516,7 +516,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case EXIT_GARBAGE_01:
             {
-                music::stop();
+                ch_man->music_fadeout = true;
                 break;
             }
             case CONVO_GARBAGE_FINAL_01:

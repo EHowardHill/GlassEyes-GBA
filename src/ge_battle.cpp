@@ -368,6 +368,7 @@ int battle_map()
         global_data_ptr->enemy_max_hp[0] = 12;
         global_data_ptr->enemy_hp[0] = 12;
         bs.moveset = 3;
+        bs.speed = 100;
 
         // Just Jeremy for this battle
         bs.party_size = 1;
@@ -389,6 +390,7 @@ int battle_map()
         global_data_ptr->enemy_max_hp[0] = 99;
         global_data_ptr->enemy_hp[0] = 99;
         bs.moveset = BULLET_SIZE;
+        bs.speed = 300;
 
         bs.party_size = 1;
         bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
@@ -981,6 +983,12 @@ int battle_map()
 
         else if (bs.stage == stage_talking_then_attack)
         {
+            // Clear any remaining UI labels before showing dialogue
+            for (int i = 0; i < 5; ++i)
+            {
+                bs.labels[i].reset();
+            }
+
             if (!is_dialogue_active(&bs))
             {
                 bs.stage = stage_execute_attacks;

@@ -431,7 +431,7 @@ void dialogue_box::init(character_manager *ch_man)
         }
         case ACT_MUSIC_FADEOUT:
         {
-            music::stop();
+            ch_man->music_fadeout = true;
             break;
         }
         case ACT_MUSIC_RESET:

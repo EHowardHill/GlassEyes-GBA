@@ -24,10 +24,11 @@ character_manager::character_manager() : player_ptr(nullptr)
 
 character *character_manager::add_character(int index, vector_2 position, int id)
 {
-    if (characters.size() >= 64)
+    if (characters.size() >= 64 || index < 1 || index > CHAR_SIZE)
         return nullptr;
 
     // Create new character
+    BN_LOG("New Character: ", id);
     characters.push_back(make_unique<character>(index, position, this));
     character *new_char = characters.back().get();
     new_char->id = id;
@@ -145,6 +146,23 @@ void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
     bool ib_inactive = true;
+
+    if (!music_fadeout)
+    {
+        music::set_volume(0.5);
+    }
+    else
+    {
+        fixed volume = music::volume() - 0.005;
+        if (volume > 0)
+        {
+            music::set_volume(volume);
+        }
+        else
+        {
+            music::set_volume(0);
+        }
+    }
 
     // Handle items box first (takes priority over dialogue)
     if (ib.has_value() && ib.value().is_active())

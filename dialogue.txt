@@ -431,7 +431,7 @@ cave_01_alt_01
 forest_dlg_sign_02														
 	db_ch_ginger	EM_CONFUSED		I can't read this..	I think it's for	"sale, though."								
 				You can't read?	Got it.								&forest_dlg_sign_02_alt_01	
-				"No, I can read,"	just not.. That.									
+	db_ch_ginger	EM_SIDE_EYE		"No, I can read,"	just not.. That.									
 														
 forest_dlg_sign_02_alt_01														
 	db_ch_ginger	EM_DEFAULT		Cute house though.	Real shame.									
@@ -476,7 +476,7 @@ temmie_02
 	db_ch_ginger	EM_HAPPY		Oh hi!!	I've heard all	about y'all!								
 	db_ch_temmie	EM_DEFAULT		we surviv on	butter from	da churn								
 	db_ch_ginger	EM_DEFAULT		What?										
-	db_ch_temmie	EM_EXCITED		butter from	da churn									
+	db_ch_temmie	EM_EXCITED		everythings gonna	churn out ok									
 														
 temmie_03														
 				"""The beautiful"	blue tunnel flower	can be found								
@@ -507,7 +507,7 @@ temmie_07
 	db_ch_temmie	EM_EXCITED		u gotta partake	in da frot	of da churn								
 	db_ch_ginger	EM_DEFAULT		Fruit?										
 	db_ch_temmie	EM_EXCITED		frot of da churn	yes									
-	db_ch_temmie	EM_DEFAULT		u gotta churn	ur life around	yknow								
+	db_ch_temmie	EM_DEFAULT		it'll churn y'all's	life around									
 	db_ch_temmie	EM_DEFAULT		then we mail u	yor honorary	cowbemmie hat								
 	db_ch_temmie	EM_DEFAULT		an u can come	to secret meetings									
 														

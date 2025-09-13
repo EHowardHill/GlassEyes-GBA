@@ -18,6 +18,7 @@
 
 #include "bn_regular_bg_items_floor_wood01.h"
 #include "bn_regular_bg_items_big_bg_forest_01.h"
+#include "bn_regular_bg_items_bg_gameover.h"
 
 #include "main.h"
 #include "ge_globals.h"
@@ -228,6 +229,19 @@ void typewriter(int scene)
     {
         break;
     }
+    case TYPEWRITER_GAME_OVER:
+    {
+        frame = regular_bg_items::bg_gameover.create_bg(0, 0);
+        music::stop();
+        music_items::intro.play();
+
+        while (!keypad::a_pressed())
+        {
+            core::update();
+        }
+
+        break;
+    }
     default:
     {
         type = TYPE_IMG;
@@ -315,7 +329,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = TEST_MAP; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = GARBAGE_TO_BLACK; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*
@@ -337,6 +351,7 @@ int main()
         }
         case NEW_CHAPTER:
         {
+            BN_LOG("New Chapter: ", global_data_ptr->process_stage);
             switch (global_data_ptr->process_stage)
             {
             case TEST_MAP:
@@ -369,6 +384,7 @@ int main()
             }
             case GARBAGE_TO_BLACK:
             {
+                global_data_ptr->hp[0] = 20;
                 typewriter(TYPEWRITER_GARBAGE);
                 global_data_ptr->entry_map = &map_lab_01;
                 global_data_ptr->entry_position = {4, 5};
@@ -410,18 +426,6 @@ int main()
                 }
                 break;
             }
-            case GAME_OVER:
-            {
-                music::stop();
-                music_items::intro.play(1);
-                typewriter(TYPEWRITER_GAME_OVER);
-                value = NEW_CHAPTER;
-                global_data_ptr->hp[0] = 20;
-                global_data_ptr->hp[1] = 20;
-                global_data_ptr->hp[2] = 20;
-                global_data_ptr->hp[3] = 20;
-                break;
-            }
             default:
             {
                 global_data_ptr->entry_map = &map_garbage_01;
@@ -434,6 +438,22 @@ int main()
             value = CONTINUE;
             break;
         }
+        case GAME_OVER:
+        {
+            music::stop();
+            music_items::intro.play(1);
+            typewriter(TYPEWRITER_GAME_OVER);
+            value = NEW_CHAPTER;
+            global_data_ptr->hp[0] = 20;
+            global_data_ptr->hp[1] = 20;
+            global_data_ptr->hp[2] = 20;
+            global_data_ptr->hp[3] = 20;
+            for (int t = 0; t < ACTIONS_SIZE; t++)
+            {
+                global_data_ptr->action_iterations[t] = 0;
+            }
+            break;
+        }
         default:
         {
             if (!music::playing())
@@ -444,6 +464,11 @@ int main()
             value = navigate_map();
             break;
         }
+        }
+
+        if (global_data_ptr->hp[0] == 0 && global_data_ptr->entry_map != &map_garbage_05)
+        {
+            value = GAME_OVER;
         }
 
         core::update();

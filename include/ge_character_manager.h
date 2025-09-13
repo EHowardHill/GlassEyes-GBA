@@ -37,6 +37,8 @@ struct character_manager
     void alert();
     int size() const { return characters.size(); }
 
+    bool music_fadeout = false;
+
     template <typename Func>
     void for_each(Func func)
     {

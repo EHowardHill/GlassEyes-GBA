@@ -517,7 +517,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
             }
             case EXIT_GARBAGE_01:
             {
-                music::stop();
+                ch_man->music_fadeout = true;
                 break;
             }
             case CONVO_GARBAGE_FINAL_01:
@@ -1307,6 +1307,7 @@ int battle_map()
         global_data_ptr->enemy_max_hp[0] = 12;
         global_data_ptr->enemy_hp[0] = 12;
         bs.moveset = 3;
+        bs.speed = 100;
 
         // Just Jeremy for this battle
         bs.party_size = 1;
@@ -1328,6 +1329,7 @@ int battle_map()
         global_data_ptr->enemy_max_hp[0] = 99;
         global_data_ptr->enemy_hp[0] = 99;
         bs.moveset = BULLET_SIZE;
+        bs.speed = 300;
 
         bs.party_size = 1;
         bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
@@ -1920,6 +1922,12 @@ int battle_map()
 
         else if (bs.stage == stage_talking_then_attack)
         {
+            // Clear any remaining UI labels before showing dialogue
+            for (int i = 0; i < 5; ++i)
+            {
+                bs.labels[i].reset();
+            }
+
             if (!is_dialogue_active(&bs))
             {
                 bs.stage = stage_execute_attacks;
@@ -2351,18 +2359,25 @@ void bullet::update()
     int speed = compact.speed;
     int flags = pattern.flags;
 
+    // Apply speed multiplier to base velocities (speed = 100 means 100% normal speed)
+    int vx_modified = (pattern.vx_base * speed) / 100;
+    int vy_modified = (pattern.vy_base * speed) / 100;
+
+    // Apply speed to acceleration as well
+    int accel_modified = (pattern.accel * speed) / 100;
+
     // Handle complex movement patterns
     if (flags & FLAG_ZIGZAG)
     {
         // Sharp zigzag movement
         compact.state2++;
-        if (compact.state2 >= 12) // Change direction every 12 frames
+        if (compact.state2 >= (12 * 100 / speed)) // Adjust zigzag frequency with speed
         {
             compact.state2 = 0;
             compact.state1 = -compact.state1;
         }
-        x += pattern.vx_base * compact.state1;
-        y += pattern.vy_base;
+        x += vx_modified * compact.state1;
+        y += vy_modified;
     }
     else if (flags & FLAG_SCATTER)
     {
@@ -2370,10 +2385,10 @@ void bullet::update()
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
 
-        compact.state2 = bn::min(compact.state2 + pattern.accel, 255);
+        compact.state2 = bn::min(compact.state2 + accel_modified, 255);
 
-        x += (cos_val * compact.state2) / 512;
-        y += (sin_val * compact.state2) / 512 + pattern.vy_base;
+        x += (cos_val * compact.state2 * speed) / (512 * 100);
+        y += (sin_val * compact.state2 * speed) / (512 * 100) + vy_modified;
     }
     else if (flags & FLAG_CONVERGE)
     {
@@ -2381,8 +2396,8 @@ void bullet::update()
         int16_t target_x = compact.state1;
         int16_t target_y = compact.state2 * 4;
 
-        int16_t dx = (target_x - x) / 32;
-        int16_t dy = (target_y - y) / 32 + pattern.vy_base;
+        int16_t dx = ((target_x - x) * speed) / (32 * 100);
+        int16_t dy = ((target_y - y) * speed) / (32 * 100) + vy_modified;
 
         x += dx;
         y += dy;
@@ -2391,25 +2406,25 @@ void bullet::update()
     {
         // Random walk pattern
         compact.state3++;
-        if (compact.state3 >= 20) // Change direction randomly
+        if (compact.state3 >= (20 * 100 / speed)) // Change direction based on speed
         {
             compact.state3 = 0;
             compact.state1 = global_data_ptr->bn_random.get_int(-3, 4);
             compact.state2 = global_data_ptr->bn_random.get_int(-2, 3);
         }
 
-        x += compact.state1 + pattern.vx_base;
-        y += compact.state2 + pattern.vy_base;
+        x += (compact.state1 * speed) / 100 + vx_modified;
+        y += (compact.state2 * speed) / 100 + vy_modified;
     }
     else if (flags & FLAG_PULSE)
     {
         // Pulsing movement (expand/contract)
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int pulse = SINE_TABLE[phase & 63];
 
         // Pulse affects speed
         int speed_mod = 64 + (pulse / 2);
-        y += (pattern.vy_base * speed_mod) / 64;
+        y += (vy_modified * speed_mod) / 64;
 
         // Also pulse horizontally for visual effect
         x = compact.init_x + (pulse * pattern.amplitude) / 64;
@@ -2417,7 +2432,7 @@ void bullet::update()
     else if (flags & FLAG_HELIX)
     {
         // 3D helix pattern
-        compact.state1 = (compact.state1 + 4) & 63;
+        compact.state1 = (compact.state1 + (4 * speed / 100)) & 63;
 
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
@@ -2427,12 +2442,12 @@ void bullet::update()
 
         // Use sine for depth illusion (affects y slightly)
         int depth = (sin_val + 64) / 4; // 0 to 32 range
-        y += pattern.vy_base + (depth / 16);
+        y += vy_modified + (depth * speed) / (16 * 100);
     }
     else if (flags & FLAG_PENDULUM)
     {
         // Pendulum swing
-        compact.state1 += compact.state2 * 2;
+        compact.state1 += (compact.state2 * 2 * speed) / 100;
 
         // Reverse at ends of swing
         if (compact.state1 <= 0 || compact.state1 >= 63)
@@ -2443,55 +2458,55 @@ void bullet::update()
 
         int swing = SINE_TABLE[compact.state1 & 63];
         x = compact.init_x + (swing * pattern.amplitude) / 32;
-        y += pattern.vy_base;
+        y += vy_modified;
     }
     else if (flags & FLAG_ORBIT)
     {
         // Circular orbit
-        compact.state1 = (compact.state1 + 2) & 63;
+        compact.state1 = (compact.state1 + (2 * speed / 100)) & 63;
 
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
 
         x = compact.init_x + (cos_val * compact.state2) / 64;
-        y += pattern.vy_base;
+        y += vy_modified;
 
         // Add vertical component for full circle
-        y += (sin_val * pattern.amplitude) / 128;
+        y += (sin_val * pattern.amplitude * speed) / (128 * 100);
     }
     else if (flags & FLAG_SPIRAL)
     {
         // Spiral pattern
-        compact.state1 = (compact.state1 + 3) & 63;
-        compact.state2 = bn::max(12, compact.state2 + pattern.accel);
+        compact.state1 = (compact.state1 + (3 * speed / 100)) & 63;
+        compact.state2 = bn::max(12, compact.state2 + accel_modified);
 
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
 
         x = compact.init_x + (cos_val * compact.state2) / 64;
-        y += pattern.vy_base + (sin_val * compact.state2) / 256;
+        y += vy_modified + (sin_val * compact.state2 * speed) / (256 * 100);
     }
     else if ((flags & FLAG_WAVE) && (flags & FLAG_ACCEL))
     {
         // Sine wave with acceleration
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int sine = SINE_TABLE[phase & 63];
         x = compact.x + (sine * pattern.amplitude) / 32;
 
-        int16_t current_vy = pattern.vy_base + (compact.ticker * pattern.accel) / 128;
-        if (current_vy > 56)
-            current_vy = 56;
+        int16_t current_vy = vy_modified + (compact.ticker * accel_modified) / 128;
+        if (current_vy > (56 * speed / 100))
+            current_vy = (56 * speed / 100);
         y += current_vy;
     }
     else if ((flags & FLAG_BOUNCE) && (flags & FLAG_WAVE))
     {
         // Bouncing with wave overlay
-        x += pattern.vx_base * compact.state1;
+        x += vx_modified * compact.state1;
 
         // Add wave to y movement
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int sine = SINE_TABLE[phase & 63];
-        y += pattern.vy_base + (sine * pattern.amplitude) / 64;
+        y += vy_modified + (sine * pattern.amplitude * speed) / (64 * 100);
 
         // Bounce off walls
         if (x < -240 || x > 240)
@@ -2503,36 +2518,36 @@ void bullet::update()
     else if (flags & 0x4000) // DOUBLE_WAVE special flag
     {
         // Two sine waves combined for complex motion
-        int phase1 = (compact.ticker * 64) / pattern.period;
-        int phase2 = (compact.ticker * 32) / pattern.period;
+        int phase1 = (compact.ticker * 64 * speed) / (pattern.period * 100);
+        int phase2 = (compact.ticker * 32 * speed) / (pattern.period * 100);
 
         int sine1 = SINE_TABLE[phase1 & 63];
         int sine2 = SINE_TABLE[phase2 & 63];
 
         x = compact.x + (sine1 * pattern.amplitude) / 32 + (sine2 * pattern.amplitude) / 64;
-        y += pattern.vy_base;
+        y += vy_modified;
     }
     else if (flags & FLAG_WAVE)
     {
         // Original wave implementation
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int sine = SINE_TABLE[phase & 63];
         x = compact.x + (sine * pattern.amplitude) / 32;
-        y += pattern.vy_base;
+        y += vy_modified;
     }
     else if (flags & FLAG_ACCEL)
     {
         // Original acceleration
-        int16_t current_vy = pattern.vy_base + (compact.ticker * pattern.accel) / 128;
-        if (current_vy > 56)
-            current_vy = 56;
+        int16_t current_vy = vy_modified + (compact.ticker * accel_modified) / 128;
+        if (current_vy > (56 * speed / 100))
+            current_vy = (56 * speed / 100);
         y += current_vy;
     }
     else if (flags & FLAG_BOUNCE)
     {
         // Original bounce
-        x += pattern.vx_base * compact.state1;
-        y += pattern.vy_base;
+        x += vx_modified * compact.state1;
+        y += vy_modified;
 
         if (x < -240 || x > 240)
         {
@@ -2545,20 +2560,20 @@ void bullet::update()
         // Original homing implementation
         compact.state2++;
 
-        if (compact.state2 >= 48)
+        if (compact.state2 >= (48 * 100 / speed)) // Adjust homing retarget frequency
         {
             compact.state2 = 0;
             compact.state1 = global_data_ptr->bn_random.get_int(-50, 50);
         }
 
         int16_t target_x = compact.state1 * 4;
-        int16_t dx = (target_x - x) / 20;
-        int16_t dy = pattern.vy_base;
+        int16_t dx = ((target_x - x) * speed) / (20 * 100);
+        int16_t dy = vy_modified;
 
-        if (dx > 8)
-            dx = 8;
-        if (dx < -8)
-            dx = -8;
+        if (dx > (8 * speed / 100))
+            dx = (8 * speed / 100);
+        if (dx < -(8 * speed / 100))
+            dx = -(8 * speed / 100);
 
         x += dx;
         y += dy;
@@ -2566,8 +2581,8 @@ void bullet::update()
     else
     {
         // Simple linear movement (FALL, RISE)
-        x += pattern.vx_base;
-        y += pattern.vy_base;
+        x += vx_modified;
+        y += vy_modified;
     }
 
     compact.x = x;
@@ -2752,10 +2767,11 @@ character_manager::character_manager() : player_ptr(nullptr)
 
 character *character_manager::add_character(int index, vector_2 position, int id)
 {
-    if (characters.size() >= 64)
+    if (characters.size() >= 64 || index < 1 || index > CHAR_SIZE)
         return nullptr;
 
     // Create new character
+    BN_LOG("New Character: ", id);
     characters.push_back(make_unique<character>(index, position, this));
     character *new_char = characters.back().get();
     new_char->id = id;
@@ -2873,6 +2889,23 @@ void character_manager::update(map_manager *current_map = nullptr)
 {
     bool db_inactive = true;
     bool ib_inactive = true;
+
+    if (!music_fadeout)
+    {
+        music::set_volume(0.5);
+    }
+    else
+    {
+        fixed volume = music::volume() - 0.005;
+        if (volume > 0)
+        {
+            music::set_volume(volume);
+        }
+        else
+        {
+            music::set_volume(0);
+        }
+    }
 
     // Handle items box first (takes priority over dialogue)
     if (ib.has_value() && ib.value().is_active())
@@ -3747,8 +3780,8 @@ const conversation new_berlin_sign = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation temmie_01 = {
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "HOIDY AND", "WELCOM TO", "COWBEMMIE LAND", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "COM EXPERENCE", "OUR VIBRANT", "CULTURE", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "HOIDY AND", "WELCOM TO", "COWBEMMIE LAND", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "COM EXPERENCE", "OUR VIBRANT", "CULTURE", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation temmie_02 = {
@@ -4033,6 +4066,7 @@ bool within_bounds(bound me, bound you)
 v_sprite_ptr::v_sprite_ptr()
     : sprite_item_ptr(nullptr), frame(0)
 {
+    BN_LOG("V1:  x: 0 - y: 0");
     bounds.position = {0, 0};
     bounds.width = 0;
     bounds.height = 0;
@@ -4042,6 +4076,7 @@ v_sprite_ptr::v_sprite_ptr()
 v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position, int width, int height, int frame_)
     : sprite_item_ptr(sprite_item_ptr_), frame(frame_)
 {
+    BN_LOG("V2:  x: ", position.x, " - y: ", position.y);
     bounds.position = position;
     bounds.width = width;
     bounds.height = height;
@@ -5071,7 +5106,7 @@ void dialogue_box::init(character_manager *ch_man)
         }
         case ACT_MUSIC_FADEOUT:
         {
-            music::stop();
+            ch_man->music_fadeout = true;
             break;
         }
         case ACT_MUSIC_RESET:
@@ -5717,6 +5752,7 @@ main.cpp:
 
 #include "bn_regular_bg_items_floor_wood01.h"
 #include "bn_regular_bg_items_big_bg_forest_01.h"
+#include "bn_regular_bg_items_bg_gameover.h"
 
 #include "main.h"
 #include "ge_globals.h"
@@ -5927,6 +5963,19 @@ void typewriter(int scene)
     {
         break;
     }
+    case TYPEWRITER_GAME_OVER:
+    {
+        frame = regular_bg_items::bg_gameover.create_bg(0, 0);
+        music::stop();
+        music_items::intro.play();
+
+        while (!keypad::a_pressed())
+        {
+            core::update();
+        }
+
+        break;
+    }
     default:
     {
         type = TYPE_IMG;
@@ -6014,7 +6063,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = TEST_MAP; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = GARBAGE_TO_BLACK; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*
@@ -6036,6 +6085,7 @@ int main()
         }
         case NEW_CHAPTER:
         {
+            BN_LOG("New Chapter: ", global_data_ptr->process_stage);
             switch (global_data_ptr->process_stage)
             {
             case TEST_MAP:
@@ -6068,6 +6118,7 @@ int main()
             }
             case GARBAGE_TO_BLACK:
             {
+                global_data_ptr->hp[0] = 20;
                 typewriter(TYPEWRITER_GARBAGE);
                 global_data_ptr->entry_map = &map_lab_01;
                 global_data_ptr->entry_position = {4, 5};
@@ -6109,18 +6160,6 @@ int main()
                 }
                 break;
             }
-            case GAME_OVER:
-            {
-                music::stop();
-                music_items::intro.play(1);
-                typewriter(TYPEWRITER_GAME_OVER);
-                value = NEW_CHAPTER;
-                global_data_ptr->hp[0] = 20;
-                global_data_ptr->hp[1] = 20;
-                global_data_ptr->hp[2] = 20;
-                global_data_ptr->hp[3] = 20;
-                break;
-            }
             default:
             {
                 global_data_ptr->entry_map = &map_garbage_01;
@@ -6133,6 +6172,22 @@ int main()
             value = CONTINUE;
             break;
         }
+        case GAME_OVER:
+        {
+            music::stop();
+            music_items::intro.play(1);
+            typewriter(TYPEWRITER_GAME_OVER);
+            value = NEW_CHAPTER;
+            global_data_ptr->hp[0] = 20;
+            global_data_ptr->hp[1] = 20;
+            global_data_ptr->hp[2] = 20;
+            global_data_ptr->hp[3] = 20;
+            for (int t = 0; t < ACTIONS_SIZE; t++)
+            {
+                global_data_ptr->action_iterations[t] = 0;
+            }
+            break;
+        }
         default:
         {
             if (!music::playing())
@@ -6143,6 +6198,11 @@ int main()
             value = navigate_map();
             break;
         }
+        }
+
+        if (global_data_ptr->hp[0] == 0 && global_data_ptr->entry_map != &map_garbage_05)
+        {
+            value = GAME_OVER;
         }
 
         core::update();
@@ -6653,6 +6713,8 @@ struct character_manager
     void update(map_manager *current_map);
     void alert();
     int size() const { return characters.size(); }
+
+    bool music_fadeout = false;
 
     template <typename Func>
     void for_each(Func func)
@@ -7913,7 +7975,6 @@ enum progress
     FOREST_01,
     FINAL_MSG,
     AVALON,
-    GAME_OVER,
     TEST_MAP
 };
 
@@ -8177,6 +8238,7 @@ enum RETURN_TYPE {
     CONTINUE,
     NEW_MAP,
     NEW_CHAPTER,
+    GAME_OVER,
     BATTLE
 };
 

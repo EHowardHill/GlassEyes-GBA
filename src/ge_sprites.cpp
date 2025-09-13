@@ -42,6 +42,7 @@ bool within_bounds(bound me, bound you)
 v_sprite_ptr::v_sprite_ptr()
     : sprite_item_ptr(nullptr), frame(0)
 {
+    BN_LOG("V1:  x: 0 - y: 0");
     bounds.position = {0, 0};
     bounds.width = 0;
     bounds.height = 0;
@@ -51,6 +52,7 @@ v_sprite_ptr::v_sprite_ptr()
 v_sprite_ptr::v_sprite_ptr(const sprite_item *sprite_item_ptr_, vector_2 position, int width, int height, int frame_)
     : sprite_item_ptr(sprite_item_ptr_), frame(frame_)
 {
+    BN_LOG("V2:  x: ", position.x, " - y: ", position.y);
     bounds.position = position;
     bounds.width = width;
     bounds.height = height;

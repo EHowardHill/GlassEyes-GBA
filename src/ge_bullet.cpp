@@ -123,18 +123,25 @@ void bullet::update()
     int speed = compact.speed;
     int flags = pattern.flags;
 
+    // Apply speed multiplier to base velocities (speed = 100 means 100% normal speed)
+    int vx_modified = (pattern.vx_base * speed) / 100;
+    int vy_modified = (pattern.vy_base * speed) / 100;
+
+    // Apply speed to acceleration as well
+    int accel_modified = (pattern.accel * speed) / 100;
+
     // Handle complex movement patterns
     if (flags & FLAG_ZIGZAG)
     {
         // Sharp zigzag movement
         compact.state2++;
-        if (compact.state2 >= 12) // Change direction every 12 frames
+        if (compact.state2 >= (12 * 100 / speed)) // Adjust zigzag frequency with speed
         {
             compact.state2 = 0;
             compact.state1 = -compact.state1;
         }
-        x += pattern.vx_base * compact.state1;
-        y += pattern.vy_base;
+        x += vx_modified * compact.state1;
+        y += vy_modified;
     }
     else if (flags & FLAG_SCATTER)
     {
@@ -142,10 +149,10 @@ void bullet::update()
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
 
-        compact.state2 = bn::min(compact.state2 + pattern.accel, 255);
+        compact.state2 = bn::min(compact.state2 + accel_modified, 255);
 
-        x += (cos_val * compact.state2) / 512;
-        y += (sin_val * compact.state2) / 512 + pattern.vy_base;
+        x += (cos_val * compact.state2 * speed) / (512 * 100);
+        y += (sin_val * compact.state2 * speed) / (512 * 100) + vy_modified;
     }
     else if (flags & FLAG_CONVERGE)
     {
@@ -153,8 +160,8 @@ void bullet::update()
         int16_t target_x = compact.state1;
         int16_t target_y = compact.state2 * 4;
 
-        int16_t dx = (target_x - x) / 32;
-        int16_t dy = (target_y - y) / 32 + pattern.vy_base;
+        int16_t dx = ((target_x - x) * speed) / (32 * 100);
+        int16_t dy = ((target_y - y) * speed) / (32 * 100) + vy_modified;
 
         x += dx;
         y += dy;
@@ -163,25 +170,25 @@ void bullet::update()
     {
         // Random walk pattern
         compact.state3++;
-        if (compact.state3 >= 20) // Change direction randomly
+        if (compact.state3 >= (20 * 100 / speed)) // Change direction based on speed
         {
             compact.state3 = 0;
             compact.state1 = global_data_ptr->bn_random.get_int(-3, 4);
             compact.state2 = global_data_ptr->bn_random.get_int(-2, 3);
         }
 
-        x += compact.state1 + pattern.vx_base;
-        y += compact.state2 + pattern.vy_base;
+        x += (compact.state1 * speed) / 100 + vx_modified;
+        y += (compact.state2 * speed) / 100 + vy_modified;
     }
     else if (flags & FLAG_PULSE)
     {
         // Pulsing movement (expand/contract)
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int pulse = SINE_TABLE[phase & 63];
 
         // Pulse affects speed
         int speed_mod = 64 + (pulse / 2);
-        y += (pattern.vy_base * speed_mod) / 64;
+        y += (vy_modified * speed_mod) / 64;
 
         // Also pulse horizontally for visual effect
         x = compact.init_x + (pulse * pattern.amplitude) / 64;
@@ -189,7 +196,7 @@ void bullet::update()
     else if (flags & FLAG_HELIX)
     {
         // 3D helix pattern
-        compact.state1 = (compact.state1 + 4) & 63;
+        compact.state1 = (compact.state1 + (4 * speed / 100)) & 63;
 
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
@@ -199,12 +206,12 @@ void bullet::update()
 
         // Use sine for depth illusion (affects y slightly)
         int depth = (sin_val + 64) / 4; // 0 to 32 range
-        y += pattern.vy_base + (depth / 16);
+        y += vy_modified + (depth * speed) / (16 * 100);
     }
     else if (flags & FLAG_PENDULUM)
     {
         // Pendulum swing
-        compact.state1 += compact.state2 * 2;
+        compact.state1 += (compact.state2 * 2 * speed) / 100;
 
         // Reverse at ends of swing
         if (compact.state1 <= 0 || compact.state1 >= 63)
@@ -215,55 +222,55 @@ void bullet::update()
 
         int swing = SINE_TABLE[compact.state1 & 63];
         x = compact.init_x + (swing * pattern.amplitude) / 32;
-        y += pattern.vy_base;
+        y += vy_modified;
     }
     else if (flags & FLAG_ORBIT)
     {
         // Circular orbit
-        compact.state1 = (compact.state1 + 2) & 63;
+        compact.state1 = (compact.state1 + (2 * speed / 100)) & 63;
 
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
 
         x = compact.init_x + (cos_val * compact.state2) / 64;
-        y += pattern.vy_base;
+        y += vy_modified;
 
         // Add vertical component for full circle
-        y += (sin_val * pattern.amplitude) / 128;
+        y += (sin_val * pattern.amplitude * speed) / (128 * 100);
     }
     else if (flags & FLAG_SPIRAL)
     {
         // Spiral pattern
-        compact.state1 = (compact.state1 + 3) & 63;
-        compact.state2 = bn::max(12, compact.state2 + pattern.accel);
+        compact.state1 = (compact.state1 + (3 * speed / 100)) & 63;
+        compact.state2 = bn::max(12, compact.state2 + accel_modified);
 
         int cos_val = SINE_TABLE[(compact.state1 + 16) & 63];
         int sin_val = SINE_TABLE[compact.state1 & 63];
 
         x = compact.init_x + (cos_val * compact.state2) / 64;
-        y += pattern.vy_base + (sin_val * compact.state2) / 256;
+        y += vy_modified + (sin_val * compact.state2 * speed) / (256 * 100);
     }
     else if ((flags & FLAG_WAVE) && (flags & FLAG_ACCEL))
     {
         // Sine wave with acceleration
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int sine = SINE_TABLE[phase & 63];
         x = compact.x + (sine * pattern.amplitude) / 32;
 
-        int16_t current_vy = pattern.vy_base + (compact.ticker * pattern.accel) / 128;
-        if (current_vy > 56)
-            current_vy = 56;
+        int16_t current_vy = vy_modified + (compact.ticker * accel_modified) / 128;
+        if (current_vy > (56 * speed / 100))
+            current_vy = (56 * speed / 100);
         y += current_vy;
     }
     else if ((flags & FLAG_BOUNCE) && (flags & FLAG_WAVE))
     {
         // Bouncing with wave overlay
-        x += pattern.vx_base * compact.state1;
+        x += vx_modified * compact.state1;
 
         // Add wave to y movement
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int sine = SINE_TABLE[phase & 63];
-        y += pattern.vy_base + (sine * pattern.amplitude) / 64;
+        y += vy_modified + (sine * pattern.amplitude * speed) / (64 * 100);
 
         // Bounce off walls
         if (x < -240 || x > 240)
@@ -275,36 +282,36 @@ void bullet::update()
     else if (flags & 0x4000) // DOUBLE_WAVE special flag
     {
         // Two sine waves combined for complex motion
-        int phase1 = (compact.ticker * 64) / pattern.period;
-        int phase2 = (compact.ticker * 32) / pattern.period;
+        int phase1 = (compact.ticker * 64 * speed) / (pattern.period * 100);
+        int phase2 = (compact.ticker * 32 * speed) / (pattern.period * 100);
 
         int sine1 = SINE_TABLE[phase1 & 63];
         int sine2 = SINE_TABLE[phase2 & 63];
 
         x = compact.x + (sine1 * pattern.amplitude) / 32 + (sine2 * pattern.amplitude) / 64;
-        y += pattern.vy_base;
+        y += vy_modified;
     }
     else if (flags & FLAG_WAVE)
     {
         // Original wave implementation
-        int phase = (compact.ticker * 64) / pattern.period;
+        int phase = (compact.ticker * 64 * speed) / (pattern.period * 100);
         int sine = SINE_TABLE[phase & 63];
         x = compact.x + (sine * pattern.amplitude) / 32;
-        y += pattern.vy_base;
+        y += vy_modified;
     }
     else if (flags & FLAG_ACCEL)
     {
         // Original acceleration
-        int16_t current_vy = pattern.vy_base + (compact.ticker * pattern.accel) / 128;
-        if (current_vy > 56)
-            current_vy = 56;
+        int16_t current_vy = vy_modified + (compact.ticker * accel_modified) / 128;
+        if (current_vy > (56 * speed / 100))
+            current_vy = (56 * speed / 100);
         y += current_vy;
     }
     else if (flags & FLAG_BOUNCE)
     {
         // Original bounce
-        x += pattern.vx_base * compact.state1;
-        y += pattern.vy_base;
+        x += vx_modified * compact.state1;
+        y += vy_modified;
 
         if (x < -240 || x > 240)
         {
@@ -317,20 +324,20 @@ void bullet::update()
         // Original homing implementation
         compact.state2++;
 
-        if (compact.state2 >= 48)
+        if (compact.state2 >= (48 * 100 / speed)) // Adjust homing retarget frequency
         {
             compact.state2 = 0;
             compact.state1 = global_data_ptr->bn_random.get_int(-50, 50);
         }
 
         int16_t target_x = compact.state1 * 4;
-        int16_t dx = (target_x - x) / 20;
-        int16_t dy = pattern.vy_base;
+        int16_t dx = ((target_x - x) * speed) / (20 * 100);
+        int16_t dy = vy_modified;
 
-        if (dx > 8)
-            dx = 8;
-        if (dx < -8)
-            dx = -8;
+        if (dx > (8 * speed / 100))
+            dx = (8 * speed / 100);
+        if (dx < -(8 * speed / 100))
+            dx = -(8 * speed / 100);
 
         x += dx;
         y += dy;
@@ -338,8 +345,8 @@ void bullet::update()
     else
     {
         // Simple linear movement (FALL, RISE)
-        x += pattern.vx_base;
-        y += pattern.vy_base;
+        x += vx_modified;
+        y += vy_modified;
     }
 
     compact.x = x;
