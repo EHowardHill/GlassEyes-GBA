@@ -211,7 +211,7 @@ lab_03_alt_01
 														
 lab_03_alt_02														
 				LOGIN SUCCESSFUL										
-				31-Dec-69										
+				"December 31, 19XX"										
 				FINAL LOG.	Funding cuts are	sending us home.								
 				"Unfortunately,"	we haven't been	able to find them.								
 				In all honesty	this whole year	feels like it's been								
@@ -460,11 +460,11 @@ tunnel_01
 	db_ch_ginger	EM_DEFAULT		"Hey- Just, uh.."	Before we go in..									
 	db_ch_ginger	EM_SIDE_EYE		Just..	"Be careful, okay?"									
 														
-final_msg														
-				Thanks for	trying out the	demo so far!								
-				I've only been	working on this	"for a month,"								
-				so I'm sure I'll	make lots of	progress.								
-				Discord / X:		"""@cinemint"""								
+														
+														
+														
+														
+														
 														
 temmie_sign														
 				COWBEMMIE	VILLAGE									
@@ -480,7 +480,7 @@ temmie_02
 	db_ch_ginger	EM_HAPPY		Oh hi!!	I've heard all	about y'all!								
 	db_ch_temmie	EM_DEFAULT		we surviv on	butter from	da churn								
 	db_ch_ginger	EM_DEFAULT		What?										
-	db_ch_temmie	EM_EXCITED		everythings gonna	churn out ok									
+	db_ch_temmie	EM_DEFAULT		everythings gonna	churn out ok									
 														
 temmie_03														
 				"""The beautiful"	blue tunnel flower	can be found								
@@ -697,7 +697,7 @@ avalon_shop_01_alt_03
 	db_ch_primary	EM_DEFAULT		Come back with	"$500,000 and let's"	"chat some more, ok?"								
 														
 doll_guy_01														
-	db_ch_ginger	EM_HAPPY		"Hey, check this"	"doll, it's kinda"	cute.								
+	db_ch_ginger	EM_HAPPY		"Hey, look at this"	"doll, it's kinda"	cute.								
 	db_ch_doll	EM_DEFAULT		"Look, babe, I don't"	know where you're	"from,"								
 	db_ch_doll	EM_DEFAULT		"But in this town,"	that's considered	"""harrassment""."								
 	db_ch_ginger	EM_WAT		"I, uh.. I'm sorry,"	I didn't know you	were.. uh.. alive.								
@@ -728,3 +728,11 @@ item_lime_01
 														
 avalon_shop_02														
 	db_ch_primary	EM_DEFAULT		Give me money ok										
+														
+final_msg														
+				Thanks for	trying out the	demo so far!								
+				I've only been	working on this	"for 2 months,"								
+				so I'm sure I'll	make lots of	progress.								
+				This village is	only partially done	for now.								
+				"Discord, X, BlueSky:"		"""@cinemint"""								
+				Feel free to reach	out! Take care!	~ Cinemint								

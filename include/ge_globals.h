@@ -122,6 +122,7 @@ enum action_list
 	BUY_ENOKI,
 	BUY_BANANA,
 	BUY_LIME,
+	FINAL_MSG_ACTION,
 	ACTIONS_SIZE
 };
 

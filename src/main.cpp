@@ -329,7 +329,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = CUTSCENE_01; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*

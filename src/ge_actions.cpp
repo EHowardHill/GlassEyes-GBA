@@ -960,6 +960,16 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return 1;
                 break;
             }
+            case FINAL_MSG_ACTION:
+            {
+                if (global_data_ptr->action_iterations[FINAL_MSG_ACTION] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&final_msg);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
             default:
             {
                 break;
