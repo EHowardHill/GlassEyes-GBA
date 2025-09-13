@@ -308,22 +308,6 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 }
                 break;
             }
-            case CHAT_PRIMARY:
-            {
-                if (global_data_ptr->action_iterations[CHAT_COURIER] == 1)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&avalon_courier_01);
-                    ch_man->db->init(ch_man);
-                }
-                else
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&avalon_courier_02);
-                    ch_man->db->init(ch_man);
-                }
-                break;
-            }
             case CHAT_WORMGUY:
             {
                 if (global_data_ptr->action_iterations[CHAT_WORMGUY] == 1)
@@ -336,6 +320,62 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 {
                     ch_man->db.emplace();
                     ch_man->db->load(&avalon_wormguy_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_DOLL:
+            {
+                if (global_data_ptr->action_iterations[CHAT_DOLL] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&doll_guy_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case BUY_TIRE:
+            {
+                if (global_data_ptr->action_iterations[BUY_TIRE] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&item_tire_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case BUY_ENOKI:
+            {
+                if (global_data_ptr->action_iterations[BUY_ENOKI] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&item_enoki_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case BUY_LIME:
+            {
+                if (global_data_ptr->action_iterations[BUY_LIME] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&item_lime_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_PRIMARY:
+            {
+                if (global_data_ptr->action_iterations[CHAT_PRIMARY] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_shop_01);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_shop_02);
                     ch_man->db->init(ch_man);
                 }
                 break;

@@ -700,9 +700,31 @@ doll_guy_01
 	db_ch_ginger	EM_HAPPY		"Hey, check this"	"doll, it's kinda"	cute.								
 	db_ch_doll	EM_DEFAULT		"Look, babe, I don't"	know where you're	"from,"								
 	db_ch_doll	EM_DEFAULT		"But in this town,"	that's considered	"""harrassment""."								
-	db_ch_ginger	EM_DEFAULT		"I, uh.. I'm sorry,"	I didn't know you	were.. uh.. alive.								
+	db_ch_ginger	EM_WAT		"I, uh.. I'm sorry,"	I didn't know you	were.. uh.. alive.								
 	db_ch_doll	EM_DEFAULT		That's extremely	"disrespectful,"	toots.								
 	db_ch_doll	EM_DEFAULT		I'm just a shopper	like any other.									
-	db_ch_ginger	EM_DEFAULT		"We're, uh.."	We're gonna go now.									
-	db_ch_primary	EM_HAPPY		Hehehehe										
-	db_ch_primary	EM_DEFAULT		"By the way, I do"	ventriloquism	lessons.		SIZE_SMALL						
+	db_ch_ginger	EM_EMBARRASSED		"We're, uh.."	We're gonna go now.									
+	db_ch_primary	EM_HAPPY		Hehehehe				SIZE_SMALL						
+	db_ch_primary	EM_DEFAULT		You'se should take	my classes on	ventriloquism.		SIZE_DEFAULT						
+														
+item_tire_01														
+				A tire would be	"fantastic, if you"	had a car.								
+				"But is $10,000"	really fair?									
+														
+item_enoki_01														
+	db_ch_ginger	EM_SIDE_EYE		Is this supposed to	be a human doll?									
+	db_ch_ginger	EM_DEFAULT		Her mouth is above	her eyes..									
+	db_ch_ginger	EM_HAPPY		It is cute.										
+	db_ch_ginger	EM_CONFUSED		..	"Maybe not ""$20,000"""	cute though.								
+														
+item_banana_hat_01														
+	db_ch_primary	EM_DEFAULT		We're running a	special on the	banana hat!								
+	db_ch_primary	EM_DEFAULT		"""BUY ONE:"	"GET THAT ONE"""									
+														
+item_lime_01														
+	db_ch_ginger	EM_DEFAULT		I don't think I	could ever get sick	of limes.								
+	db_ch_ginger	EM_ANNOYED		"$50,000 for a lime.."										
+	db_ch_primary	EM_DEFAULT		It's out of season.	And we're in the	woods.								
+														
+avalon_shop_02														
+	db_ch_primary	EM_DEFAULT		Give me money ok										

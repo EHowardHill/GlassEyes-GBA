@@ -309,22 +309,6 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 }
                 break;
             }
-            case CHAT_PRIMARY:
-            {
-                if (global_data_ptr->action_iterations[CHAT_COURIER] == 1)
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&avalon_courier_01);
-                    ch_man->db->init(ch_man);
-                }
-                else
-                {
-                    ch_man->db.emplace();
-                    ch_man->db->load(&avalon_courier_02);
-                    ch_man->db->init(ch_man);
-                }
-                break;
-            }
             case CHAT_WORMGUY:
             {
                 if (global_data_ptr->action_iterations[CHAT_WORMGUY] == 1)
@@ -337,6 +321,62 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 {
                     ch_man->db.emplace();
                     ch_man->db->load(&avalon_wormguy_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_DOLL:
+            {
+                if (global_data_ptr->action_iterations[CHAT_DOLL] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&doll_guy_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case BUY_TIRE:
+            {
+                if (global_data_ptr->action_iterations[BUY_TIRE] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&item_tire_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case BUY_ENOKI:
+            {
+                if (global_data_ptr->action_iterations[BUY_ENOKI] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&item_enoki_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case BUY_LIME:
+            {
+                if (global_data_ptr->action_iterations[BUY_LIME] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&item_lime_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_PRIMARY:
+            {
+                if (global_data_ptr->action_iterations[CHAT_PRIMARY] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_shop_01);
+                    ch_man->db->init(ch_man);
+                }
+                else
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&avalon_shop_02);
                     ch_man->db->init(ch_man);
                 }
                 break;
@@ -3148,6 +3188,10 @@ const conversation avalon_shop_01_alt_03 = {
     {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "Come back with", "$500,000 and let's", "chat some more, ok?", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
+const conversation avalon_shop_02 = {
+    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "Give me money ok", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
 const conversation avalon_sign_01 = {
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "That's a lot of", "trash down there.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Yeah..", "I'mma stand", "back here.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
@@ -3353,12 +3397,12 @@ const conversation doll_guy_01 = {
     {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Hey, check this", "doll, it's kinda", "cute.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "Look, babe, I don't", "know where you're", "from,", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "But in this town,", "that's considered", "\"harrassment\".", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "I, uh.. I'm sorry,", "I didn't know you", "were.. uh.. alive.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_WAT, ACT_DEFAULT, "I, uh.. I'm sorry,", "I didn't know you", "were.. uh.. alive.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "That's extremely", "disrespectful,", "toots.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_doll, EM_DEFAULT, ACT_DEFAULT, "I'm just a shopper", "like any other.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "We're, uh..", "We're gonna go now.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_primary, EM_HAPPY, ACT_DEFAULT, "Hehehehe", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "By the way, I do", "ventriloquism", "lessons.", false, SIZE_SMALL, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_EMBARRASSED, ACT_DEFAULT, "We're, uh..", "We're gonna go now.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_primary, EM_HAPPY, ACT_DEFAULT, "Hehehehe", "", "", false, SIZE_SMALL, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "You'se should take", "my classes on", "ventriloquism.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation final_msg = {
@@ -3409,7 +3453,7 @@ const conversation forest_dlg_sign_01 = {
 const conversation forest_dlg_sign_02 = {
     {0, &sprite_items::db_ch_ginger, EM_CONFUSED, ACT_DEFAULT, "I can't read this..", "I think it's for", "sale, though.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "You can't read?", "Got it.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &forest_dlg_sign_02_alt_01, static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "No, I can read,", "just not.. That.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "No, I can read,", "just not.. That.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation forest_dlg_sign_02_alt_01 = {
@@ -3587,6 +3631,11 @@ const conversation garbage_sign05 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "ABANDON ALL HOPE,", "YE WHO ENTER", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
+const conversation garbage_spare = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "SPARE is not", "effective on", "Visker.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "He seems very", "resolute to fight.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
 const conversation intro_01 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Deep within the", "woods of the", "old world,", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "There once", "lay a cabin.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
@@ -3602,6 +3651,29 @@ const conversation intro_02 = {
 
 const conversation intro_03 = {
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Cinemint", "presents", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation item_banana_hat_01 = {
+    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "We're running a", "special on the", "banana hat!", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "\"BUY ONE:", "GET THAT ONE\"", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation item_enoki_01 = {
+    {0, &sprite_items::db_ch_ginger, EM_SIDE_EYE, ACT_DEFAULT, "Is this supposed to", "be a human doll?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Her mouth is above", "her eyes..", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "It is cute.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_CONFUSED, ACT_DEFAULT, "..", "Maybe not \"$20,000\"", "cute though.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation item_lime_01 = {
+    {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "I don't think I", "could ever get sick", "of limes.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_ginger, EM_ANNOYED, ACT_DEFAULT, "$50,000 for a lime..", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_primary, EM_DEFAULT, ACT_DEFAULT, "It's out of season.", "And we're in the", "woods.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
+
+const conversation item_tire_01 = {
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "A tire would be", "fantastic, if you", "had a car.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "But is $10,000", "really fair?", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation lab_01 = {
@@ -3790,7 +3862,7 @@ const conversation temmie_02 = {
     {0, &sprite_items::db_ch_ginger, EM_HAPPY, ACT_DEFAULT, "Oh hi!!", "I've heard all", "about y'all!", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "we surviv on", "butter from", "da churn", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "What?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "butter from", "da churn", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "everythings gonna", "churn out ok", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation temmie_03 = {
@@ -3826,7 +3898,7 @@ const conversation temmie_07 = {
     {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "u gotta partake", "in da frot", "of da churn", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Fruit?", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_temmie, EM_EXCITED, ACT_DEFAULT, "frot of da churn", "yes", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "u gotta churn", "ur life around", "yknow", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "it'll churn y'all's", "life around", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "then we mail u", "yor honorary", "cowbemmie hat", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_temmie, EM_DEFAULT, ACT_DEFAULT, "an u can come", "to secret meetings", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
@@ -6061,7 +6133,7 @@ int main()
 
     // Set for debug
     global_data_ptr = new global_data();
-    global_data_ptr->process_stage = GARBAGE_TO_BLACK; // BLACK_TO_LAB;
+    global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
 
     // Test battle before game begins
     /*
@@ -6246,6 +6318,7 @@ constexpr int is_interactive_array[999] = {
     CHAT_COURIER,
     CHAT_PRIMARY,
     CHAT_WORMGUY,
+    CHAT_DOLL,
     BUY_TIRE,
     BUY_ENOKI,
     BUY_BANANA,
@@ -6770,6 +6843,7 @@ extern const conversation avalon_guy_02;
 extern const conversation avalon_shop_01;
 extern const conversation avalon_shop_01_alt_02;
 extern const conversation avalon_shop_01_alt_03;
+extern const conversation avalon_shop_02;
 extern const conversation avalon_sign_01;
 extern const conversation avalon_sign_02;
 extern const conversation avalon_sign_03;
@@ -6835,9 +6909,14 @@ extern const conversation garbage_sign02;
 extern const conversation garbage_sign03;
 extern const conversation garbage_sign04;
 extern const conversation garbage_sign05;
+extern const conversation garbage_spare;
 extern const conversation intro_01;
 extern const conversation intro_02;
 extern const conversation intro_03;
+extern const conversation item_banana_hat_01;
+extern const conversation item_enoki_01;
+extern const conversation item_lime_01;
+extern const conversation item_tire_01;
 extern const conversation lab_01;
 extern const conversation lab_02;
 extern const conversation lab_02b;
@@ -7706,7 +7785,7 @@ inline constexpr map map_shop_01 = {
 	10,6,55,56,57,58,38,6,38,9,
 	7,54,50,52,53,0,39,0,39,8,
 	7,1,1,1,1,0,32,34,36,8,
-	7,0,0,0,0,0,33,35,37,8,
+	7,0,0,0,0,0,0,0,0,8,
 	7,0,0,0,0,0,0,0,45,8,
 	7,0,0,0,0,0,0,0,0,8,
 	7,0,0,48,0,0,0,0,0,8,
@@ -7715,7 +7794,7 @@ inline constexpr map map_shop_01 = {
 	11,5,5,5,0,0,5,5,5,12
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,104,105,106,107,0,0,0,0,0,0,0,0,0,0,0,108,108,108,0,0,0,0,0,0,0,0,0,0,0,0,103,0,0,0,0,0,0,0,0,0,103,103,0,0,0,0,0,0,0,0,103,0,0,0,0,0,0,0,0,0,0,0,0,102,102,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,104,105,106,107,0,108,108,108,0,0,0,0,0,0,0,108,108,108,0,0,0,0,0,0,0,0,0,0,0,0,103,0,0,0,0,0,0,0,0,0,103,103,0,0,0,0,0,0,0,0,103,0,0,0,0,0,0,0,0,0,0,0,0,102,102,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

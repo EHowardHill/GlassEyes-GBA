@@ -36,6 +36,7 @@ constexpr int is_interactive_array[999] = {
     CHAT_COURIER,
     CHAT_PRIMARY,
     CHAT_WORMGUY,
+    CHAT_DOLL,
     BUY_TIRE,
     BUY_ENOKI,
     BUY_BANANA,
