@@ -103,6 +103,7 @@ extern const conversation garbage_sign02;
 extern const conversation garbage_sign03;
 extern const conversation garbage_sign04;
 extern const conversation garbage_sign05;
+extern const conversation garbage_spare;
 extern const conversation intro_01;
 extern const conversation intro_02;
 extern const conversation intro_03;

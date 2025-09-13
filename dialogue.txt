@@ -140,6 +140,10 @@ garbage_fight_03
 garbage_fight_04														
 	db_ch_visker	EM_ANNOYED		OW OW OW	"OKAY, HUMAN WIN"	HUMAN WIN								
 														
+garbage_spare														
+				SPARE is not	effective on	Visker.								
+				He seems very	resolute to fight.									
+														
 garbage_05														
 	db_ch_visker	EM_DISAPPOINTED		Fine.	Grrr.	Human can go.								
 	db_ch_visker	EM_DEFAULT		But if human	*dies*..	Remember..								

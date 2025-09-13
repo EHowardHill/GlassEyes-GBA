@@ -28,7 +28,6 @@ character *character_manager::add_character(int index, vector_2 position, int id
         return nullptr;
 
     // Create new character
-    BN_LOG("New Character: ", id);
     characters.push_back(make_unique<character>(index, position, this));
     character *new_char = characters.back().get();
     new_char->id = id;

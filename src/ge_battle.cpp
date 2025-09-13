@@ -380,9 +380,9 @@ int battle_map()
         convos[RESULT_UP].push_back(&garbage_fight_03);
         convos[RESULT_LAST_WIN].push_back(&garbage_fight_04);
 
+        spare_convos.push_back(&garbage_spare);
         spare_convos.push_back(&garbage_fight_02);
         spare_convos.push_back(&garbage_fight_03);
-        spare_convos.push_back(&garbage_fight_04);
         break;
 
     case FOE_VISKERS_02:
@@ -396,6 +396,7 @@ int battle_map()
         bs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
 
         convos[RESULT_FIRST].push_back(&garbage_fight_05);
+        spare_convos.push_back(&garbage_spare);
         break;
 
     case FOE_CROKE_01:
