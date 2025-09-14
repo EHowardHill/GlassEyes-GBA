@@ -41,4 +41,5 @@ constexpr int is_interactive_array[999] = {
     BUY_ENOKI,
     BUY_BANANA,
     BUY_LIME,
+    NEW_BERLIN_SIGN,
     -1};

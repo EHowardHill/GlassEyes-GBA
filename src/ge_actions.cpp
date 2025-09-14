@@ -380,13 +380,18 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 }
                 break;
             }
+            case NEW_BERLIN_SIGN:
+            {
+                global_data_ptr->process_stage = NEW_BERLIN;
+                return NEW_CHAPTER;
+            }
             default:
             {
                 break;
             }
             }
         }
-        else if (action != 0 && !is_interactive(action) && !action_triggered)
+        else if (action != 0 && !action_triggered)
         {
             action_triggered = true; // Mark as triggered
 
@@ -433,21 +438,21 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 global_data_ptr->entry_map = &map_garbage_02;
                 global_data_ptr->entry_position = {2, 6};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case TO_GARBAGE_02b:
             {
                 global_data_ptr->entry_map = &map_garbage_02;
                 global_data_ptr->entry_position = {13, 2};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case TO_VISKERS_HOUSE:
             {
                 global_data_ptr->entry_map = &map_viskers_house;
                 global_data_ptr->entry_position = {3, 5};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case CONVO_VISKER_BED:
@@ -484,7 +489,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 global_data_ptr->entry_map = &map_garbage_03;
                 global_data_ptr->entry_position = {1, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case CONVO_VISKER_FIGHT:
@@ -507,7 +512,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 global_data_ptr->entry_map = &map_garbage_04;
                 global_data_ptr->entry_position = {29, 4};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case GARBAGE_04_EXIT_01:
@@ -516,13 +521,13 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 {
                     global_data_ptr->entry_map = &map_garbage_03;
                     global_data_ptr->entry_position = {2, 8};
-                    return 1;
+                    return NEW_MAP;
                 }
                 else
                 {
                     global_data_ptr->entry_map = &map_garbage_05;
                     global_data_ptr->entry_position = {4, 45};
-                    return 1;
+                    return NEW_MAP;
                 }
                 break;
             }
@@ -530,28 +535,28 @@ int action_listener(map_manager *man, character_manager *ch_man)
             {
                 global_data_ptr->entry_map = &map_garbage_04;
                 global_data_ptr->entry_position = {10, 12};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case GARBAGE_04_EXIT_03:
             {
                 global_data_ptr->entry_map = &map_garbage_04;
                 global_data_ptr->entry_position = {2, 20};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case GARBAGE_04_EXIT_04:
             {
                 global_data_ptr->entry_map = &map_garbage_04;
                 global_data_ptr->entry_position = {29, 12};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case GARBAGE_04_EXIT_05:
             {
                 global_data_ptr->entry_map = &map_garbage_04;
                 global_data_ptr->entry_position = {29, 20};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case EXIT_GARBAGE_01:
@@ -701,7 +706,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->ginger_position = {6, 12};
                 global_data_ptr->bg_track = nullptr;
                 music::stop();
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case FROM_CAVE_01:
@@ -711,7 +716,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->ginger_position = {66, 3};
                 global_data_ptr->bg_track = &music_items::forest_01;
                 music::stop();
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case CONVO_CAVE_01:
@@ -729,7 +734,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_02;
                 global_data_ptr->entry_position = {3, 30};
                 global_data_ptr->ginger_position = {2, 30};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case FOREST_01_SETUP:
@@ -772,7 +777,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_forest_01;
                 global_data_ptr->entry_position = {105, 3};
                 global_data_ptr->ginger_position = {104, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_55:
@@ -780,7 +785,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {19, 30};
                 global_data_ptr->ginger_position = {20, 30};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_56:
@@ -788,7 +793,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_02;
                 global_data_ptr->entry_position = {28, 3};
                 global_data_ptr->ginger_position = {29, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_57:
@@ -796,7 +801,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {16, 4};
                 global_data_ptr->ginger_position = {15, 4};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_58:
@@ -804,7 +809,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {16, 16};
                 global_data_ptr->ginger_position = {15, 16};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_59:
@@ -812,7 +817,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {30, 19};
                 global_data_ptr->ginger_position = {31, 19};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_60:
@@ -820,7 +825,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {29, 3};
                 global_data_ptr->ginger_position = {30, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_61:
@@ -828,7 +833,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {12, 11};
                 global_data_ptr->ginger_position = {11, 11};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_62:
@@ -836,7 +841,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {12, 21};
                 global_data_ptr->ginger_position = {11, 21};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_63:
@@ -844,7 +849,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {4, 3};
                 global_data_ptr->ginger_position = {5, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_64:
@@ -852,7 +857,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {28, 11};
                 global_data_ptr->ginger_position = {29, 11};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_65:
@@ -860,7 +865,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {2, 24};
                 global_data_ptr->ginger_position = {2, 23};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_66:
@@ -868,7 +873,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {13, 8};
                 global_data_ptr->ginger_position = {13, 7};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_67:
@@ -878,7 +883,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->ginger_position = {1, 3};
                 global_data_ptr->bg_track = &music_items::bg_dixieland;
                 music::stop();
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case ACT_68:
@@ -888,7 +893,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->ginger_position = {6, 23};
                 global_data_ptr->bg_track = &music_items::forest_01;
                 music::stop();
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case BACK_TO_CAVE_03:
@@ -896,7 +901,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_03;
                 global_data_ptr->entry_position = {5, 15};
                 global_data_ptr->ginger_position = {4, 15};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case TO_FOREST_02b:
@@ -904,7 +909,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_forest_02;
                 global_data_ptr->entry_position = {2, 3};
                 global_data_ptr->ginger_position = {1, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case TO_FOREST_03:
@@ -917,7 +922,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 music::stop();
                 global_data_ptr->bg_track = &music_items::bg_avalon;
                 global_data_ptr->bg_track->play(0.5);
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case TO_CAVE_04:
@@ -925,7 +930,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_cave_04;
                 global_data_ptr->entry_position = {16, 3};
                 global_data_ptr->ginger_position = {15, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case BACK_TO_FOREST_02:
@@ -933,7 +938,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->entry_map = &map_forest_02;
                 global_data_ptr->entry_position = {27, 3};
                 global_data_ptr->ginger_position = {26, 3};
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case TO_AVALON_SHOP_01:
@@ -945,7 +950,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 music::stop();
                 global_data_ptr->bg_track = &music_items::shop;
                 global_data_ptr->bg_track->play(0.5);
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case OUT_AVALON_SHOP_01:
@@ -957,7 +962,7 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 music::stop();
                 global_data_ptr->bg_track = &music_items::bg_avalon;
                 global_data_ptr->bg_track->play(0.5);
-                return 1;
+                return NEW_MAP;
                 break;
             }
             case FINAL_MSG_ACTION:
@@ -969,6 +974,13 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     ch_man->db->init(ch_man);
                 }
                 break;
+            }
+            case NEW_BERLIN_SIGN:
+            {
+                if (man->bg_ptr.has_value())
+                {
+                    man->bg_ptr.value().set_visible(true);
+                }
             }
             default:
             {

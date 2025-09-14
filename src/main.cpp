@@ -19,6 +19,7 @@
 #include "bn_regular_bg_items_floor_wood01.h"
 #include "bn_regular_bg_items_big_bg_forest_01.h"
 #include "bn_regular_bg_items_bg_gameover.h"
+#include "bn_regular_bg_items_scene_berlin01.h"
 
 #include "main.h"
 #include "ge_globals.h"
@@ -69,6 +70,19 @@ int navigate_map()
     {
         auto croke = char_mgr.find_by_index(CHAR_CROKE);
         croke->idle_animation = &croke_lay_down;
+    }
+
+    vector_2 spawn_pos = {
+        global_data_ptr->entry_position.x * 32,
+        global_data_ptr->entry_position.y * 32};
+    int spawn_action = current_map.action(spawn_pos);
+
+    if (spawn_action == NEW_BERLIN_SIGN)
+    {
+        if (current_map.bg_ptr.has_value())
+        {
+            current_map.bg_ptr.value().set_visible(true);
+        }
     }
 
     int loop_value = 0;
@@ -160,6 +174,7 @@ enum TYPEWRITER_SCENES
     TYPEWRITER_TITLE,
     TYPEWRITER_GARBAGE,
     TYPEWRITER_MSG,
+    TYPEWRITER_NEW_BERLIN,
     TYPEWRITER_GAME_OVER,
     TYPEWRITER_BUFFER
 };
@@ -222,6 +237,14 @@ void typewriter(int scene)
     {
         music_items::shop.play();
         current_conversation = &final_msg;
+        type = TYPE_TEXT;
+        break;
+    }
+    case TYPEWRITER_NEW_BERLIN:
+    {
+        music::stop();
+        frame = regular_bg_items::scene_berlin01.create_bg(0, 0);
+        current_conversation = &new_berlin_sign;
         type = TYPE_TEXT;
         break;
     }
@@ -356,9 +379,11 @@ int main()
             {
             case TEST_MAP:
             {
-                global_data_ptr->entry_map = &map_cave_02;
-                global_data_ptr->entry_position = {3, 30};
-                global_data_ptr->ginger_position = {2, 30};
+                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
+                global_data_ptr->bg_track = &music_items::forest_01;
+                global_data_ptr->entry_map = &map_forest_02;
+                global_data_ptr->entry_position = {2, 3};
+                global_data_ptr->ginger_position = {1, 3};
                 break;
             }
             case CUTSCENE_01:
@@ -404,6 +429,18 @@ int main()
                 global_data_ptr->entry_map = &map_forest_01;
                 global_data_ptr->entry_position = {6, 8};
                 global_data_ptr->ginger_position = {5, 8};
+                global_data_ptr->bg_track = &music_items::forest_01;
+                break;
+            }
+            case NEW_BERLIN:
+            {
+                typewriter(TYPEWRITER_NEW_BERLIN);
+
+                // Return
+                global_data_ptr->bg = &regular_bg_items::big_bg_forest_01;
+                global_data_ptr->entry_map = &map_forest_02;
+                global_data_ptr->entry_position = {15, 5};
+                global_data_ptr->ginger_position = {14, 5};
                 global_data_ptr->bg_track = &music_items::forest_01;
                 break;
             }

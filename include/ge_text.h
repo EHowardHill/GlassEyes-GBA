@@ -26,6 +26,7 @@ enum progress
     FOREST_01,
     FINAL_MSG,
     AVALON,
+    NEW_BERLIN,
     TEST_MAP
 };
 
