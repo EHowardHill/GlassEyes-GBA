@@ -736,3 +736,12 @@ final_msg
 				This village is	only partially done	for now.								
 				"Discord, X, BlueSky:"		"""@cinemint"""								
 				Feel free to reach	out! Take care!	~ Cinemint								
+														
+youtube_ad														
+				"10 years ago,"	Toby Fox released	"""Undertale"" for PC."								
+				"That same year,"	I released my oldest	fantasy novel.								
+				"In some ways,"	the two works were	very similar.								
+				"In other ways,"	they were not.									
+				To celebrate the	"anniversary of both,"	"however,"								
+				I've decided to	adapt the latter in	the former's style.								
+				An early demo is	now available on	Itch.io!								

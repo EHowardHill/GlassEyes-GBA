@@ -176,7 +176,8 @@ enum TYPEWRITER_SCENES
     TYPEWRITER_MSG,
     TYPEWRITER_NEW_BERLIN,
     TYPEWRITER_GAME_OVER,
-    TYPEWRITER_BUFFER
+    TYPEWRITER_BUFFER,
+    TYPEWRITER_YT_AD
 };
 
 enum TYPEWRITER_TYPE
@@ -263,6 +264,13 @@ void typewriter(int scene)
             core::update();
         }
 
+        break;
+    }
+    case TYPEWRITER_YT_AD:
+    {
+        frame = regular_bg_items::scene_cabin01.create_bg(0, 0);
+        current_conversation = &youtube_ad;
+        type = TYPE_TEXT;
         break;
     }
     default:
@@ -461,6 +469,11 @@ int main()
                 {
                     core::update();
                 }
+                break;
+            }
+            case YOUTUBE_AD:
+            {
+                typewriter(TYPEWRITER_YT_AD);
                 break;
             }
             default:

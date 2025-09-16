@@ -27,6 +27,7 @@ enum progress
     FINAL_MSG,
     AVALON,
     NEW_BERLIN,
+    YOUTUBE_AD,
     TEST_MAP
 };
 

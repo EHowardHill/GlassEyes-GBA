@@ -144,5 +144,6 @@ extern const conversation tunnel_01;
 extern const conversation visker_h_01;
 extern const conversation visker_h_02;
 extern const conversation visker_h_03;
+extern const conversation youtube_ad;
 
 #endif // GE_DIALOGUE_H
