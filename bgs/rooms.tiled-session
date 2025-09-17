@@ -76,8 +76,8 @@
             "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 396.66666666666663,
-                "y": 467.66666666666663
+                "x": 247,
+                "y": 418
             }
         },
         "maps/garbage_01.tmx": {
@@ -196,12 +196,12 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "C:/Users/ethan/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
-    "map.height": 10,
+    "last.imagePath": "C:/Users/ethan/OneDrive/Documents/GitHub/GlassEyes-GBA/bgs/tilesets",
+    "map.height": 12,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,
     "map.tileWidth": 32,
-    "map.width": 10,
+    "map.width": 16,
     "openFiles": [
         "maps/forest_03.tmx"
     ],

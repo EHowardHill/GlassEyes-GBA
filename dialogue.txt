@@ -574,7 +574,7 @@ avalon_sign_03_alt_02
 	db_ch_ginger	EM_DEFAULT		Only problem is	then they gotta go	replace the statues.								
 														
 avalon_sign_04														
-				AVALON TAVERN		BYOB								
+				SCRUFFY'S TAVERN		BYOB								
 														
 avalon_sign_05														
 	db_ch_ginger	EM_DEFAULT		"Give me a moment,"	I think I can	read this..								
@@ -627,7 +627,7 @@ avalon_wormguy_01
 	db_ch_wormguy	EM_DEFAULT		(shush!!)	(human doesn't	know that!!)								
 	db_ch_wormguy	EM_DEFAULT		The wicked fairies	of the wood turned	by beloved daughter								
 	db_ch_wormguy	EM_DEFAULT		Into a statue!	(The horror!)									
-	db_ch_wormguy	EM_DEFAULT		If you pay me	"one $ however,"	I can show you								
+	db_ch_wormguy	EM_DEFAULT		If you pay me	"1G however,"	I can show you								
 	db_ch_wormguy	EM_DEFAULT		her sorry fate.										
 				"No way, worm guy."	Sure. Why not.								&avalon_wormguy_01_alt_01	
 	db_ch_wormguy	EM_DEFAULT		You will regret it!	I hope YOU turn to	a statue as well!								
@@ -675,7 +675,7 @@ avalon_courier_03_alt_01
 														
 avalon_courier_04														
 	db_ch_ginger	EM_DEFAULT		"Sir, we need this"	turkey delivered to	the garbage pile.								
-	db_ch_courier	EM_DEFAULT		My fee is $5.										
+	db_ch_courier	EM_DEFAULT		My fee is 5G.										
 	db_ch_ginger	EM_DEFAULT		Oh.. Heheh..	I apologize then.									
 	db_ch_courier	EM_DEFAULT		I would deliver it	for free if my	client was royalty.								
 	db_ch_ginger	EM_SIDE_EYE		"Gee, it's a shame"	that I'm not royalty	"then, huh."								
@@ -685,7 +685,7 @@ avalon_shop_01
 	db_ch_primary	EM_DEFAULT		How'se you two	fine folks doin on a	day like today?								
 	db_ch_ginger	EM_HAPPY		I'm doing well!										
 	db_ch_primary	EM_DEFAULT		"I'm not, this"	town sucks so bad									
-	db_ch_primary	EM_DEFAULT		I'd move but I spent	"like $500,000 on"	this shop								
+	db_ch_primary	EM_DEFAULT		I'd move but I spent	"like 500,000G on"	this shop								
 	db_ch_primary	EM_DEFAULT		I need to pay it all	off first									
 				Well that sucks	You didn't rent?	I'll buy the shop.							&avalon_shop_01_alt_02	&avalon_shop_01_alt_03
 	db_ch_primary	EM_DEFAULT		You'se can buy	my things though									
@@ -694,7 +694,7 @@ avalon_shop_01_alt_02
 	db_ch_primary	EM_DEFAULT		I value ownership										
 														
 avalon_shop_01_alt_03														
-	db_ch_primary	EM_DEFAULT		Come back with	"$500,000 and let's"	"chat some more, ok?"								
+	db_ch_primary	EM_DEFAULT		Come back with	"500,000G and let's"	"chat some more, ok?"								
 														
 doll_guy_01														
 	db_ch_ginger	EM_HAPPY		"Hey, look at this"	"doll, it's kinda"	cute.								
@@ -709,13 +709,13 @@ doll_guy_01
 														
 item_tire_01														
 				A tire would be	"fantastic, if you"	had a car.								
-				"But is $10,000"	really fair?									
+				"But is 10,000G"	really fair?									
 														
 item_enoki_01														
 	db_ch_ginger	EM_SIDE_EYE		Is this supposed to	be a human doll?									
 	db_ch_ginger	EM_DEFAULT		Her mouth is above	her eyes..									
 	db_ch_ginger	EM_HAPPY		It is cute.										
-	db_ch_ginger	EM_CONFUSED		..	"Maybe not ""$20,000"""	cute though.								
+	db_ch_ginger	EM_CONFUSED		..	"Maybe not ""20,000G"""	cute though.								
 														
 item_banana_hat_01														
 	db_ch_primary	EM_DEFAULT		We're running a	special on the	banana hat!								
@@ -723,7 +723,7 @@ item_banana_hat_01
 														
 item_lime_01														
 	db_ch_ginger	EM_DEFAULT		I don't think I	could ever get sick	of limes.								
-	db_ch_ginger	EM_ANNOYED		"$50,000 for a lime.."										
+	db_ch_ginger	EM_ANNOYED		"50,000G for a lime.."										
 	db_ch_primary	EM_DEFAULT		It's out of season.	And we're in the	woods.								
 														
 avalon_shop_02														
@@ -745,3 +745,109 @@ youtube_ad
 				To celebrate the	"anniversary of both,"	"however,"								
 				I've decided to	adapt the latter in	the former's style.								
 				An early demo is	now available on	Itch.io!								
+														
+scruffys_01														
+	db_ch_greyfriar	EM_DEFAULT		I can't believe	they'd slander me	like that!								
+	db_ch_greyfriar	EM_DEFAULT		My mates say	I've got a	"""gambling problem""."								
+	db_ch_greyfriar	EM_DEFAULT		I bet they're	making fun of me	right now.								
+				I'm bet they're not.	I bet you're right.								&scruffys_01_alt_01	
+	db_ch_greyfriar	EM_DEFAULT		..										
+	db_ch_greyfriar	EM_DEFAULT		I'll give you $10	if they're not.									
+														
+scruffys_01_alt_01														
+				"""B-Bet.."""	That word makes me	want to gamble..								
+														
+scruffys_02														
+	db_ch_jelly	EM_DEFAULT		And that's when I	"said, ""Yes. ALL of"	"the toenails."""								
+	db_ch_jelly	EM_DEFAULT		Um..	"Can I help you,"	human?								
+	db_ch_ginger	EM_DEFAULT		Do you know how	to get to	Canterbury?								
+	db_ch_jelly	EM_DEFAULT		"I asked the human,"	not you.	Rude.								
+				Where is Canterbury?	Goodbye.								&scruffys_02_alt_01	
+				So a human shows	up in the middle of	"Avalon,"								
+				And doesn't know	how to get to	Canterbury.								
+				Every mueto knows	how to get to	Canterbury.								
+				That's why the	gods love us more.									
+	db_ch_ginger	EM_DEFAULT		I don't-										
+				What?	Did I	hear something?								
+														
+scruffys_02_alt_01														
+				"Hey, check out the"	tollhouse on the	east side.								
+				That's the best way	to leave and never	come back.								
+														
+scruffys_03														
+	db_ch_shady	EM_DEFAULT		You look lost.										
+	db_ch_ginger	EM_DEFAULT		"Please, just let us"	know which way is	Canterbury.								
+	db_ch_shady	EM_DEFAULT		"Hey, hey, hey.."	No need to be in	such a hurry.								
+	db_ch_shady	EM_DEFAULT		Especially not a	sweet little thing	like you.								
+	db_ch_ginger	EM_DEFAULT		We need to get	out of here.	Now.								
+														
+scruffys_04														
+	db_ch_glompy	EM_DEFAULT		They don't got	alcohol here no	more.								
+	db_ch_glompy	EM_DEFAULT		I gotta drink this	lake water and	pretend a little.								
+	db_ch_glompy	EM_DEFAULT		Look at it.	I think it moved	on its own.								
+	db_ch_ginger	EM_DEFAULT		Surely there's	something else to	drink.								
+	db_ch_glompy	EM_DEFAULT		There is but I'd	have to get up.									
+	db_ch_glompy	EM_DEFAULT		If you two find	"somethin' else, I'll"	pay a little.								
+														
+scruffys_04b														
+	db_ch_glompy	EM_DEFAULT		"""How dry I am.."""		"""How dry I am.."""								
+														
+scruffys_04c														
+	db_ch_glompy	EM_DEFAULT		Oh!! Thank you!	"Here, take this,"	I don't need it.								
+				You found:	5G									
+scruffys_05														
+	db_ch_barry	EM_DEFAULT		A human..	They say your kind	is good at darts.								
+	db_ch_barry	EM_DEFAULT		"If you beat me,"	I'll give you 50G.	Deal?								
+				Deal.	No deal.								scruffys_05_alt_01	
+	db_ch_barry			Let's play!										
+		ACT_GAME								GAME_DARTS				
+														
+&scruffys_05_alt_01														
+	db_ch_barry	EM_DEFAULT		Too afraid.	I see.									
+														
+scruffys_05b														
+	db_ch_barry	EM_DEFAULT		I.. I can't..	YOU!	GLABBER!								
+				I'LL KILL YOU!!										
+														
+tollhouse_01														
+	db_ch_tollman	EM_DEFAULT		Ask not for	whom the bell	tolls..								
+	db_ch_tollman	EM_DEFAULT		For it might be	*I*!	The tollman!								
+	db_ch_ginger	EM_DEFAULT		You take your job	very seriously.									
+	db_ch_tollman	EM_DEFAULT		But of course I do.	I spent every	waking moment								
+	db_ch_tollman	EM_DEFAULT		of my life in this	booth.									
+	db_ch_tollman	EM_DEFAULT		If I didn't take it	"seriously, then my"	entire life would								
+	db_ch_tollman	EM_DEFAULT		be an enormous	waste.									
+	db_ch_tollman	EM_DEFAULT		Can't you see how	serious I am about	getting into heaven?								
+	db_ch_ginger	EM_DEFAULT		How much is	the toll?									
+	db_ch_tollman	EM_DEFAULT		50G.										
+	db_ch_ginger	EM_DEFAULT		50G?!										
+	db_ch_tollman	EM_DEFAULT		Of course.	How much is freedom	worth it to you?								
+	db_ch_ginger	EM_DEFAULT		I don't like this	toll man.									
+	db_ch_tollman	EM_DEFAULT		Your approval is	not the approval	I'm after.								
+														
+tollhouse_01b														
+	db_ch_tollman	EM_DEFAULT		You returned..	but not with 50G!									
+	db_ch_tollman	EM_DEFAULT		Your time may not	be meaningful to	"yourself,"								
+	db_ch_tollman	EM_DEFAULT		But my time is	the most precious	thing in the world!								
+	db_ch_tollman	EM_DEFAULT		Return.	But only with	enough.								
+														
+worm_action_01														
+				It seems that	someone left a	bottle here.								
+				Perhaps it's to pay	respects?	No clue.								
+				I'll take it.	I'll leave it be.								&worm_action_01_alt_01	
+				You found:	WINE BOTTLE									
+														
+worm_action_01_alt_01														
+				A considerate	choice.									
+														
+captive_01														
+	db_ch_ginger	EM_DEFAULT		W-WHERE ARE	WE?!									
+				In a cave.	Ow.								&captive_01_alt_01	
+	db_ch_ginger	EM_DEFAULT		I mean..	"Of course, but.."	What did..								
+	db_ch_ginger	EM_DEFAULT		I think we're	trapped down here!!									
+	db_ch_ginger	EM_DEFAULT		I-I knew this was	a bad idea..	I knew								
+	db_ch_ginger	EM_DEFAULT		I-I wasn't	supposed to leave..									
+	db_ch_ginger	EM_DEFAULT		W-We're gonna	die down here..									
+														
+captive_01_alt_01														
+	db_ch_ginger	EM_DEFAULT												
