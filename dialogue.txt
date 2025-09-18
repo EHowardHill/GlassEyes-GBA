@@ -775,11 +775,8 @@ scruffys_02_alt_01
 				That's the best way	to leave and never	come back.								
 														
 scruffys_03														
-	db_ch_shady	EM_DEFAULT		You look lost.										
-	db_ch_ginger	EM_DEFAULT		"Please, just let us"	know which way is	Canterbury.								
-	db_ch_shady	EM_DEFAULT		"Hey, hey, hey.."	No need to be in	such a hurry.								
-	db_ch_shady	EM_DEFAULT		Especially not a	sweet little thing	like you.								
-	db_ch_ginger	EM_DEFAULT		We need to get	out of here.	Now.								
+	db_ch_ginger	EM_DEFAULT		Can you help us	figure out how to	get to Canterbury?								
+	db_ch_horsey	EM_DEFAULT		…Nay.										
 														
 scruffys_04														
 	db_ch_glompy	EM_DEFAULT		They don't got	alcohol here no	more.								
@@ -851,3 +848,19 @@ captive_01
 														
 captive_01_alt_01														
 	db_ch_ginger	EM_DEFAULT												
+														
+scruffys_06														
+				"I'm sorry, we"	haven't gotten any	shipments in								
+				in weeks.	All we have is	water.								
+				1G per glass.										
+														
+scruffys_06b														
+	db_ch_robin	EM_DEFAULT		What can I get	for you?									
+	db_ch_robin	EM_DEFAULT		Water.	No water.								scruffys_06b_alt_01	
+	db_ch_robin	EM_DEFAULT		"One water,"	coming right up.									
+	db_ch_robin	EM_DEFAULT		You found:	WATER									
+														
+scruffys_06b_alt_01														
+	db_ch_robin	EM_DEFAULT		Your loss.										
+														
+henry_01														
