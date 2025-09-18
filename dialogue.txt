@@ -574,7 +574,7 @@ avalon_sign_03_alt_02
 	db_ch_ginger	EM_DEFAULT		Only problem is	then they gotta go	replace the statues.								
 														
 avalon_sign_04														
-				SCRUFFY'S TAVERN		BYOB								
+				THE RED ROBIN	TAVERN & INN	BYOB								
 														
 avalon_sign_05														
 	db_ch_ginger	EM_DEFAULT		"Give me a moment,"	I think I can	read this..								
