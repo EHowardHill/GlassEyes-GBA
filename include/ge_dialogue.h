@@ -24,8 +24,16 @@ typedef const dialogue_line conversation[128];
 #include "bn_sprite_items_db_ch_courier.h"
 #include "bn_sprite_items_db_ch_primary.h"
 #include "bn_sprite_items_db_ch_doll.h"
+#include "bn_sprite_items_db_ch_greyfriar.h"
+#include "bn_sprite_items_db_ch_jelly.h"
+#include "bn_sprite_items_db_ch_horsey.h"
+#include "bn_sprite_items_db_ch_glompy.h"
+#include "bn_sprite_items_db_ch_barry.h"
+#include "bn_sprite_items_db_ch_tollman.h"
+#include "bn_sprite_items_db_ch_robin.h"
 
 // Forward declarations for conversations
+extern const conversation &scruffys_05_alt_01;
 extern const conversation avalon_courier_01;
 extern const conversation avalon_courier_02;
 extern const conversation avalon_courier_03;
@@ -53,6 +61,8 @@ extern const conversation avalon_wormguy_01;
 extern const conversation avalon_wormguy_01_alt_01;
 extern const conversation avalon_wormguy_02;
 extern const conversation bridge_01;
+extern const conversation captive_01;
+extern const conversation captive_01_alt_01;
 extern const conversation cave_01;
 extern const conversation cave_01_alt_01;
 extern const conversation cave_sign_01;
@@ -131,6 +141,19 @@ extern const conversation leaving_lab_alt_01;
 extern const conversation leaving_lab_alt_02;
 extern const conversation leaving_lab_alt_03;
 extern const conversation new_berlin_sign;
+extern const conversation scruffys_01;
+extern const conversation scruffys_01_alt_01;
+extern const conversation scruffys_02;
+extern const conversation scruffys_02_alt_01;
+extern const conversation scruffys_03;
+extern const conversation scruffys_04;
+extern const conversation scruffys_04b;
+extern const conversation scruffys_04c;
+extern const conversation scruffys_05;
+extern const conversation scruffys_05b;
+extern const conversation scruffys_06;
+extern const conversation scruffys_06b;
+extern const conversation scruffys_06b_alt_01;
 extern const conversation temmie_01;
 extern const conversation temmie_02;
 extern const conversation temmie_03;
@@ -140,10 +163,14 @@ extern const conversation temmie_06;
 extern const conversation temmie_07;
 extern const conversation temmie_sign;
 extern const conversation test_convo;
+extern const conversation tollhouse_01;
+extern const conversation tollhouse_01b;
 extern const conversation tunnel_01;
 extern const conversation visker_h_01;
 extern const conversation visker_h_02;
 extern const conversation visker_h_03;
+extern const conversation worm_action_01;
+extern const conversation worm_action_01_alt_01;
 extern const conversation youtube_ad;
 
 #endif // GE_DIALOGUE_H

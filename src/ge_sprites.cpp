@@ -13,6 +13,12 @@
 #include "bn_sprite_items_spr_deadguy_01.h"
 #include "bn_sprite_items_spr_grandma_01.h"
 #include "bn_sprite_items_spr_primary_01.h"
+#include "bn_sprite_items_spr_tavern_goat.h"
+#include "bn_sprite_items_spr_tavern_bear.h"
+#include "bn_sprite_items_spr_tavern_birb.h"
+#include "bn_sprite_items_spr_tavern_honse.h"
+#include "bn_sprite_items_spr_tavern_robin.h"
+#include "bn_sprite_items_spr_sneaker_01.h"
 #include "bn_sprite_items_spr_elements.h"
 
 #include "ge_structs.h"
@@ -217,6 +223,36 @@ character::character(int index_, vector_2 start_, character_manager *manager) : 
     case CHAR_PRIMARY:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_primary_01;
+        break;
+    }
+    case CHAR_GOAT:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_tavern_goat;
+        break;
+    }
+    case CHAR_BEAR:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_tavern_bear;
+        break;
+    }
+    case CHAR_BIRB:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_tavern_birb;
+        break;
+    }
+    case CHAR_HONSE:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_tavern_honse;
+        break;
+    }
+    case CHAR_ROBIN:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_tavern_robin;
+        break;
+    }
+    case CHAR_SNEAKER:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_sneaker_01;
         break;
     }
     case ITEM_BUTTON:

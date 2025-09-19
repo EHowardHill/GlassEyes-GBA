@@ -83,6 +83,12 @@ enum character_list
     CHAR_WORMDUDE,
     CHAR_COURIER,
     CHAR_PRIMARY,
+    CHAR_GOAT,
+    CHAR_BEAR,
+    CHAR_BIRB,
+    CHAR_HONSE,
+    CHAR_ROBIN,
+    CHAR_SNEAKER,
     CHAR_SIZE,
     CHAR_TYPEWRITER
 };
@@ -111,7 +117,7 @@ struct character
     v_sprite_ptr v_sprite;
     const animation *current_animation;
     const animation *idle_animation;
-    character_manager *ch_man; // Now the compiler knows this is a pointer to a type
+    character_manager *ch_man;
 
     int id = 0;
     int index;

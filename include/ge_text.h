@@ -39,6 +39,11 @@ enum foes
     FOE_TEST
 };
 
+enum games
+{
+    GAME_DARTS
+};
+
 enum actions
 {
     ACT_DEFAULT,
@@ -55,6 +60,7 @@ enum actions
     ACT_CUE_GINGER,
     ACT_SFX_KNOCK,
     ACT_HP,
+    ACT_GAME,
     ACT_MUSIC_VISKER,
     ACT_MUSIC_GINGER,
     ACT_MUSIC_FADEOUT,

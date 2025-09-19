@@ -755,7 +755,7 @@ scruffys_01
 	db_ch_greyfriar	EM_DEFAULT		I'll give you $10	if they're not.									
 														
 scruffys_01_alt_01														
-				"""B-Bet.."""	That word makes me	want to gamble..								
+				"""B-Bet.."""	I feel..	An itch..								
 														
 scruffys_02														
 	db_ch_jelly	EM_DEFAULT		And that's when I	"said, ""Yes. ALL of"	"the toenails."""								
@@ -763,20 +763,20 @@ scruffys_02
 	db_ch_ginger	EM_DEFAULT		Do you know how	to get to	Canterbury?								
 	db_ch_jelly	EM_DEFAULT		"I asked the human,"	not you.	Rude.								
 				Where is Canterbury?	Goodbye.								&scruffys_02_alt_01	
-				So a human shows	up in the middle of	"Avalon,"								
-				And doesn't know	how to get to	Canterbury.								
-				Every mueto knows	how to get to	Canterbury.								
-				That's why the	gods love us more.									
+	db_ch_jelly			So a human shows	up in the middle of	"Avalon,"								
+	db_ch_jelly			And doesn't know	how to get to	Canterbury.								
+	db_ch_jelly			Every mueto knows	how to get to	Canterbury.								
+	db_ch_jelly			That's why the	gods love us more.									
 	db_ch_ginger	EM_DEFAULT		I don't-										
 				What?	Did I	hear something?								
 														
 scruffys_02_alt_01														
-				"Hey, check out the"	tollhouse on the	east side.								
-				That's the best way	to leave and never	come back.								
+	db_ch_jelly			"Hey, check out the"	tollhouse on the	east side.								
+	db_ch_jelly			That's the best way	to leave and never	come back.								
 														
 scruffys_03														
 	db_ch_ginger	EM_DEFAULT		Can you help us	figure out how to	get to Canterbury?								
-	db_ch_horsey	EM_DEFAULT		…Nay.										
+	db_ch_horsey	EM_DEFAULT		..Nay.										
 														
 scruffys_04														
 	db_ch_glompy	EM_DEFAULT		They don't got	alcohol here no	more.								
@@ -795,7 +795,7 @@ scruffys_04c
 scruffys_05														
 	db_ch_barry	EM_DEFAULT		A human..	They say your kind	is good at darts.								
 	db_ch_barry	EM_DEFAULT		"If you beat me,"	I'll give you 50G.	Deal?								
-				Deal.	No deal.								scruffys_05_alt_01	
+				Deal.	No deal.								&scruffys_05_alt_01	
 	db_ch_barry			Let's play!										
 		ACT_GAME								GAME_DARTS				
 														
@@ -856,7 +856,7 @@ scruffys_06
 														
 scruffys_06b														
 	db_ch_robin	EM_DEFAULT		What can I get	for you?									
-	db_ch_robin	EM_DEFAULT		Water.	No water.								scruffys_06b_alt_01	
+	db_ch_robin	EM_DEFAULT		Water.	No water.								&scruffys_06b_alt_01	
 	db_ch_robin	EM_DEFAULT		"One water,"	coming right up.									
 	db_ch_robin	EM_DEFAULT		You found:	WATER									
 														

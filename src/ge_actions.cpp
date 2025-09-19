@@ -385,6 +385,82 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 global_data_ptr->process_stage = NEW_BERLIN;
                 return NEW_CHAPTER;
             }
+            case CHAT_GOAT:
+            {
+                if (global_data_ptr->action_iterations[CHAT_GOAT] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&scruffys_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_BEAR:
+            {
+                if (global_data_ptr->action_iterations[CHAT_BEAR] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&scruffys_02);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_HORSE:
+            {
+                if (global_data_ptr->action_iterations[CHAT_HORSE] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&scruffys_03);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_BIRB:
+            {
+                if (global_data_ptr->action_iterations[CHAT_BIRB] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&scruffys_04);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case CHAT_SNEAKER:
+            {
+                if (global_data_ptr->action_iterations[CHAT_SNEAKER] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&scruffys_05);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case JUKEBOX_01:
+            {
+                music::stop();
+                music_items::shop.play();
+                break;
+            }
+            case CHAT_TOLLHOUSE:
+            {
+                if (global_data_ptr->action_iterations[CHAT_TOLLHOUSE] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&tollhouse_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
+            case WORM_ACTION:
+            {
+                if (global_data_ptr->action_iterations[WORM_ACTION] == 1)
+                {
+                    ch_man->db.emplace();
+                    ch_man->db->load(&tollhouse_01);
+                    ch_man->db->init(ch_man);
+                }
+                break;
+            }
             default:
             {
                 break;
