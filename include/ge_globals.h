@@ -158,6 +158,7 @@ struct global_data
 	bool progress_cue = false;
 	int process_stage = 0;
 	bool items[ITEMS_SIZE] = {0};
+	int gold = 0;
 
 	const music_item *bg_track;
 };

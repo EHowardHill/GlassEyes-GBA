@@ -61,6 +61,7 @@ enum actions
     ACT_SFX_KNOCK,
     ACT_HP,
     ACT_GAME,
+    ACT_GOLD,
     ACT_MUSIC_VISKER,
     ACT_MUSIC_GINGER,
     ACT_MUSIC_FADEOUT,
@@ -264,6 +265,7 @@ struct items_box
 {
     optional<regular_bg_ptr> box;
     optional<sprite_ptr> selector; // The "*" selector sprite
+    text gold = {nullptr, {-96, 48}};
     text lines[3] = {
         {nullptr, {-40, 32}},
         {nullptr, {-40, 48}},

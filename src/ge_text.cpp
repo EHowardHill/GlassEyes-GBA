@@ -153,6 +153,15 @@ void text::init(const char *value)
     index = 0;
 }
 
+void text::init(const string<20> &value)
+{
+    // Convert C-string to bn::string
+    reference = value;
+    letters.clear();
+    current_x = 0;
+    index = 0;
+}
+
 void text::update(const bn::sprite_item *portrait = nullptr, bool typewriter = false)
 {
     if (index >= reference.size() || is_ended())
@@ -438,6 +447,11 @@ void dialogue_box::init(character_manager *ch_man)
         {
             music::stop();
             global_data_ptr->bg_track->play(0.5);
+            break;
+        }
+        case ACT_GOLD:
+        {
+            global_data_ptr->gold += line.index;
             break;
         }
         case ACT_FIGHT:
@@ -871,6 +885,42 @@ void items_box::init()
     cursor_position = 0;
     scroll_offset = 0;
     active = true;
+
+    string<20> temp;
+    int value = global_data_ptr->gold;
+
+    if (value == 0)
+    {
+        temp.push_back('0');
+    }
+    else
+    {
+        // Build digits without std::to_string to stay consistent with your text pipeline
+        string<20> reversed;
+        bool is_negative = false;
+        if (value < 0)
+        {
+            is_negative = true;
+            value = -value;
+        }
+        while (value > 0)
+        {
+            reversed.push_back(digit_conv(value));
+            value /= 10;
+        }
+        if (is_negative)
+        {
+            temp.push_back('-');
+        }
+        for (int i = reversed.size() - 1; i >= 0; --i)
+        {
+            temp.push_back(reversed[i]);
+        }
+    }
+    temp.push_back('G'); // append the "G" suffix (e.g., "10G")
+
+    gold.init(temp); // set the reference string
+    gold.render();   // create the letters
 
     refresh_display();
 }
