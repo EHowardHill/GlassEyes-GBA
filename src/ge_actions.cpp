@@ -1058,6 +1058,30 @@ int action_listener(map_manager *man, character_manager *ch_man)
                     man->bg_ptr.value().set_visible(true);
                 }
             }
+            case TO_AVALON_TAVERN:
+            {
+                global_data_ptr->entry_map = &map_tavern_01;
+                global_data_ptr->entry_position = {8, 10};
+                global_data_ptr->ginger_position = {7, 10};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::theme_visker;
+                global_data_ptr->bg_track->play(0.5);
+                return NEW_MAP;
+                break;
+            }
+            case FROM_AVALON_TAVERN:
+            {
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {24, 14};
+                global_data_ptr->ginger_position = {23, 14};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::bg_avalon;
+                global_data_ptr->bg_track->play(0.5);
+                return NEW_MAP;
+                break;
+            }
             default:
             {
                 break;

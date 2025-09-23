@@ -16,8 +16,6 @@
 
 using namespace bn;
 
-// --- FIX: Forward declare these structs ---
-// This tells the compiler these types exist without needing the full file.
 struct character_manager;
 struct map_manager;
 
@@ -89,6 +87,7 @@ enum character_list
     CHAR_HONSE,
     CHAR_ROBIN,
     CHAR_SNEAKER,
+    CHAR_TOLLBOOTH,
     CHAR_SIZE,
     CHAR_TYPEWRITER
 };

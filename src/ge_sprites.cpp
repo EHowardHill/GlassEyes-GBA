@@ -19,6 +19,7 @@
 #include "bn_sprite_items_spr_tavern_honse.h"
 #include "bn_sprite_items_spr_tavern_robin.h"
 #include "bn_sprite_items_spr_sneaker_01.h"
+#include "bn_sprite_items_spr_tower_01.h"
 #include "bn_sprite_items_spr_elements.h"
 
 #include "ge_structs.h"
@@ -253,6 +254,11 @@ character::character(int index_, vector_2 start_, character_manager *manager) : 
     case CHAR_SNEAKER:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_sneaker_01;
+        break;
+    }
+    case CHAR_TOLLBOOTH:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_tower_01;
         break;
     }
     case ITEM_BUTTON:

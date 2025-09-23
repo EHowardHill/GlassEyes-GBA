@@ -5,9 +5,9 @@
     },
     "activeFile": "maps/forest_03.tmx",
     "expandedProjectPaths": [
-        ".",
+        "tilesets",
         "maps",
-        "tilesets"
+        "."
     ],
     "exportAsImage.includeBackgroundColor": true,
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -28,8 +28,8 @@
             "scale": 0.75,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 368,
-                "y": 342
+                "x": 367.9999999999999,
+                "y": 693.3333333333333
             }
         },
         "maps/cave_03.tmx": {
@@ -74,10 +74,10 @@
         },
         "maps/forest_03.tmx": {
             "scale": 1.5,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 338.66666666666663,
-                "y": 421
+                "x": 916.6666666666667,
+                "y": 435.33333333333337
             }
         },
         "maps/garbage_01.tmx": {
@@ -144,6 +144,14 @@
                 "y": 159.75
             }
         },
+        "maps/tavern_01.tmx": {
+            "scale": 1.59013671875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 423.23404777989316,
+                "y": 210.6737087760241
+            }
+        },
         "maps/viskers_house.tmx": {
             "scale": 1.8356770833333333,
             "selectedLayer": 2,
@@ -187,6 +195,9 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "tilesets/tavern01.tsx": {
+            "scaleInDock": 1
+        },
         "tilesets/underground01.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
@@ -203,22 +214,24 @@
     "map.tileWidth": 32,
     "map.width": 16,
     "openFiles": [
-        "maps/forest_03.tmx"
+        "maps/forest_03.tmx",
+        "maps/tavern_01.tmx",
+        "maps/cave_02.tmx"
     ],
     "project": "rooms.tiled-project",
     "recentFiles": [
+        "maps/cave_02.tmx",
+        "maps/tavern_01.tmx",
         "maps/forest_03.tmx",
         "maps/cave_03.tmx",
         "maps/garbage_04.tmx",
         "maps/forest_02.tmx",
         "maps/garbage_03.tmx",
-        "maps/cave_02.tmx",
         "maps/garbage_05.tmx",
         "maps/shop_01.tmx",
         "tilesets/room02.tsx",
         "maps/lab_01.tmx",
-        "maps/cave_cowbemmie.tmx",
-        "maps/viskers_house.tmx"
+        "maps/cave_cowbemmie.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

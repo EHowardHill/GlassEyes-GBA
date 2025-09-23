@@ -100,12 +100,7 @@ def create_tiled_bmp(png_path, output_path, grid_size, tile_indices, sprite_size
             f"Expected {expected_tiles} tile indices, got {len(tile_indices)}"
         )
 
-    # Check if all indices are valid (0 means empty, 1 to num_sprites are valid sprites)
-    for idx in tile_indices:
-        if idx < 0 or idx > num_sprites:
-            raise ValueError(
-                f"Invalid sprite index {idx}. Must be between 0 and {num_sprites}"
-            )
+    tile_indices = [t if t >= 0 and t <= num_sprites else 0 for t in tile_indices]
 
     # Create output image
     output_width = grid_width * sprite_size
