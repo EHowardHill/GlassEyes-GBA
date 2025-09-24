@@ -272,8 +272,9 @@ includes_dir = "include"
 
 with open(os.path.join(includes_dir, "ge_map_data.h"), "w") as f:
     f.write(
-        header_template.replace("$includes", "\n".join(full_headers))
-        .replace("$definitions", "\n".join(full_data))
+        header_template.replace("$includes", "\n".join(full_headers)).replace(
+            "$definitions", "\n".join(full_data)
+        )
     )
 
 # No .cpp file needed anymore

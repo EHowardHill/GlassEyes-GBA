@@ -1083,6 +1083,40 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return NEW_MAP;
                 break;
             }
+            case TO_SPAMTON:
+            {
+                global_data_ptr->entry_map = &map_forest_04;
+                global_data_ptr->entry_position = {4, 7};
+                global_data_ptr->ginger_position = {3, 7};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::bg_spamton;
+                global_data_ptr->bg_track->play(0.5);
+                return NEW_MAP;
+                break;
+            }
+            case FROM_SPAMTON:
+            {
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {6, 2};
+                global_data_ptr->ginger_position = {6, 1};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::bg_avalon;
+                global_data_ptr->bg_track->play(0.5);
+                return NEW_MAP;
+                break;
+            }
+            case GO_SPAMTON_GO:
+            {
+                auto st = ch_man->find_by_index(CHAR_SPAMTON);
+                if (st != nullptr)
+                {
+                    st->idle_animation = &spamton_anim;
+                    st->current_animation = &spamton_anim;
+                }
+                break;
+            }
             default:
             {
                 break;
@@ -4010,7 +4044,7 @@ const conversation scruffys_01 = {
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation scruffys_01_alt_01 = {
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "\"B-Bet..\"", "That word makes me", "want to gamble..", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "\"B-Bet..\"", "I feel..", "An itch..", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation scruffys_02 = {
@@ -4019,22 +4053,22 @@ const conversation scruffys_02 = {
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Do you know how", "to get to", "Canterbury?", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_jelly, EM_DEFAULT, ACT_DEFAULT, "I asked the human,", "not you.", "Rude.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Where is Canterbury?", "Goodbye.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, &scruffys_02_alt_01, static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "So a human shows", "up in the middle of", "Avalon,", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "And doesn't know", "how to get to", "Canterbury.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Every mueto knows", "how to get to", "Canterbury.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "That's why the", "gods love us more.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_jelly, EM_DEFAULT, ACT_DEFAULT, "So a human shows", "up in the middle of", "Avalon,", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_jelly, EM_DEFAULT, ACT_DEFAULT, "And doesn't know", "how to get to", "Canterbury.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_jelly, EM_DEFAULT, ACT_DEFAULT, "Every mueto knows", "how to get to", "Canterbury.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_jelly, EM_DEFAULT, ACT_DEFAULT, "That's why the", "gods love us more.", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "I don't-", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "What?", "Did I", "hear something?", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation scruffys_02_alt_01 = {
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "Hey, check out the", "tollhouse on the", "east side.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, nullptr, EM_DEFAULT, ACT_DEFAULT, "That's the best way", "to leave and never", "come back.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_jelly, EM_DEFAULT, ACT_DEFAULT, "Hey, check out the", "tollhouse on the", "east side.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_jelly, EM_DEFAULT, ACT_DEFAULT, "That's the best way", "to leave and never", "come back.", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation scruffys_03 = {
     {0, &sprite_items::db_ch_ginger, EM_DEFAULT, ACT_DEFAULT, "Can you help us", "figure out how to", "get to Canterbury?", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
-    {0, &sprite_items::db_ch_horsey, EM_DEFAULT, ACT_DEFAULT, "…Nay.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
+    {0, &sprite_items::db_ch_horsey, EM_DEFAULT, ACT_DEFAULT, "..Nay.", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)},
     {0, nullptr, EM_DEFAULT, ACT_END, "", "", "", false, SIZE_DEFAULT, SP_DEFAULT, 0, static_cast<const animation*>(nullptr), {0, 0}, static_cast<const conversation*>(nullptr), static_cast<const conversation*>(nullptr)}};
 
 const conversation scruffys_04 = {
@@ -4221,6 +4255,917 @@ const conversation youtube_ad = {
 
 
 
+ge_games.cpp: 
+// ge_battle.cpp
+
+#include "bn_core.h"
+#include "bn_keypad.h"
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_sound_items.h"
+#include "bn_random.h"
+
+#include "bn_regular_bg_items_bg_battle_grid.h"
+#include "bn_regular_bg_items_bg_dialogue_box.h"
+#include "bn_sprite_items_hearts.h"
+#include "bn_sprite_items_battle_icons.h"
+#include "bn_sprite_items_battle_chars.h"
+#include "bn_sprite_items_battle_squares.h"
+
+#include "bn_sprite_items_dartboard.h"
+#include "bn_sprite_items_darts.h"
+
+#include "ge_text.h"
+#include "ge_character_manager.h"
+#include "ge_dialogue.h"
+#include "ge_games.h"
+
+using namespace bn;
+
+// Dialogue functions
+static void init_dialogue(conversation *conv, game_state *gs)
+{
+    if (!gs->bg_ptr)
+    {
+        gs->bg_ptr = regular_bg_items::bg_dialogue_box.create_bg(0, 0);
+    }
+
+    gs->active_conv = conv;
+    gs->dlg_index = 0;
+    gs->dlg_size = 0;
+    gs->dlg_ticker = 0;
+
+    // Count lines
+    for (int i = 0; i < 64 && (*conv)[i].action != ACT_END; ++i)
+    {
+        gs->dlg_size++;
+    }
+
+    if (gs->dlg_size > 0)
+    {
+        const auto &line = (*conv)[0];
+        if (line.portrait)
+        {
+            gs->portrait = line.portrait->create_sprite(-84, 56, line.emotion);
+        }
+
+        for (int i = 0; i < 3; ++i)
+        {
+            gs->dlg_lines[i].init(line.raw_text[i]);
+            gs->dlg_lines[i].size = line.size;
+        }
+    }
+}
+
+static void update_dialogue(game_state *gs)
+{
+    if (!gs->active_conv || gs->dlg_index >= gs->dlg_size)
+        return;
+
+    const auto &line = (*gs->active_conv)[gs->dlg_index];
+
+    // Update portrait animation
+    if (gs->portrait && line.portrait)
+    {
+        gs->portrait->set_tiles(line.portrait->tiles_item(),
+                                (line.emotion * 2) + (gs->dlg_ticker % 12 < 6));
+    }
+
+    // Update text
+    if (gs->dlg_ticker % 3 == 0)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            if (!gs->dlg_lines[i].is_ended())
+            {
+                gs->dlg_lines[i].update(line.portrait, false);
+                break;
+            }
+        }
+    }
+
+    // Update letter effects
+    for (int i = 0; i < 3; ++i)
+    {
+        for (auto &letter : gs->dlg_lines[i].letters)
+        {
+            letter.update(line.shake, line.size);
+        }
+    }
+
+    gs->dlg_ticker++;
+}
+
+static bool advance_dialogue(game_state *gs)
+{
+    if (gs->dlg_index < gs->dlg_size - 1)
+    {
+        gs->dlg_index++;
+        gs->dlg_ticker = 0;
+
+        const auto &line = (*gs->active_conv)[gs->dlg_index];
+
+        if (line.portrait)
+        {
+            gs->portrait = line.portrait->create_sprite(-84, 56, line.emotion);
+        }
+        else
+        {
+            gs->portrait.reset();
+        }
+
+        for (int i = 0; i < 3; ++i)
+        {
+            gs->dlg_lines[i].init(line.raw_text[i]);
+            gs->dlg_lines[i].size = line.size;
+        }
+        return true;
+    }
+    return false;
+}
+
+static void clear_dialogue(game_state *gs)
+{
+    gs->bg_ptr.reset();
+    gs->portrait.reset();
+    gs->active_conv = nullptr;
+    gs->dlg_ticker = 0;
+    for (int i = 0; i < 3; ++i)
+    {
+        gs->dlg_lines[i].letters.clear();
+        gs->dlg_lines[i].index = 0;
+        gs->dlg_lines[i].size = 0;
+    }
+}
+
+static bool is_dialogue_active(game_state *gs)
+{
+    return gs->active_conv && gs->dlg_index < gs->dlg_size;
+}
+
+static bool are_lines_complete(game_state *gs)
+{
+    return gs->dlg_lines[0].is_ended() &&
+           gs->dlg_lines[1].is_ended() &&
+           gs->dlg_lines[2].is_ended();
+}
+
+static int get_character_y_position(int index)
+{
+    // Stack characters vertically, with first character highest
+    return 8 - (index * 32);
+}
+
+static void update_character_animation(int char_index, game_state &gs)
+{
+    if (!gs.character_sprites[char_index])
+        return;
+
+    auto &sprite = gs.character_sprites[char_index];
+    int &state = gs.character_states[char_index];
+    int &ticker = gs.character_tickers[char_index];
+
+    // Get appropriate sprite item and frame ranges based on character
+    const sprite_item *spr_item = nullptr;
+    int idle_start, idle_end, hurt_start, hurt_end, atk_start, atk_end;
+    int intro_frames = 55; // Default intro length
+
+    switch (char_index)
+    {
+    case 0: // Jeremy
+        spr_item = &sprite_items::jeremy_battle;
+        idle_start = JEREMY_IDLE_START;
+        idle_end = JEREMY_IDLE_START; // Single frame idle for Jeremy
+        hurt_start = JEREMY_HURT_START;
+        hurt_end = JEREMY_HURT_END;
+        atk_start = JEREMY_ATK_START;
+        atk_end = JEREMY_ATK_END;
+        break;
+
+    case 1: // Ginger
+        spr_item = &sprite_items::ginger_battle;
+        idle_start = GINGER_IDLE_START;
+        idle_end = GINGER_IDLE_END;
+        hurt_start = GINGER_HURT_START;
+        hurt_end = GINGER_HURT_END;
+        atk_start = GINGER_ATK_START;
+        atk_end = GINGER_ATK_END;
+        intro_frames = 40;
+        break;
+
+    // Add cases for other characters as needed
+    default:
+        return; // Unknown character
+    }
+
+    int y_offset = get_character_y_position(char_index) + gs.y_delta;
+
+    switch (state)
+    {
+    case 0:
+    { // INTRO
+        if (ticker < intro_frames)
+        {
+            // Intro animation
+            if (char_index == 0) // Jeremy has special intro
+            {
+                sprite->set_tiles(spr_item->tiles_item(), ticker / 5);
+            }
+            else if (char_index == 1) // Ginger intro
+            {
+                // Ginger's intro uses frames 0-7 (before idle starts at 8)
+                int frame = ticker / 5;
+                if (frame >= idle_start)
+                {
+                    frame = idle_start - 1;
+                }
+                sprite->set_tiles(spr_item->tiles_item(), frame);
+            }
+            ticker++;
+        }
+        else
+        {
+            state = 1; // Go to idle
+            ticker = 0;
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        break;
+    }
+
+    case 1:
+    {                              // IDLE
+        if (idle_end > idle_start) // Animated idle
+        {
+            int frame = idle_start + ((ticker / 8) % (idle_end - idle_start + 1));
+            sprite->set_tiles(spr_item->tiles_item(), frame);
+            ticker++;
+        }
+        else // Static idle
+        {
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        break;
+    }
+
+    case 2: // HURT
+    {
+        constexpr int TICKS_PER_FRAME = 4;
+        int anim_frame_idx = ticker / TICKS_PER_FRAME;
+        int frame = hurt_start + anim_frame_idx;
+
+        if (frame > hurt_end)
+        {
+            state = 1; // Back to idle
+            ticker = 0;
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        else
+        {
+            sprite->set_tiles(spr_item->tiles_item(), frame);
+            ticker++;
+        }
+
+        break;
+    }
+
+    case 3: // ATTACK
+    {
+        constexpr int TICKS_PER_FRAME = 3;
+        int anim_frame_idx = ticker / TICKS_PER_FRAME;
+        int frame = atk_start + anim_frame_idx;
+
+        if (frame > atk_end)
+        {
+            state = 1; // Back to idle
+            ticker = 0;
+            sprite->set_tiles(spr_item->tiles_item(), idle_start);
+        }
+        else
+        {
+            sprite->set_tiles(spr_item->tiles_item(), frame);
+            ticker++;
+        }
+
+        break;
+    }
+
+    default:
+    {
+        break;
+    }
+    }
+
+    sprite->set_position(-96, y_offset);
+}
+
+static void init_dart_game(game_state &gs)
+{
+    gs.darts = dart_game();   // Reset dart game state
+    gs.darts.max_rounds = 12; // Explicitly set to 12 rounds
+
+    // Create dartboard
+    gs.darts.dartboard = sprite_items::dartboard.create_sprite(0, -16);
+    gs.darts.dartboard->set_z_order(1);
+
+    // Create crosshair (using a small icon or custom sprite)
+    gs.darts.crosshair = sprite_items::battle_icons.create_sprite(0, -16, 0);
+    gs.darts.crosshair->set_z_order(-1);
+
+    // Create power meter sprites
+    for (int i = 0; i < 5; ++i)
+    {
+        gs.darts.power_meter[i] = sprite_items::battle_squares.create_sprite(
+            -60 + (i * 8), 50, 0);
+        gs.darts.power_meter[i]->set_visible(false);
+    }
+
+    // Initialize score text displays
+    gs.darts.player_score_text = text("You: 0", {-100, 70});
+    gs.darts.enemy_score_text = text("Foe: 0", {60, 70});
+    gs.darts.round_text = text("Round 1/12", {-20, -70}); // Updated to show 12
+
+    gs.darts.state = DART_INTRO;
+    gs.darts.state_timer = 0;
+}
+
+static int calculate_dart_score(fixed x, fixed y)
+{
+    // Calculate distance from dartboard center (dartboard is at 0, -16)
+    // So we need to offset y by +16 to get distance from visual center
+    fixed center_y = y + 16; // Adjust for dartboard position
+    fixed dist = bn::sqrt((x * x) + (center_y * center_y));
+
+    // Score based on distance (dartboard has ~32 pixel radius)
+    if (dist < 4)
+        return 50; // Bullseye!
+    else if (dist < 8)
+        return 25; // Inner bull
+    else if (dist < 16)
+        return 20; // Triple zone
+    else if (dist < 24)
+        return 10; // Double zone
+    else if (dist < 32)
+        return 5; // Single zone
+    else
+        return 0; // Miss
+}
+
+static void update_dart_aiming(game_state &gs)
+{
+    auto &d = gs.darts;
+    d.wobble_timer++;
+
+    // MUCH slower - one full pattern every ~12 seconds (720 frames)
+    fixed t = fixed(d.wobble_timer % 12800) / 12800;
+
+    // Select pattern based on round
+    int pattern = d.current_round % 3;
+    fixed base_angle = t * 360; // Full rotation over the cycle
+
+    switch (pattern)
+    {
+
+    case 1: // Elliptical pattern - wider horizontally
+        d.aim_x = bn::cos(base_angle) * 30;
+        d.aim_y = -16 + bn::sin(base_angle) * 20;
+        // Add wobble
+        d.aim_x += bn::cos(base_angle * 3) * 5;
+        d.aim_y += bn::sin(base_angle * 3) * 5;
+        break;
+
+    default: // Spiraling pattern
+        fixed radius = 15 + (bn::sin(base_angle * 2) * 15);
+        d.aim_x = bn::cos(base_angle) * radius;
+        d.aim_y = -16 + bn::sin(base_angle) * radius;
+        break;
+    }
+
+    // Very occasional small drift
+    if (d.wobble_timer % 60 == 0)
+    {
+        bn::random rng;
+        d.random_jitter_x = rng.get_fixed(-2, 2);
+        d.random_jitter_y = rng.get_fixed(-2, 2);
+    }
+
+    // Fade jitter
+    d.random_jitter_x *= 0.98;
+    d.random_jitter_y *= 0.98;
+
+    // Update crosshair position
+    if (d.crosshair)
+    {
+        d.wobbled_aim_x = d.aim_x + d.random_jitter_x;
+        d.wobbled_aim_y = d.aim_y + d.random_jitter_y;
+        d.crosshair->set_position(d.wobbled_aim_x, d.wobbled_aim_y);
+    }
+
+    // Press A to lock aim
+    if (keypad::a_pressed())
+    {
+        d.state = DART_POWER;
+        d.power = 0;
+        d.power_direction = 2;
+        sound_items::snd_select.play();
+
+        for (auto &meter : d.power_meter)
+        {
+            if (meter)
+                meter->set_visible(true);
+        }
+    }
+}
+
+static void update_dart_power(game_state &gs)
+{
+    auto &d = gs.darts;
+
+    // Make power oscillation less predictable
+    bn::random rng;
+    int base_direction = d.power_direction.integer();
+
+    // Occasionally change direction unexpectedly
+    if (rng.get_int(100) < 3) // 3% chance each frame
+    {
+        d.power_direction = -d.power_direction;
+    }
+
+    // Variable power increment for less predictable timing
+    int power_increment = base_direction + rng.get_int(-1, 1);
+    d.power += power_increment;
+
+    if (d.power >= d.max_power || d.power <= 0)
+    {
+        d.power = bn::clamp(d.power, fixed(0), d.max_power);
+        d.power_direction = -d.power_direction;
+    }
+
+    // Update power meter visual
+    int filled_segments = (d.power / 20).integer();
+    for (int i = 0; i < 5; ++i)
+    {
+        if (d.power_meter[i])
+        {
+            d.power_meter[i]->set_tiles(
+                sprite_items::battle_squares.tiles_item(),
+                i < filled_segments ? 1 : 0);
+        }
+    }
+
+    // Press A to throw with current power
+    if (keypad::a_pressed())
+    {
+        d.state = DART_THROWING;
+        d.throw_timer = 0;
+
+        // Calculate throw trajectory with power strongly affecting accuracy
+        bn::random rng;
+
+        // Power ranges from 0 to 100 (max_power)
+        // Perfect power is 100, worst is 0
+        // Calculate accuracy: 1.0 at max power, 0.0 at min power
+        fixed accuracy = d.power / d.max_power;
+
+        // Invert to get error amount: 0 at max power, 1.0 at min power
+        fixed error_multiplier = 1.0 - accuracy;
+
+        // Scale error up to 48 pixels as requested
+        fixed max_error = 48;
+        fixed actual_error = max_error * error_multiplier;
+
+        // Apply random error based on power level
+        d.dart_target_x = d.wobbled_aim_x + rng.get_fixed(-actual_error, actual_error);
+        d.dart_target_y = d.wobbled_aim_y + rng.get_fixed(-actual_error, actual_error);
+
+        // Create dart sprite at starting position (always from left for player)
+        d.dart = sprite_items::darts.create_sprite(-80, 60, 0);
+        d.dart_start_x = -80;
+        d.dart_start_y = 60;
+
+        // Hide power meter and crosshair
+        for (auto &meter : d.power_meter)
+        {
+            if (meter)
+                meter->set_visible(false);
+        }
+        if (d.crosshair)
+            d.crosshair->set_visible(false);
+
+        sound_items::snd_cnaut.play();
+    }
+}
+
+static void update_dart_throwing(game_state &gs)
+{
+    auto &d = gs.darts;
+
+    d.throw_timer++;
+
+    // Animate dart flying to target
+    fixed t = bn::min(fixed(d.throw_timer) / 30, fixed(1));
+
+    // Use easing for smooth motion
+    fixed ease_t = t * t * (3 - 2 * t);
+
+    // Calculate current position using stored start position
+    d.dart_x = (d.dart_start_x * (1 - ease_t)) + (d.dart_target_x * ease_t);
+    d.dart_y = (d.dart_start_y * (1 - ease_t)) + (d.dart_target_y * ease_t);
+
+    // Add rotation to dart during flight
+    if (d.dart)
+    {
+        d.dart->set_position(d.dart_x, d.dart_y);
+        d.dart->set_rotation_angle((d.throw_timer * 12) % 360);
+    }
+
+    // When dart reaches target
+    if (d.throw_timer >= 30)
+    {
+        d.state = DART_RESULT;
+        d.result_timer = 0;
+
+        // Calculate and store score using the final dart position
+        int score = calculate_dart_score(d.dart_target_x, d.dart_target_y);
+
+        if (d.player_turn)
+        {
+            d.round_scores[d.current_round] = score;
+            d.player_score += score;
+
+            // Play appropriate sound
+            if (score >= 25)
+                sound_items::snd_hit.play();
+            else if (score > 0)
+                sound_items::snd_hit.play();
+            else
+                sound_items::snd_miss.play();
+        }
+        else
+        {
+            d.round_scores[3 + d.current_round] = score;
+            d.enemy_score += score;
+        }
+
+        // Stop dart rotation
+        if (d.dart)
+            d.dart->set_rotation_angle(0);
+
+        // Show score text
+        string<32> score_text;
+        if (score == 50)
+            score_text = "BULLSEYE!";
+        else if (score > 0)
+            score_text = "+" + to_string<16>(score);
+        else
+            score_text = "MISS!";
+
+        text::add_toast(score_text, {0, 32});
+    }
+}
+
+static void update_dart_result(game_state &gs)
+{
+    auto &d = gs.darts;
+
+    d.result_timer++;
+
+    // Wait for result display
+    if (d.result_timer >= 60)
+    {
+        // Clean up dart
+        d.dart.reset();
+
+        if (d.player_turn)
+        {
+            // Switch to enemy turn
+            d.player_turn = false;
+            d.state = DART_ENEMY_TURN;
+            d.state_timer = 0;
+        }
+        else
+        {
+            // End of round
+            d.current_round++;
+
+            if (d.current_round >= d.max_rounds)
+            {
+                // Game over - Winner takes all!
+                d.state = DART_GAME_OVER;
+                d.state_timer = 0;
+
+                // Determine winner and apply battle effects
+                if (d.player_score > d.enemy_score)
+                {
+                    // Player wins - enemy HP to 0
+                    gs.result = G_WIN;                // Changed to G_WIN for immediate victory
+                    global_data_ptr->enemy_hp[0] = 0; // Set enemy HP to 0
+
+                    // Trigger enemy hurt animation
+                    gs.enemy_state = 2;
+                    gs.enemy_ticker = 0;
+
+                    text::add_toast("YOU WIN!", {0, 0});
+                }
+                else if (d.enemy_score > d.player_score)
+                {
+                    // Enemy wins - player HP to 0
+                    gs.result = G_LOSE;         // Assuming G_LOSE exists, otherwise use appropriate value
+                    global_data_ptr->hp[0] = 0; // Set player HP to 0
+
+                    // Trigger player hurt animation
+                    gs.character_states[0] = 2;
+                    gs.character_tickers[0] = 0;
+
+                    text::add_toast("YOU LOSE!", {0, 0});
+                }
+                else
+                {
+                    // Draw - no one loses HP
+                    gs.result = G_FIRST;
+                    text::add_toast("DRAW!", {0, 0});
+                }
+            }
+            else
+            {
+                // Next round, back to player
+                d.player_turn = true;
+                d.state = DART_AIMING;
+                d.aim_x = 0;
+                d.aim_y = -16;
+                if (d.crosshair)
+                    d.crosshair->set_visible(true);
+            }
+        }
+    }
+}
+
+static void update_enemy_dart_turn(game_state &gs)
+{
+    auto &d = gs.darts;
+
+    d.state_timer++;
+
+    // Simulate enemy thinking
+    if (d.state_timer == 30)
+    {
+        // Random position within ~40 pixel radius of the dartboard center
+        fixed target_x = gs.rng.get_fixed(-24, 24);
+        fixed target_y = -16 + gs.rng.get_fixed(-24, 24);
+
+        // STORE THE TARGET POSITION for later use
+        d.dart_target_x = target_x;
+        d.dart_target_y = target_y;
+
+        // Show enemy's crosshair briefly
+        if (d.crosshair)
+        {
+            d.crosshair->set_visible(true);
+            d.crosshair->set_position(target_x, target_y);
+        }
+    }
+    else if (d.state_timer == 60)
+    {
+        // Enemy throws - USE THE STORED TARGET from aiming phase
+        d.state = DART_THROWING;
+        d.throw_timer = 0;
+
+        // Don't recalculate! Use the stored d.dart_target_x and d.dart_target_y
+        // They were already set at state_timer == 30
+
+        // Optional: Add some inaccuracy based on enemy skill
+        bn::random rng;
+        fixed accuracy_error = 10 * (1.0 - d.enemy_accuracy); // Use the enemy_accuracy field
+        d.dart_target_x += rng.get_fixed(-accuracy_error, accuracy_error);
+        d.dart_target_y += rng.get_fixed(-accuracy_error, accuracy_error);
+
+        // Create dart sprite at starting position (from RIGHT side for enemy)
+        d.dart = sprite_items::darts.create_sprite(80, 60, 0);
+        d.dart->set_horizontal_flip(true);
+        d.dart_start_x = 80; // Enemy starts from right
+        d.dart_start_y = 60;
+
+        if (d.crosshair)
+            d.crosshair->set_visible(false);
+
+        // Trigger enemy attack animation
+        gs.enemy_state = 3;
+        gs.enemy_ticker = 0;
+
+        sound_items::snd_cnaut.play();
+    }
+}
+
+static void update_dart_game(game_state &gs)
+{
+    auto &d = gs.darts;
+
+    switch (d.state)
+    {
+    case DART_INTRO:
+        d.state_timer++;
+        if (d.state_timer >= 30)
+        {
+            d.state = DART_AIMING;
+            text::add_toast("Round 1 of 12!", {0, -50}); // Updated to show total rounds
+        }
+        break;
+
+    case DART_AIMING:
+        update_dart_aiming(gs);
+        break;
+
+    case DART_POWER:
+        update_dart_power(gs);
+        break;
+
+    case DART_THROWING:
+        update_dart_throwing(gs);
+        break;
+
+    case DART_RESULT:
+        update_dart_result(gs);
+        break;
+
+    case DART_ENEMY_TURN:
+        update_enemy_dart_turn(gs);
+        break;
+
+    case DART_GAME_OVER:
+        d.state_timer++;
+        if (d.state_timer == 30)
+        {
+            // Clean up dart game sprites
+            d.dartboard.reset();
+            d.dart.reset();
+            d.crosshair.reset();
+            for (auto &meter : d.power_meter)
+            {
+                meter.reset();
+            }
+
+            // Clear text displays
+            d.player_score_text.letters.clear();
+            d.enemy_score_text.letters.clear();
+            d.round_text.letters.clear();
+
+            // Return to dialogue/battle
+            gs.stage = G_TALKING;
+        }
+        break;
+    }
+
+    // Display scores
+    if (d.state != DART_GAME_OVER && d.state != DART_INTRO)
+    {
+        // Update score text with larger buffer sizes
+        string<32> player_str = "You: " + to_string<16>(d.player_score);
+        string<32> enemy_str = "Foe: " + to_string<16>(d.enemy_score);
+        string<48> round_str = "Round " + to_string<16>(d.current_round + 1) + "/" + to_string<16>(d.max_rounds); // Increased buffer size
+
+        d.player_score_text.init(player_str);
+        d.enemy_score_text.init(enemy_str);
+        d.round_text.init(round_str);
+
+        // Render the text
+        d.player_score_text.render();
+        d.enemy_score_text.render();
+        d.round_text.render();
+    }
+}
+
+// Main battle function
+int game_map(int game_type = 0)
+{
+    music::stop();
+    music_items::boss.play();
+    sound_items::snd_fight_start.play();
+
+    auto bg_grid = regular_bg_items::bg_battle_grid.create_bg(0, 0);
+
+    // Create and reset battle state
+    game_state gs;
+
+    // Setup conversations based on foe
+    vector<conversation *, 3> convos[G_SIZE];
+
+    switch (global_data_ptr->battle_foe)
+    {
+    case FOE_VISKERS_01:
+        gs.enemy_sprite_item = &sprite_items::visker_battle;
+        global_data_ptr->enemy_max_hp[0] = 12;
+        global_data_ptr->enemy_hp[0] = 12;
+
+        // Just Jeremy for this battle
+        gs.party_size = 1;
+        gs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
+        gs.character_sprites[0]->set_z_order(0);
+
+        convos[G_FIRST].push_back(&garbage_fight_01);
+        convos[G_UP].push_back(&garbage_fight_02);
+        convos[G_WIN].push_back(&garbage_fight_04);
+        break;
+    default:
+        gs.enemy_sprite_item = &sprite_items::visker_battle;
+        global_data_ptr->enemy_max_hp[0] = 12;
+        global_data_ptr->enemy_hp[0] = 12;
+
+        // Just Jeremy for this battle
+        gs.party_size = 1;
+        gs.character_sprites[0] = sprite_items::jeremy_battle.create_sprite(-96, get_character_y_position(0), 0);
+        gs.character_sprites[0]->set_z_order(0);
+
+        convos[G_FIRST].push_back(&garbage_fight_01);
+        convos[G_UP].push_back(&garbage_fight_02);
+        convos[G_WIN].push_back(&garbage_fight_04);
+        break;
+    }
+
+    for (int i = 0; i < gs.party_size; ++i)
+    {
+        if (gs.character_sprites[i].has_value())
+            gs.character_sprites[i].value().set_z_order(i);
+    }
+
+    gs.enemy_sprite = gs.enemy_sprite_item->create_sprite(96, 16, 0);
+
+    // Main game loop
+    while (true)
+    {
+        bg_grid.set_position(bg_grid.x() - 1, bg_grid.y() - 1);
+
+        // Update all character animations
+        for (int i = 0; i < gs.party_size; ++i)
+        {
+            update_character_animation(i, gs);
+        }
+
+        // Normal enemy animation for other enemies
+        switch (gs.enemy_state)
+        {
+        default:
+            break;
+        }
+
+        if (gs.enemy_sprite.has_value())
+        {
+            gs.enemy_sprite.value().set_position(96, 16 + gs.y_delta);
+        }
+
+        // Y offset for dialogue
+        gs.y_delta += is_dialogue_active(&gs) ? (gs.y_delta > -32 ? -4 : 0) : (gs.y_delta < 0 ? 4 : 0);
+
+        // Stage: Talking
+        if (gs.stage == G_TALKING)
+        {
+            // Normal battle dialogue flow
+            if (global_data_ptr->enemy_hp[0] <= 0)
+            {
+                gs.result = G_WIN;
+            }
+
+            if (!is_dialogue_active(&gs))
+            {
+                if (gs.result < G_SIZE && convos[gs.result].size() > 0)
+                {
+                    conversation *c = convos[gs.result].front();
+                    convos[gs.result].erase(convos[gs.result].begin());
+                    init_dialogue(c, &gs);
+                }
+                else
+                {
+                    gs.stage = G_PLAYING;
+                }
+            }
+            else
+            {
+                update_dialogue(&gs);
+
+                if (keypad::a_pressed() && are_lines_complete(&gs))
+                {
+                    if (!advance_dialogue(&gs))
+                    {
+                        clear_dialogue(&gs);
+                    }
+                }
+            }
+        }
+        else if (gs.stage == G_PLAYING)
+        {
+            // Check if we should start dart game
+            if (!gs.darts.dartboard)
+            {
+                init_dart_game(gs);
+            }
+
+            // Update dart game
+            update_dart_game(gs);
+        }
+
+        text::update_toasts();
+        core::update();
+    }
+}
+
 ge_globals.cpp: 
 // ge_globals.cpp
 
@@ -4395,6 +5340,7 @@ ge_sprites.cpp:
 #include "bn_sprite_items_spr_tavern_robin.h"
 #include "bn_sprite_items_spr_sneaker_01.h"
 #include "bn_sprite_items_spr_tower_01.h"
+#include "bn_sprite_items_spr_spamton_01.h"
 #include "bn_sprite_items_spr_elements.h"
 
 #include "ge_structs.h"
@@ -4634,6 +5580,11 @@ character::character(int index_, vector_2 start_, character_manager *manager) : 
     case CHAR_TOLLBOOTH:
     {
         v_sprite.sprite_item_ptr = &bn::sprite_items::spr_tower_01;
+        break;
+    }
+    case CHAR_SPAMTON:
+    {
+        v_sprite.sprite_item_ptr = &bn::sprite_items::spr_spamton_01;
         break;
     }
     case ITEM_BUTTON:
@@ -6205,6 +7156,7 @@ main.cpp:
 #include "ge_dialogue.h"
 #include "ge_actions.h"
 #include "ge_battle.h"
+#include "ge_games.h"
 
 #include "ge_map_data.h"
 
@@ -6537,6 +7489,13 @@ int main()
     global_data_ptr = new global_data();
     global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
 
+    // Test game
+    global_data_ptr->items[OBJ_LIME] = true;
+    global_data_ptr->battle_foe = FOE_TEST;
+    value = game_map(GAME_DARTS);
+    core::update();
+    value = NEW_CHAPTER;
+
     // Test battle before game begins
     /*
     global_data_ptr->items[OBJ_LIME] = true;
@@ -6784,6 +7743,7 @@ const animation croke_lay_down = {{10}, 1, SP_DEFAULT, true};
 
 // NPCs
 const animation noodle_go = {{0, 1, 2, 3, 3, 3, 3, 3, 3, 2, 1, 0}, 11, SP_DEFAULT, false};
+const animation spamton_anim = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55}, 56, SP_DEFAULT, true};
 
 // Elements
 const animation elem_button_up = {{0}, 1, SP_DEFAULT, true};
@@ -7411,6 +8371,169 @@ extern const conversation youtube_ad;
 #endif // GE_DIALOGUE_H
 
 
+ge_games.h: 
+#ifndef GE_GAMES_H
+#define GE_GAMES_H
+
+#include "bn_core.h"
+#include "bn_log.h"
+#include "bn_regular_bg_item.h"
+#include "bn_string.h"
+#include "bn_keypad.h"
+#include "bn_list.h"
+#include "bn_music.h"
+#include "bn_music_items.h"
+#include "bn_music_items_info.h"
+#include "bn_sound_items.h"
+#include "bn_math.h"
+
+#include "bn_camera_ptr.h"
+#include "bn_regular_bg_items_bg_battle_grid.h"
+#include "bn_regular_bg_items_bg_battle_box.h"
+#include "bn_regular_bg_items_bg_battle_action.h"
+#include "bn_sprite_items_spr_jeremy_01.h"
+#include "bn_sprite_items_spr_ginger_01.h"
+#include "bn_sprite_items_spr_visker_01.h"
+#include "bn_sprite_items_hearts.h"
+#include "bn_sprite_items_battle_icons.h"
+#include "bn_sprite_items_battle_chars.h"
+
+#include "bn_sprite_items_jeremy_battle.h"
+#include "bn_sprite_items_ginger_battle.h"
+#include "bn_sprite_items_visker_battle.h"
+#include "bn_sprite_items_croke_battle.h"
+
+#include "ge_globals.h"
+#include "ge_text.h"
+#include "ge_battle.h"
+
+using namespace bn;
+
+int game_map(int game_type);
+
+enum game_stage
+{
+    G_TALKING,
+    G_PLAYING,
+    G_FINISH
+};
+
+enum game_result
+{
+    G_FIRST,
+    G_UP,
+    G_DOWN,
+    G_WIN,
+    G_LOSE,
+    G_SIZE
+};
+
+enum dart_state
+{
+    DART_INTRO,
+    DART_AIMING,
+    DART_POWER,
+    DART_THROWING,
+    DART_RESULT,
+    DART_ENEMY_TURN,
+    DART_GAME_OVER
+};
+
+struct dart_game
+{
+    // Game mechanics
+    int state = DART_INTRO;
+    int current_round = 0;
+    int max_rounds = 12;
+    bool player_turn = true;
+
+    // Scoring
+    int player_score = 0;
+    int enemy_score = 0;
+    int round_scores[6] = {0}; // 3 for player, 3 for enemy
+
+    // Aiming system
+    fixed aim_x = 0;
+    fixed aim_y = 0;
+    fixed aim_speed = 1;
+    fixed aim_wobble = 0;
+    int wobble_timer = 0;
+
+    // Power meter
+    fixed power = 0;
+    fixed power_direction = 1;
+    fixed max_power = 100;
+
+    // Dart physics
+    fixed dart_x = 0;
+    fixed dart_y = 60;
+    fixed dart_target_x = 0;
+    fixed dart_target_y = 0;
+    fixed dart_speed = 0;
+    int throw_timer = 0;
+
+    fixed random_jitter_x = 0;
+    fixed random_jitter_y = 0;
+    fixed wobbled_aim_x = 0;
+    fixed wobbled_aim_y = 0;
+    fixed dart_start_x = 0;  // Starting position for dart throw
+    fixed dart_start_y = 0;
+
+    // Visual elements
+    optional<sprite_ptr> dartboard;
+    optional<sprite_ptr> dart;
+    optional<sprite_ptr> crosshair;
+    optional<sprite_ptr> power_meter[5]; // 5 segments for power bar
+
+    // Text displays - initialized with positions
+    text player_score_text{nullptr, {-100, 70}};
+    text enemy_score_text{nullptr, {60, 70}};
+    text round_text{nullptr, {-20, -70}};
+
+    // Animation timers
+    int state_timer = 0;
+    int result_timer = 0;
+
+    // Enemy AI difficulty
+    fixed enemy_accuracy = 0.7; // 0.0 to 1.0, higher = better
+};
+
+struct game_state
+{
+    const sprite_item *enemy_sprite_item = nullptr;
+    int party_size = 1;
+    int current_actor = -1;
+    int stage = G_TALKING;
+    int result = G_FIRST;
+    int y_delta = 0;
+    dart_game darts;
+
+    // Reusable dialogue state
+    conversation *active_conv = nullptr;
+    int dlg_index = 0;
+    int dlg_size = 0;
+    int dlg_ticker = 0;
+    text dlg_lines[3] = {{nullptr, {-40, 32}}, {nullptr, {-40, 48}}, {nullptr, {-40, 64}}};
+    optional<sprite_ptr> portrait;
+    optional<regular_bg_ptr> bg_ptr;
+
+    // Combat entities
+    optional<sprite_ptr> character_sprites[MAX_PARTY_SIZE];
+    int character_states[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+    int character_tickers[MAX_PARTY_SIZE] = {0, 0, 0, 0};
+
+    optional<sprite_ptr> enemy_sprite;
+    int enemy_state = 0;
+    int enemy_ticker = 0;
+
+    // Menu state
+    int menu_index = 0;
+
+    bn::random rng;
+};
+
+#endif
+
 ge_globals.h: 
 // ge_globals.h
 
@@ -7546,7 +8669,12 @@ enum action_list
 	CHAT_TOLLHOUSE,
 	WORM_ACTION,
 	FROM_AVALON_TAVERN,
+	TO_SPAMTON,
+	FROM_SPAMTON,
+	BIG_SHOT,
+	BIG_SHOT_2,
 	FINAL_MSG_ACTION,
+	GO_SPAMTON_GO,
 	ACTIONS_SIZE
 };
 
@@ -7662,6 +8790,7 @@ ge_map_data.h:
 #include "bn_regular_bg_items_map_forest_01.h"
 #include "bn_regular_bg_items_map_forest_02.h"
 #include "bn_regular_bg_items_map_forest_03.h"
+#include "bn_regular_bg_items_map_forest_04.h"
 #include "bn_regular_bg_items_map_garbage_01.h"
 #include "bn_regular_bg_items_map_garbage_02.h"
 #include "bn_regular_bg_items_map_garbage_03.h"
@@ -7962,15 +9091,15 @@ inline constexpr map map_forest_03 = {
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,
-	0,0,22,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,23,
+	0,0,22,81,81,81,0,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,81,23,
 	0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,
 	0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,213,215,0,0,0,0,0,0,0,213,215,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,27,27,27,27,23,
-	0,0,0,0,23,18,18,18,0,0,0,0,0,0,0,0,0,0,0,0,214,216,0,0,213,215,0,85,0,214,216,0,1,1,0,0,0,165,157,165,161,165,169,165,161,165,169,157,169,165,157,0,0,0,0,0,0,0,22,17,0,0,0,23,
-	0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,190,190,165,161,214,216,165,161,165,171,172,0,0,0,0,0,0,167,190,179,183,190,171,171,171,190,179,183,190,171,171,0,0,0,0,0,0,0,23,22,0,0,0,23,
-	0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,190,190,190,190,171,171,171,171,171,171,171,157,0,0,0,0,0,168,190,0,0,190,172,172,172,190,0,0,190,172,172,0,0,0,0,0,0,0,23,23,22,0,0,23,
-	0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,187,191,0,0,0,0,0,0,0,0,171,171,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,23,23,18,0,23,
-	0,0,0,0,0,0,0,0,23,19,22,0,0,0,0,0,0,0,0,0,188,192,0,0,0,0,0,0,0,0,171,171,153,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,23,23,19,0,23,
-	0,0,0,0,0,0,0,0,23,0,23,22,33,35,0,0,0,0,0,0,190,213,0,0,0,0,0,0,0,0,171,213,215,0,0,0,0,217,221,0,0,0,0,0,185,185,165,169,173,153,1,1,0,0,0,0,0,0,23,23,0,0,0,23,
+	0,0,0,0,23,18,22,0,0,0,0,0,0,0,0,0,0,0,0,0,214,216,0,0,213,215,0,85,0,214,216,0,1,1,0,0,0,165,157,165,161,165,169,165,161,165,169,157,169,165,157,0,0,0,0,0,0,0,22,17,0,0,0,23,
+	0,0,0,0,0,19,23,22,0,0,0,0,0,0,0,0,0,0,0,0,190,190,165,161,214,216,165,161,165,171,172,0,0,0,0,0,0,167,190,179,183,190,171,171,171,190,179,183,190,171,171,0,0,0,0,0,0,0,23,22,0,0,0,23,
+	0,0,0,0,0,19,23,23,0,0,0,0,0,0,0,0,0,0,0,0,190,190,190,190,171,171,171,171,171,171,171,157,0,0,0,0,0,168,190,0,0,190,172,172,172,190,0,0,190,172,172,0,0,0,0,0,0,0,23,23,22,0,0,23,
+	2,2,2,2,2,19,23,23,22,0,0,0,0,0,0,0,0,0,0,0,187,191,0,0,0,0,0,0,0,0,171,171,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,23,23,18,0,23,
+	2,2,2,2,2,2,60,23,23,19,22,0,0,0,0,0,0,0,0,0,188,192,0,0,0,0,0,0,0,0,171,171,153,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,23,23,19,0,23,
+	2,2,2,2,2,2,2,60,23,0,23,22,33,35,0,0,0,0,0,0,190,213,0,0,0,0,0,0,0,0,171,213,215,0,0,0,0,217,221,0,0,0,0,0,185,185,165,169,173,153,1,1,0,0,0,0,0,0,23,23,0,0,0,23,
 	0,0,0,0,0,0,0,0,23,0,23,23,22,0,0,0,0,0,0,213,215,214,216,214,216,171,210,171,171,171,171,214,216,0,0,0,0,218,222,0,0,202,206,0,167,167,166,170,174,154,177,177,0,0,0,0,0,0,0,0,0,0,0,23,
 	0,0,0,0,0,0,0,0,23,0,23,23,23,18,18,22,0,0,20,214,216,171,171,179,183,171,211,171,171,187,191,171,171,0,0,0,0,219,223,0,0,203,207,0,187,191,187,191,171,179,183,171,0,0,0,0,0,0,0,0,167,167,0,23,
 	0,0,0,0,0,0,0,0,23,0,23,23,60,19,19,23,93,95,21,172,172,172,172,0,0,172,212,172,172,188,192,172,172,0,0,0,3,220,224,85,0,204,208,0,188,192,188,192,172,180,184,172,0,0,0,0,0,0,0,0,167,167,0,23,
@@ -7986,12 +9115,38 @@ inline constexpr map map_forest_03 = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,50,50,50,50,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,49,49,49,49,49,49,49,49,49,49,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96,96,0,0,0,0,0,95,95,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,89,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,98,0,98,0,0,0,91,0,0,0,0,0,0,0,0,0,93,93,0,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,108,0,0,108,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,0,98,0,0,0,0,91,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,0,108,108,97,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,119,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96,96,0,0,0,0,0,95,95,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,94,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,89,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,98,0,98,0,0,0,91,0,0,0,0,0,0,0,0,0,93,93,0,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,108,0,0,108,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,0,98,0,0,0,0,91,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,87,0,0,0,0,0,49,50,0,0,0,108,108,97,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,92,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,21,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     },
     &bn::regular_bg_items::map_forest_03};
+
+
+inline constexpr map map_forest_04 = {
+    {9, 9},
+    {512, 512},
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    {
+	1,1,20,80,80,80,22,1,1,
+	18,18,21,81,81,81,23,18,18,
+	19,19,21,0,0,0,23,19,19,
+	19,19,59,0,0,0,60,19,19,
+	17,0,0,0,0,0,0,0,68,
+	42,46,0,0,0,64,1,42,46,
+	43,47,34,0,0,0,32,43,47,
+	44,48,35,0,0,0,33,44,48,
+	45,49,32,34,0,32,34,45,49
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,120,0,0,0,0,0,0,0,120,120,120,0,0,0,0,0,0,0,120,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,121,0,0,0,0,0,0,0,123,0,0,0,0,0,0,0,0,119,0,0,0,0
+    },
+    {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    },
+    &bn::regular_bg_items::map_forest_04};
 
 
 inline constexpr map map_garbage_01 = {
@@ -8421,6 +9576,7 @@ enum character_list
     CHAR_ROBIN,
     CHAR_SNEAKER,
     CHAR_TOLLBOOTH,
+    CHAR_SPAMTON,
     CHAR_SIZE,
     CHAR_TYPEWRITER
 };
@@ -8604,6 +9760,7 @@ enum speed
     SP_DEFAULT,
     SP_SLOW,
     SP_FAST,
+    SP_REALTIME,
     SP_SHAKE
 };
 

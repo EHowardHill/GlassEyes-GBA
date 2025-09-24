@@ -88,6 +88,7 @@ enum character_list
     CHAR_ROBIN,
     CHAR_SNEAKER,
     CHAR_TOLLBOOTH,
+    CHAR_SPAMTON,
     CHAR_SIZE,
     CHAR_TYPEWRITER
 };

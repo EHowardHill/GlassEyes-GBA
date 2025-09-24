@@ -30,6 +30,7 @@
 #include "ge_dialogue.h"
 #include "ge_actions.h"
 #include "ge_battle.h"
+#include "ge_games.h"
 
 #include "ge_map_data.h"
 
@@ -361,6 +362,13 @@ int main()
     // Set for debug
     global_data_ptr = new global_data();
     global_data_ptr->process_stage = AVALON; // BLACK_TO_LAB;
+
+    // Test game
+    global_data_ptr->items[OBJ_LIME] = true;
+    global_data_ptr->battle_foe = FOE_TEST;
+    value = game_map(GAME_DARTS);
+    core::update();
+    value = NEW_CHAPTER;
 
     // Test battle before game begins
     /*

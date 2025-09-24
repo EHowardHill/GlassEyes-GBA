@@ -73,6 +73,7 @@ enum speed
     SP_DEFAULT,
     SP_SLOW,
     SP_FAST,
+    SP_REALTIME,
     SP_SHAKE
 };
 

@@ -1082,6 +1082,40 @@ int action_listener(map_manager *man, character_manager *ch_man)
                 return NEW_MAP;
                 break;
             }
+            case TO_SPAMTON:
+            {
+                global_data_ptr->entry_map = &map_forest_04;
+                global_data_ptr->entry_position = {4, 7};
+                global_data_ptr->ginger_position = {3, 7};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::bg_spamton;
+                global_data_ptr->bg_track->play(0.5);
+                return NEW_MAP;
+                break;
+            }
+            case FROM_SPAMTON:
+            {
+                global_data_ptr->entry_map = &map_forest_03;
+                global_data_ptr->entry_position = {6, 2};
+                global_data_ptr->ginger_position = {6, 1};
+
+                music::stop();
+                global_data_ptr->bg_track = &music_items::bg_avalon;
+                global_data_ptr->bg_track->play(0.5);
+                return NEW_MAP;
+                break;
+            }
+            case GO_SPAMTON_GO:
+            {
+                auto st = ch_man->find_by_index(CHAR_SPAMTON);
+                if (st != nullptr)
+                {
+                    st->idle_animation = &spamton_anim;
+                    st->current_animation = &spamton_anim;
+                }
+                break;
+            }
             default:
             {
                 break;
